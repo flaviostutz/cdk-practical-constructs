@@ -1,0 +1,157 @@
+// This was copied from https://github.com/andylockran/spectral-aws-apigateway-ruleset/blob/main/aws_important_notes.yml
+export const awsRulesetYml = `
+#functions:
+#  - draft4
+# These rules are a codified representation of https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-known-issues.html
+extends: spectral:oas
+formats:
+  - "oas3_0"
+  - "oas3_1"
+rules:
+  aws-openapi-version:
+    description: "OpenAPI version must be 3.0.x.  This is the version set when the API is exported from the REST interface."
+    given: $.
+    severity: error
+    then:
+      field: openapi
+      function: pattern
+      functionOptions:
+        match: "^3.0"
+  
+  aws-path-segments:
+    description: 'Path segments can only contain alphanumeric characters, hyphens, periods, commas, and curly braces. Path parameters must be separate path segments. For example, "resource/{path_parameter_name}" is valid; "resource{path_parameter_name}" is not.'
+    given: $.paths
+    severity: error
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^\\/[A-Za-z0-9.,{}\\/]*"
+  
+  aws-model-names:
+    description: 'Model names can only contain alphanumeric characters.'
+    given: $.components.schemas
+    severity: error
+    then:
+      field: "@key"
+      function: pattern
+      functionOptions:
+        match: "^[A-Za-z0-9]+$"
+  
+  aws-allowed-parameters:
+    description: 'For input parameters, only the following attributes are supported: name, in, required, type, description. Other attributes are ignored.\n Note that this means "schema" definitions are not applied to input parameters during basic validation in the header or querystring.'
+    given: $.components.parameters.*
+    severity: warn
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values: 
+        - name
+        - in
+        - required
+        - type
+        - description
+  
+  aws-securitySchemes:
+    description: 'The securitySchemes type, if used, must be of type apiKey.'
+    given: $.components.securitySchemes
+    severity: warn
+    then:
+      field: type
+      function: pattern
+      functionOptions:
+        match: "apiKey"
+  
+  aws-ignore-deprecated:
+    description: 'The deprecated field is not supported and is dropped in exported APIs.'
+    severity: warn
+    given: $.paths[*][*]
+    then:
+      field: deprecated
+      function: undefined
+  
+  aws-model-field-additionalProperties:
+    description: 'The additionalProperties field is supported in Models.  However, if you remove it, it will remain set to the last value specified.'
+    severity: hint
+    given: $.components.schemas.*
+    then:
+      field: additionalProperties
+      function: defined
+
+  aws-model-fields-anyOf:
+    description: 'The anyOf field is not supported in Models.'
+    severity: error
+    given: $.components.schemas.*
+    then:
+      field: anyOf
+      function: undefined
+  
+  aws-model-discriminator:
+    description: 'The discriminator parameter is not supported in any schema object.'
+    severity: error
+    given: $.components.schemas.*
+    then:
+      field: discriminator
+      function: undefined
+
+  aws-example-tag:
+    description: 'The example tag is not supported by API gateway, but there is no harm in including it.'
+    severity: hint
+    given: $..example
+    then:
+      function: undefined
+
+  aws-exclusive-minimum:
+    description: 'exclusiveMinimum is not supported by API Gateway'
+    severity: error
+    given: $..exclusiveMinimum
+    then:
+      function: undefined
+
+  aws-supported-formats:
+    description: "Format not supported by JSONSchema4, therefore may be ignored"
+    severity: hint
+    given: $..format
+    then:
+      field: "@key"
+      function: enumeration
+      functionOptions:
+        values: 
+        - date-time
+        - email
+        - hostname
+        - ipv4
+        - ipv6
+        - uri
+  
+  aws-readOnly:
+    description: 'readOnly is not supported by API Gateway'
+    severity: warn
+    given: $..readOnly
+    then:
+      function: undefined
+    
+  aws-default:
+    description: 'default is not supported by API Gateway'
+    severity: error
+    given: $.components.schemas.*.properties.*
+    then:
+      field: default
+      function: undefined
+  
+  aws-proxy:
+    description: 'passThroughBehaviour is ignored when aws_proxy type is set'
+    severity: warn
+    given: $..x-amazon-apigateway-integration[?(@ == "aws_proxy")]^
+    then: 
+      field: passthroughBehavior
+      function: undefined
+
+#  jsonschema-draft4-validation:
+#    description: "The model schemas are valid"
+#    message: "{{error}}"
+#    given: "$"
+#    then:
+#      function: draft4
+`;

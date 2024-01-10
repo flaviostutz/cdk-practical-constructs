@@ -1,0 +1,50 @@
+{
+  "name": "cdk-practical-constructs",
+  "version": "0.0.1",
+  "description": "A collection of CDK constructs for making the development of AWS based applications easier and safer",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/index.js",
+    "dist/*.d.ts"
+  ],
+  "packageManager": "pnpm@8.9.0",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flaviostutz/cdk-practical-constructs.git"
+  },
+  "author": "flaviostutz",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/flaviostutz/cdk-practical-constructs/issues"
+  },
+  "homepage": "https://github.com/flaviostutz/cdk-practical-constructs#readme",
+  "devDependencies": {
+    "@stutzlab/eslint-config": "^3.0.0",
+    "@tsconfig/node16": "16.1.1",
+    "@types/jest": "^29.4.0",
+    "esbuild": "^0.19.11",
+    "esbuild-jest": "^0.5.0",
+    "jest": "^29.4.2",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@apiture/openapi-down-convert": "^0.9.0",
+    "@asteasolutions/zod-to-openapi": "^6.3.1",
+    "@stoplight/spectral-cli": "^6.11.0",
+    "@types/npm-which": "^3.0.3",
+    "@types/tmp": "^0.2.6",
+    "aws-cdk-lib": "^2.118.0",
+    "constructs": "^10.3.0",
+    "fs": "0.0.1-security",
+    "npm-which": "^3.0.1",
+    "openapi3-ts": "^4.2.1",
+    "tmp": "^0.2.1",
+    "zod": "^3.22.4"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}
