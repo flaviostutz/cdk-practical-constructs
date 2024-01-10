@@ -25,7 +25,7 @@ export const vpcFromConfig = (scope: Construct, config: NetworkConfig): IVpc => 
 export const getLambdaEventSchema = (routeConfig: RouteConfig): ZodSchema => {
   return z.object({
     pathParameters: routeConfig.request?.params ?? z.undefined(),
-    // FIXME finish implementation
+    // TODO finish implementation
     // headers: routeConfig.request?.headers,
     // body: routeConfig.request?.body?.content['application/json'].schema ?? null
   });

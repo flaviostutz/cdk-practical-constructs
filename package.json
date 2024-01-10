@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/flaviostutz/cdk-practical-constructs#readme",
   "devDependencies": {
-    "@stutzlab/eslint-config": "^3.0.0",
+    "@stutzlab/eslint-config": "^3.0.2",
     "@tsconfig/node16": "16.1.1",
     "@types/jest": "^29.4.0",
     "esbuild": "^0.19.11",

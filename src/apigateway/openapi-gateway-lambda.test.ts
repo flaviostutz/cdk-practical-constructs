@@ -157,7 +157,7 @@ describe('openapi-gateway-lambda', () => {
     const template = Template.fromStack(stack);
     const templateStr = JSON.stringify(template.toJSON());
 
-    console.log(JSON.stringify(template.toJSON(), null, 2));
+    // console.log(JSON.stringify(template.toJSON(), null, 2));
 
     expect(templateStr.indexOf('myapi-endpoint')).not.toBe(-1);
 
@@ -402,7 +402,7 @@ const testUserPostRouteConfig: RouteConfig = {
                 .array(z.string())
                 .openapi({ example: ['User name is required', 'age should be positive'] }),
             })
-            .openapi('Response'), // FIXME should throw error because it's using Response name twice?
+            .openapi('ResponseDetails'),
         },
       },
     },
