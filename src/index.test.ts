@@ -1,6 +1,6 @@
 import { Stack } from 'aws-cdk-lib/core';
 
-import { BaseNodeJsFunction, BaseNodeJsProps, EventType } from './index';
+import { BaseNodeJsFunction, EventType } from './index';
 
 describe('cdk lib', () => {
   it('lib exported', () => {

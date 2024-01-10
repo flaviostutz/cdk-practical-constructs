@@ -31,6 +31,7 @@ describe('lambda-base', () => {
       },
     };
 
+    if (!lambdaConfig.network) throw new Error('lambdaConfig.network should be defined');
     const vpc = vpcFromConfig(stack, lambdaConfig.network);
     if (!vpc) throw new Error('vpc should be defined');
 
