@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/index.js",
-    "dist/**/*.d.ts"
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md"
   ],
   "packageManager": "pnpm@8.9.0",
   "scripts": {},

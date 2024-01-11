@@ -2,9 +2,18 @@ SHELL := /bin/bash
 
 build: install
 	rm -rf dist
-	@# TODO add --minify later
-	pnpm exec esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js
+
+	@# TODO bundle dist after stabilisation
+	@# pnpm exec esbuild src/index.ts --bundle --minify --platform=node --outfile=dist/index.js
+
+	@# don't bundle dist for now (helps with debugging in clients)
+	pnpm exec esbuild src/*.ts src/**/*.ts --platform=node --outdir=dist
+
 	pnpm exec tsc --emitDeclarationOnly --outDir dist
+
+	-find ./dist -name "*.test.js" -exec rm -rf {} \;
+	-find ./dist -name "*.test.d.ts" -exec rm -rf {} \;
+	-find ./dist -name "__tests__" -exec rm -rf {} \;
 
 lint:
 	pnpm exec eslint ./src --ext .ts
