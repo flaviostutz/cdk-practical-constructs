@@ -1,6 +1,6 @@
 # cdk-practical-constructs
 
-A collection of CDK constructs for making the development of AWS based applications easier and safer in a practical way.
+A collection of CDK constructs and utilities for making the development of AWS based applications easier and safer in a practical way.
 
 See examples for BaseNodeJsLambda and OpenApiGatewayLambda below.
 
