@@ -6,7 +6,7 @@ See examples for BaseNodeJsLambda and OpenApiGatewayLambda below.
 
 ## Construct BaseNodeJsLambda
 
-Based on (AWS Construct NodeJsFunction)[https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.NodejsFunction.html] and adds the following capabilities:
+Based on [AWS Construct NodeJsFunction](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.NodejsFunction.html) and adds the following capabilities:
   - creates a default security group. See property 'defaultSecurityGroup' of this construct
   - creates an alias called "live" pointing to the latest lambda version and replaced versions are deleted automatically. See property 'liveAlias' of this construct
   - typed configuration props for common usage scenarios
