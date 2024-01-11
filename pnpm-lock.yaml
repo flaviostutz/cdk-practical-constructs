@@ -35,6 +35,9 @@ dependencies:
   openapi3-ts:
     specifier: ^4.2.1
     version: 4.2.1
+  scoperjs:
+    specifier: ^1.0.0
+    version: 1.0.0
   tmp:
     specifier: ^0.2.1
     version: 0.2.1
@@ -5207,6 +5210,10 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /scoperjs@1.0.0:
+    resolution: {integrity: sha512-M0UJmk8TbhwXr5t9laJ3T1GgjFMlhgIAWpM1myNdeFsSiFhcKW2XBHm7z4HbRHXKS7u+On06FCTWkkdBnGR/RQ==}
+    dev: false
 
   /semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
