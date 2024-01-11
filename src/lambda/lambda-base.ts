@@ -16,7 +16,7 @@ import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 import { vpcFromConfig } from '../utils';
 
-import { EventType, BaseNodeJsProps, LambdaConfig } from './types';
+import { BaseNodeJsProps, LambdaConfig } from './types';
 
 // CDK L2 constructs
 // Docs: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.NodejsFunction.html#entry
@@ -95,7 +95,7 @@ export const getPropsWithDefaults = (
     if (!props.eventType) {
       throw new Error('eventType is required if entry is not defined');
     }
-    const eventTypeStr = EventType[props.eventType].toLowerCase();
+    const eventTypeStr = props.eventType.toLowerCase();
     entry = `${props.baseCodePath || 'handlers'}/${eventTypeStr}/${id}/index.ts`;
   }
 

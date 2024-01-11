@@ -2,11 +2,12 @@ SHELL := /bin/bash
 
 build: install
 	rm -rf dist
-	pnpm exec esbuild src/index.ts --bundle --platform=node --minify --outfile=dist/index.js
+	@# TODO add --minify later
+	pnpm exec esbuild src/index.ts --bundle --platform=node --outfile=dist/index.js
 	pnpm exec tsc --emitDeclarationOnly --outDir dist
 
 lint:
-	pnpm exec eslint . --ext .ts
+	pnpm exec eslint ./src --ext .ts
 	pnpm exec tsc -noEmit --skipLibCheck
 	pnpm audit
 

@@ -35,7 +35,7 @@
     "@stoplight/spectral-cli": "^6.11.0",
     "@types/npm-which": "^3.0.3",
     "@types/tmp": "^0.2.6",
-    "aws-cdk-lib": "^2.118.0",
+    "aws-cdk-lib": "^2.117.0",
     "constructs": "^10.3.0",
     "fs": "0.0.1-security",
     "npm-which": "^3.0.1",

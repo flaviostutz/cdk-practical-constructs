@@ -126,7 +126,7 @@ describe('lambda-base', () => {
 
     const f = (): void => {
       // eslint-disable-next-line no-new
-      new BaseNodeJsFunction(stack, 'test-lambda', {
+      new BaseNodeJsFunction(stack, 'test-lambda1', {
         stage: 'dev',
         eventType: EventType.Http,
         baseCodePath: 'src/lambda/__tests__',
@@ -139,6 +139,17 @@ describe('lambda-base', () => {
       stage: 'dev',
       entry: 'src/lambda/__tests__/http/test-lambda/index.ts',
     });
+
+    expect(func.nodeJsFunction.isBoundToVpc).toBe(false);
+
+    const f2 = (): void => {
+      // eslint-disable-next-line no-new
+      new BaseNodeJsFunction(stack, 'test-lambda', {
+        stage: 'dev',
+        baseCodePath: 'src/lambda/__tests__',
+      });
+    };
+    expect(f2).toThrow('eventType is required if entry is not defined');
 
     expect(func.nodeJsFunction.isBoundToVpc).toBe(false);
 
