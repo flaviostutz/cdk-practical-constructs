@@ -4,6 +4,6 @@
     "sourceMap": true,
     "declaration": true
   },
-  "include": ["**/*"],
+  "include": ["src/**/*", ".eslintrc.js", "jest.config.js"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
