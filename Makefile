@@ -7,7 +7,7 @@ build: install
 	@# pnpm exec esbuild src/index.ts --bundle --minify --platform=node --outfile=dist/index.js
 
 	@# don't bundle dist for now (helps with debugging in clients)
-	pnpm exec esbuild src/*.ts src/**/*.ts --platform=node --outdir=dist
+	pnpm exec esbuild src/*.ts src/**/*.ts --platform=node --format=cjs --outdir=dist
 
 	pnpm exec tsc --emitDeclarationOnly --outDir dist
 
