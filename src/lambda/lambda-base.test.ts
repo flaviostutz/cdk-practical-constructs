@@ -171,6 +171,7 @@ describe('lambda-base', () => {
         privateSubnetIds: ['a'],
         privateSubnetRouteTableIds: ['a'],
       },
+      timeout: Duration.seconds(200),
       eventType: EventType.Http,
       entry: 'src/lambda/__tests__/http/test-lambda/index.ts',
       reservedConcurrentExecutions: 10,
