@@ -3,21 +3,14 @@ SHELL := /bin/bash
 build: install
 	rm -rf dist
 
-	@# TODO bundle dist after stabilisation
-	@# pnpm exec esbuild src/index.ts --bundle --minify --platform=node --outfile=dist/index.js
+	@# Don't bundle so internal CDK constructs continue working on clients
+	pnpm exec tsc --outDir dist
 
-	@# don't bundle dist for now (helps with debugging in clients)
-	pnpm exec esbuild src/*.ts src/**/*.ts --platform=node --format=cjs --outdir=dist
-
-	pnpm exec tsc --emitDeclarationOnly --outDir dist
-
-	-find ./dist -name "*.test.js" -exec rm -rf {} \;
-	-find ./dist -name "*.test.d.ts" -exec rm -rf {} \;
-	-find ./dist -name "__tests__" -exec rm -rf {} \;
+	@# remove all tests from distribution
+	@-find -E ./dist -regex '.*\.test\..*|.*__tests.*' -exec rm -rf {} \;
 
 lint:
 	pnpm exec eslint ./src --ext .ts
-	pnpm exec tsc -noEmit --skipLibCheck
 	pnpm audit
 
 test: unit-tests
