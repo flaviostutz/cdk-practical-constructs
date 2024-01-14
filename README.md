@@ -22,40 +22,28 @@ Based on [AWS Construct NodeJsFunction](https://docs.aws.amazon.com/cdk/api/v2/d
 #### Simple Typescript Lambda Function
 
 ```ts
-    // define a global lambda config that will be used by most of your lambda functions
-    const globalLambdaConfig: BaseNodeJsProps = {
-        // this is used to create the name of the function so you can have multiple stages in the same account (e.g: for PR environments)
-        stage: 'dev',
-        // get these info from your target AWS accounts
-        // we use this instead of fetching from the account to make builds simpler
-        // and less dependent on network calls
-        network: {
-            vpcId: 'vpc-123123',
-            availabilityZones: ['us-east-1a', 'us-east-1b'],
-            privateSubnetIds: ['subnet-aaaaaaa', 'subnet-bbbbbbb'],
-            privateSubnetRouteTableIds: ['rtb-abc123', 'rtb-xyz123'],
-        }
-    };
-
     // instantiate Lambda construct
     // this will bundle your ts code using esbuild
     const func = new BaseNodeJsFunction(stack, 'test-lambda', {
-        ...globalLambdaConfig,
+        stage: 'dev',
         eventType: EventType.Http
-        //override any config here
     });
 ```
 
 #### Complex Typescript Lambda Function
 
 ```ts
+    // this can be reused in various lambda definitions
+    const globalLambdaConfig = {
+        eventType: EventType.Http,
+        runtime: Runtime.NODEJS_18_X,
+        extraCaPubCert: 'ABCXxxxyz123123123' // add private CA pub certificate to NodeJS
+    }
+
     const lambdaConfig: BaseNodeJsProps = {
         // merge config with global defaults
         ...globalLambdaConfig,
-        eventType: EventType.Http,
         sourceMap: true, // add code source map to esbuild and configure Node. This might impose severe performance penauties
-        runtime: Runtime.NODEJS_18_X,
-        extraCaPubCert: 'ABCXxxxyz123123123', // add private CA pub certificate to NodeJS
         provisionedConcurrentExecutions: {
             minCapacity: 1, // min instances in auto-scaling of provisioned lambdas
             maxCapacity: 5, // max instances in auto-scaling. if empty, the number of provisioned instances will be fixed to "minCapacity"
