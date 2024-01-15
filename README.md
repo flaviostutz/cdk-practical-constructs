@@ -98,3 +98,8 @@ Check https://github.com/awslabs/aws-solutions-constructs/blob/main/source/patte
 ### Usage
 
 TODO
+
+## Construct WSO2 API
+
+Some pieces of code and experiences were extracted from [serverless-wso2-apim](https://github.com/ramgrandhi/serverless-wso2-apim). Thanks for the good work, Ram!
+
