@@ -43,6 +43,7 @@
     "openapi3-ts": "^4.2.1",
     "scoperjs": "^1.0.1",
     "tmp": "^0.2.1",
+    "wso2apim-sdk": "^0.0.4",
     "zod": "^3.22.4"
   },
   "publishConfig": {
