@@ -38,6 +38,7 @@ export type LambdaConfig = NodejsFunctionProps & {
 export enum EventType {
   Cloudwatch = 'cloudwatch',
   Http = 'http',
+  CustomResource = 'custom-resource',
 }
 
 export type BaseNodeJsProps = LambdaConfig & {

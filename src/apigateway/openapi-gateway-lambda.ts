@@ -1,8 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable no-param-reassign */
-import fs from 'fs';
-import { execSync } from 'child_process';
 
 import {
   AccessLogFormat,
@@ -15,7 +13,6 @@ import {
   StageOptions,
 } from 'aws-cdk-lib/aws-apigateway';
 import type { oas30, oas31 } from 'openapi3-ts';
-import tmp from 'tmp';
 import { Construct } from 'constructs';
 import { Size } from 'aws-cdk-lib';
 import { ILogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
@@ -23,9 +20,10 @@ import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { OpenAPIRegistry, OpenApiGeneratorV31, RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { Converter } from '@apiture/openapi-down-convert';
 
+import { lintOpenapiDocument } from '../utils/openapi-lint';
+import { randomId } from '../utils/misc';
+
 import { LambdaOperation, OpenApiGatewayLambdaProps } from './types';
-import { awsRulesetYml } from './spectral-openapi-aws-ruleset';
-import { findExecutableInNodeModuleBin, randomId } from './utils';
 
 /**
  * Rest API built from Openapi specs and aws extensions for running on Lambda functions with the following characteristics:
@@ -69,7 +67,7 @@ export class OpenApiGatewayLambda extends Construct {
     });
     const openapiDoc30 = converter.convert() as oas30.OpenAPIObject;
 
-    lintOpenapiDocument(openapiDoc30);
+    lintOpenapiDocument(openapiDoc30, true);
 
     // SpecRestApi builds all of our lambda integrations based on openapi doc and extensions
     const specRestApi = new SpecRestApi(this, 'SpecRestApi', {
@@ -287,58 +285,6 @@ export const generateOperationId = (routeConfig: RouteConfig): string => {
   str = str.replace(/^\//g, '');
   str = str.replaceAll(/\//g, '-');
   return `${str.replaceAll(/[^A-Za-z0-9-_]/g, '')}-${randomId(5)}`;
-};
-
-/**
- * This is a linter only on openapi 3.0 json schema
- * It doesn't check for best practices or aws related advisory
- * (check AWS known issues here: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-known-issues.html)
- */
-export const lintOpenapiDocument = (openapiDoc30: oas30.OpenAPIObject): void => {
-  // create tmp dir for running lint commands
-  const lintDir = tmp.dirSync({ postfix: 'lint-spectral' });
-
-  // prepare aws ruleset file
-  // tmp.setGracefulCleanup();
-  fs.writeFileSync(`${lintDir.name}/aws-ruleset.yml`, awsRulesetYml);
-
-  // create openapi spec file
-  fs.writeFileSync(`${lintDir.name}/openapi-spec.json`, JSON.stringify(openapiDoc30));
-
-  // create spectral config file
-  fs.writeFileSync(
-    `${lintDir.name}/.spectral.yaml`,
-    `extends:
-  - spectral:oas
-  - ./aws-ruleset.yml
-rules:
-  operation-tags: off
-`,
-  );
-
-  // We can't do async operations in CDK, so the following can't be used now (https://github.com/aws/aws-cdk/issues/8273)
-  // const rs = await bundleAndLoadRuleset(spectralConfFile.name, { fs, fetch}); const results = await spectral.run(apiDocument)
-
-  // Instead we are directly invoking the process using execSync
-  const spectralBinPath = findExecutableInNodeModuleBin('spectral');
-  try {
-    // this will fail if errors are found in linting
-    execSync(`${spectralBinPath} lint -F error -D openapi-spec.json`, {
-      cwd: lintDir.name,
-      timeout: 10000,
-    });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (err: any) {
-    const output = err.stdout.toString();
-    console.log('');
-    console.log('Linting failed for openapi document');
-    console.log(JSON.stringify(openapiDoc30, null, 2));
-    console.log('');
-    console.log('Linting errors:');
-    console.log(output);
-    console.log('');
-    throw new Error('Openapi spec lint error');
-  }
 };
 
 // function configureCloudwatchRoleForApi() {
