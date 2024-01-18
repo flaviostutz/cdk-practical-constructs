@@ -2,8 +2,9 @@
   "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
     "sourceMap": true,
-    "declaration": true
+    "declaration": true,
+    "declarationMap": true
   },
-  "include": ["src/**/*", ".eslintrc.js", "jest.config.js"],
+  "include": ["src", ".eslintrc.js", "jest.config.js", "example"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

@@ -10,8 +10,8 @@ import { EventType } from '../../lambda/types';
 import { lintOpenapiDocument } from '../../utils/openapi-lint';
 import { BaseNodeJsFunction } from '../../lambda/lambda-base';
 
-import { Wso2ApiDefinition, Wso2ApiProps } from './types';
-import { validateProps } from './props';
+import { Wso2ApiProps } from './types';
+import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './wso2-api-defs';
 
 /**
  * WSO2 API CDK construct for creating WSO2 APIs based on Openapi and WSO2-specific configurations
@@ -33,9 +33,10 @@ export class Wso2Api extends Construct {
 
     validateProps(props);
 
-    lintOpenapiDocument(props.openapiDocument, false);
-
-    const wso2ApiDefs = buildWso2ApiDefinition(props.wso2ApiDefinition);
+    const wso2ApiDefs = applyDefaultsWso2ApiDefinition(
+      props.wso2ApiDefinition,
+      props.openapiDocument,
+    );
 
     const { accountId, region } = new ScopedAws(scope);
 
@@ -77,40 +78,11 @@ export class Wso2Api extends Construct {
   }
 }
 
-const buildWso2ApiDefinition = (apiDef: Wso2ApiDefinition): Wso2ApiDefinition => {
-  const apiDefr = { ...apiDef };
-
-  // TODO finish
-
-  // If cors was defined only with "origins", use a default configuration for the rest of the definition
-  // this is to make it easier to define an api with default cors configurations
-  const corsConfig = apiDef.corsConfiguration;
-  if (corsConfig) {
-    if (corsConfig.accessControlAllowOrigins) {
-      corsConfig.accessControlAllowCredentials = corsConfig.accessControlAllowCredentials ?? false;
-      // default WSO2 cors config
-      corsConfig.accessControlAllowHeaders = corsConfig.accessControlAllowHeaders ?? [
-        'Authorization',
-        'Access-Control-Allow-Origin',
-        'Content-Type',
-        'SOAPAction',
-      ];
-      // default WSO2 cors config
-      corsConfig.accessControlAllowMethods = corsConfig.accessControlAllowMethods ?? [
-        'GET',
-        'PUT',
-        'POST',
-        'DELETE',
-        'PATCH',
-        'OPTIONS',
-      ];
-      corsConfig.corsConfigurationEnabled =
-        typeof corsConfig.corsConfigurationEnabled === 'boolean'
-          ? corsConfig.corsConfigurationEnabled
-          : true;
-    }
+export const validateProps = (props: Wso2ApiProps): void => {
+  if (!props.wso2BaseUrl) throw new Error('wso2ApiBaseUrl is required');
+  if (!props.wso2CredentialsSecretManagerPath) {
+    throw new Error('wso2CredentialsSecretManagerPath is required');
   }
-  apiDefr.corsConfiguration = corsConfig;
-
-  return apiDefr;
+  validateWso2ApiDefs(props.wso2ApiDefinition);
+  lintOpenapiDocument(props.openapiDocument, false);
 };

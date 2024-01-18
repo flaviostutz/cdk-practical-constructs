@@ -13,6 +13,9 @@ lint:
 	pnpm exec eslint ./src --ext .ts
 	pnpm audit
 
+lint-fix:
+	pnpm exec eslint . --ext .ts --fix
+
 test: unit-tests
 
 unit-tests:

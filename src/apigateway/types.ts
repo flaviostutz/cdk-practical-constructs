@@ -28,11 +28,11 @@ export type OpenApiGatewayLambdaProps = Omit<
    */
   accessLogEnable?: boolean;
   accessLogRetention?: RetentionDays;
-  openapiBasic: OpenAPIBasic;
+  openapiBasic: OpenAPIConfig;
   openapiOperations: LambdaOperation[];
 };
 
-export type OpenAPIBasic = OpenAPIObjectConfigV31;
+export type OpenAPIConfig = OpenAPIObjectConfigV31;
 
 export type AwsExtensions = {
   enableParametersValidator?: boolean;
