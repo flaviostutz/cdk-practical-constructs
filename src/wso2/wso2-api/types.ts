@@ -51,4 +51,5 @@ export type Wso2LambdaConfig = Pick<
   | 'extraCaPubCert'
   | 'network'
   | 'logGroupSubscriberLambdaArn'
+  | 'logRetention'
 >;

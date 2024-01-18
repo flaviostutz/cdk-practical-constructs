@@ -40,6 +40,7 @@ export class Wso2Api extends Construct {
 
     const { accountId, region } = new ScopedAws(scope);
 
+    // lambda function used for invoking WSO2 APIs during CFN operations
     const customResourceFunction = new BaseNodeJsFunction(this, 'Wso2ApiCustomResourceFunction', {
       stage: 'dev',
       timeout: Duration.seconds(120),
@@ -53,13 +54,14 @@ export class Wso2Api extends Construct {
           Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${props.wso2CredentialsSecretManagerPath}*`,
         }),
       ],
+      logRetention: props.customResourceConfig.logRetention,
       ...props.customResourceConfig,
     });
     customResourceFunction.defaultSecurityGroup?.addEgressRule(Peer.anyIpv4(), Port.allTraffic());
 
     const customResourceProvider = new Provider(this, 'Wso2ApiCustomResourceProvider', {
       onEventHandler: customResourceFunction.nodeJsFunction,
-      logRetention: RetentionDays.ONE_DAY,
+      logRetention: props.customResourceConfig.logRetention,
     });
 
     // TODO test if large open api documents can be passed by Custom Resource properties
