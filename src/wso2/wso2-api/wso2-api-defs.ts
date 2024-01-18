@@ -64,6 +64,11 @@ const defaultApiDef: Partial<Wso2ApiDefinition> = {
   subscriptionAvailableTenants: [],
 };
 
+/**
+ * Transform input wso2 api definition by applying default values when
+ * input is undefined and merging data from openapi document to
+ * fields in wso2 api def
+ */
 export const applyDefaultsWso2ApiDefinition = (
   apiDef: Wso2ApiDefinition,
   openapiDocument: OpenAPIObject,
@@ -78,7 +83,7 @@ export const applyDefaultsWso2ApiDefinition = (
       technicalOwner: openapiDocument.info.contact?.name,
       businessOwner: openapiDocument.info.contact?.name,
     },
-    operations: wso2APIOperationsFromOpenapi(openapiDocument),
+    operations: [...wso2APIOperationsFromOpenapi(openapiDocument), ...(apiDef.operations ?? [])],
   };
 
   // If cors was defined only with "origins", use a default configuration for the rest of the definition
