@@ -96,7 +96,7 @@ export const getPropsWithDefaults = (
       throw new Error('eventType is required if entry is not defined');
     }
     const eventTypeStr = props.eventType.toLowerCase();
-    entry = `${props.baseCodePath || 'handlers'}/${eventTypeStr}/${id}/index.ts`;
+    entry = `${props.baseCodePath || 'src/handlers'}/${eventTypeStr}/${id}/index.ts`;
   }
 
   return {

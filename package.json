@@ -27,7 +27,7 @@
     "@types/jest": "^29.4.0",
     "esbuild-jest": "^0.5.0",
     "jest": "^29.4.2",
-    "typescript": "5.1.6"
+    "typescript": "5.3.3"
   },
   "dependencies": {
     "@apiture/openapi-down-convert": "^0.9.0",
@@ -43,7 +43,6 @@
     "openapi3-ts": "^4.2.1",
     "scoperjs": "^1.0.1",
     "tmp": "^0.2.1",
-    "wso2apim-sdk": "^0.0.4",
     "zod": "^3.22.4"
   },
   "publishConfig": {

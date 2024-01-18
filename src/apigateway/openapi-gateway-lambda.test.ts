@@ -18,6 +18,7 @@ import { CfnFunction } from 'aws-cdk-lib/aws-lambda';
 
 import { BaseNodeJsFunction } from '../lambda/lambda-base';
 import { BaseNodeJsProps, EventType } from '../lambda/types';
+import { lintOpenapiDocument } from '../utils/openapi-lint';
 
 import { LambdaOperation, OpenApiGatewayLambdaProps } from './types';
 import {
@@ -26,7 +27,6 @@ import {
   generateOpenapiDocWithExtensions,
   generateOperationId,
   getPropsWithDefaults,
-  lintOpenapiDocument,
 } from './openapi-gateway-lambda';
 
 extendZodWithOpenApi(z);
