@@ -19,9 +19,6 @@ export const validateWso2ApiDefs = (apiDef: Wso2ApiDefinition): void => {
   if (!apiDef.endpointConfig) {
     throw new Error('endpointConfig is required');
   }
-  if (!apiDef.gatewayEnvironments || apiDef.gatewayEnvironments.length === 0) {
-    throw new Error('gatewayEnvironments is required');
-  }
 
   validateVisibility(apiDef);
 };

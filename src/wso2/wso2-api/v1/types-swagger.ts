@@ -330,7 +330,12 @@ export type API = {
    *   }
    * }
    */
-  endpointConfig?: { [key: string]: unknown };
+  endpointConfig?:
+    | ({ endpoint_type: 'http' } & EndpointHttp)
+    | ({ endpoint_type: 'load_balance' } & EndpointLoadBalance)
+    | ({ endpoint_type: 'failover' } & EndpointFailover)
+    | ({ endpoint_type: 'default' } & EndpointHttp);
+
   /**
    * @default ENDPOINT
    * @example INLINE
@@ -543,4 +548,45 @@ export type MediationPolicy = {
   type?: string;
   /** @example true */
   shared?: boolean;
+};
+
+export type EndpointTarget = {
+  endpoint_type?: string;
+  template_not_supported?: boolean;
+  url: string;
+};
+
+export type EndpointHttp = {
+  endpoint_type: 'http';
+  sandbox_endpoints: {
+    url: string;
+  };
+  production_endpoints: {
+    url: string;
+  };
+};
+
+export type EndpointFailover = {
+  endpoint_type: 'failover';
+  sandbox_endpoints: {
+    url: string;
+  };
+  production_endpoints: {
+    url: string;
+  };
+  production_failovers: [EndpointTarget];
+  sandbox_failovers: [EndpointTarget];
+};
+
+export type EndpointLoadBalance = {
+  endpoint_type: 'load_balance';
+  algoCombo: 'org.apache.synapse.endpoints.algorithms.RoundRobin';
+  sessionManagement: 'None' | 'Transport' | 'SOAP' | 'ClientID';
+  sandbox_endpoints: [EndpointTarget];
+  production_endpoints: [EndpointTarget];
+  /**
+   * Session timeout in milliseconds
+   */
+  sessionTimeOut: number;
+  algoClassName: 'org.apache.synapse.endpoints.algorithms.RoundRobin';
 };
