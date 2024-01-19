@@ -93,7 +93,7 @@ export const applyDefaultsWso2ApiDefinition = (
   // this is to make it easier to define an api with default cors configurations
   const corsConfig = apiDefr.corsConfiguration;
   if (corsConfig) {
-    if (corsConfig.accessControlAllowOrigins) {
+    if (corsConfig.accessControlAllowOrigins && corsConfig.accessControlAllowOrigins.length > 0) {
       corsConfig.accessControlAllowCredentials = corsConfig.accessControlAllowCredentials ?? false;
       // default WSO2 cors config
       corsConfig.accessControlAllowHeaders = corsConfig.accessControlAllowHeaders ?? [
