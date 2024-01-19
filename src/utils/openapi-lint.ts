@@ -36,11 +36,11 @@ export const lintOpenapiDocument = (
   fs.writeFileSync(
     `${lintDir.name}/.spectral.yaml`,
     `extends:
-    - spectral:oas
-    ${awsRs}
-  rules:
-    operation-tags: off
-  `,
+  - spectral:oas
+  ${awsRs}
+rules:
+  operation-tags: off
+`,
   );
 
   // We can't do async operations in CDK, so the following can't be used now (https://github.com/aws/aws-cdk/issues/8273)
@@ -56,7 +56,7 @@ export const lintOpenapiDocument = (
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
-    const output = err.stdout.toString();
+    const output = `${err.stdout.toString()} ${err.stderr.toString()}`;
     console.log('');
     console.log('Linting failed for openapi document');
     console.log(JSON.stringify(openapiDoc30, null, 2));
@@ -64,6 +64,6 @@ export const lintOpenapiDocument = (
     console.log('Linting errors:');
     console.log(output);
     console.log('');
-    throw new Error('Openapi spec lint error');
+    throw new Error(`Openapi spec lint error: ${output}`);
   }
 };

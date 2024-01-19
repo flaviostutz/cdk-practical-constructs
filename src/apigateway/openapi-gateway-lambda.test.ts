@@ -287,7 +287,7 @@ describe('openapi-gateway-lambda', () => {
 
   it('openapi lint should work', async () => {
     const f = (): void => {
-      lintOpenapiDocument(testOpenpidoc30());
+      lintOpenapiDocument(testOpenpidoc30(), true);
     };
     expect(f).not.toThrow();
   });
@@ -299,7 +299,7 @@ describe('openapi-gateway-lambda', () => {
     // @ts-ignore
     odoc.paths['/users/{id}'].get.parameters[0].name = 'SOMETHING';
     const f = (): void => {
-      lintOpenapiDocument(odoc);
+      lintOpenapiDocument(odoc, true);
     };
     expect(f).toThrow();
   });

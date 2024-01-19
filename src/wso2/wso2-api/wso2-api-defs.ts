@@ -77,14 +77,21 @@ export const applyDefaultsWso2ApiDefinition = (
     ...defaultApiDef,
     ...apiDef,
     tags: [...(apiDef.tags ?? []), 'cdk-practical-constructs'],
-    businessInformation: apiDef.businessInformation ?? {
+    operations: [...wso2APIOperationsFromOpenapi(openapiDocument), ...(apiDef.operations ?? [])],
+  };
+
+  // user openapi contact info for business/technical information of the api
+  if (
+    (!apiDefr.businessInformation && openapiDocument.info.contact?.email) ||
+    openapiDocument.info.contact?.name
+  ) {
+    apiDefr.businessInformation = {
       businessOwnerEmail: openapiDocument.info.contact?.email,
       technicalOwnerEmail: openapiDocument.info.contact?.email,
       technicalOwner: openapiDocument.info.contact?.name,
       businessOwner: openapiDocument.info.contact?.name,
-    },
-    operations: [...wso2APIOperationsFromOpenapi(openapiDocument), ...(apiDef.operations ?? [])],
-  };
+    };
+  }
 
   // If cors was defined only with "origins", use a default configuration for the rest of the definition
   // this is to make it easier to define an api with default cors configurations
@@ -114,7 +121,9 @@ export const applyDefaultsWso2ApiDefinition = (
           : true;
     }
   }
-  apiDefr.corsConfiguration = corsConfig;
+  if (corsConfig) {
+    apiDefr.corsConfiguration = corsConfig;
+  }
 
   return apiDefr;
 };
@@ -134,7 +143,7 @@ const wso2APIOperationsFromOpenapi = (openapiDocument: OpenAPIObject): APIOperat
       if (
         ['get', 'put', 'post', 'options', 'head', 'delete', 'patch', 'trace'].includes(verbName)
       ) {
-        const verbObj = pathObjProps[verbName as keyof typeof pathObjProps];
+        const verbObj = pathObj[verbName as keyof typeof pathObj];
         const verbObjProps = Object.keys(verbObj);
         // look for x-auth-type attribute in verb props
         let authType = 'Any';
