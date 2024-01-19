@@ -7,6 +7,6 @@ module.exports = {
   extends: '@stutzlab/eslint-config',
   rules: {
     'import/group-exports': 'off',
-    'fp/no-class': 'off'
-  }
+    'fp/no-class': 'off',
+  },
 };
