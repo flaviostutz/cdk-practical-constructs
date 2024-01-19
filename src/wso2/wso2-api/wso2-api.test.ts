@@ -6,9 +6,9 @@ import { cloneDeep } from 'lodash';
 import { App, Stack } from 'aws-cdk-lib/core';
 import { Template } from 'aws-cdk-lib/assertions';
 
-import { Wso2Api, Wso2ApiDefinition, Wso2ApiProps } from '..';
-
 import { petstoreOpenapi } from './__tests__/petstore';
+import { Wso2Api } from './wso2-api';
+import { Wso2ApiDefinition, Wso2ApiProps } from './types';
 
 describe('wso2-api-construct', () => {
   it('minimal wso2 api', async () => {
