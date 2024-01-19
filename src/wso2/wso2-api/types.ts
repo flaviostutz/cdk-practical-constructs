@@ -1,7 +1,7 @@
 import type { oas30 } from 'openapi3-ts';
 import { RemovalPolicy } from 'aws-cdk-lib/core';
 
-import { LambdaConfig } from '../..';
+import { LambdaConfig } from '../../lambda/types';
 
 import { Wso2ApiDefinitionV1 } from './v1/types';
 
