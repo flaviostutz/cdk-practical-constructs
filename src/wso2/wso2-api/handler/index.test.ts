@@ -1,20 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CdkCustomResourceEvent } from 'aws-lambda';
 
 import { petstoreOpenapi } from '../__tests__/petstore';
-import { Wso2ApiDefinition } from '../types';
+import { Wso2ApiBaseProperties, Wso2ApiDefinition } from '../types';
 
-import { handler } from './index';
+import { Wso2ApiCustomResourceEvent, handler } from './index';
 
 describe('wso2 custom resource lambda', () => {
-  it.skip('basic secret fetch and wso2 version check', async () => {
+  it('basic secret fetch and wso2 version check', async () => {
     const eres = await handler(
       testCFNEventCreate({
         ...testEvent,
       }),
-      {} as any,
     );
-    expect(eres.PhysicalResourceId).toBe('123-456-789');
+    expect(eres.PhysicalResourceId).toBe('test123Swagger Petstore');
   });
 });
 
@@ -36,17 +34,17 @@ const commonEvt = {
   ResourceType: 'wso2api',
 };
 
-const testCFNEventCreate = (resourceProperties: { [key: string]: any }): CdkCustomResourceEvent => {
+const testCFNEventCreate = (baseProperties: Wso2ApiBaseProperties): Wso2ApiCustomResourceEvent => {
   return {
     ...commonEvt,
     RequestType: 'Create',
-    ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
+    ResourceProperties: { ...baseProperties, ServiceToken: 'arn:somelambdatest' },
   };
 };
 // const testCFNEventDelete = (
 //   resourceProperties: { [key: string]: any },
 //   physicalResourceId: string,
-// ): CdkCustomResourceEvent => {
+// ): Wso2ApiCustomResourceEvent => {
 //   return {
 //     ...commonEvt,
 //     RequestType: 'Delete',
@@ -58,7 +56,7 @@ const testCFNEventCreate = (resourceProperties: { [key: string]: any }): CdkCust
 //   resourceProperties: { [key: string]: any },
 //   oldResourceProperties: { [key: string]: any },
 //   physicalResourceId: string,
-// ): CdkCustomResourceEvent => {
+// ): Wso2ApiCustomResourceEvent => {
 //   return {
 //     ...commonEvt,
 //     RequestType: 'Update',
@@ -68,9 +66,11 @@ const testCFNEventCreate = (resourceProperties: { [key: string]: any }): CdkCust
 //   };
 // };
 
-const testEvent = {
-  wso2BaseUrl: 'http://testwso2.com',
-  wso2CredentialsSecretManagerPath: 'arn:aws:secretsmanager:us-east-1:123123123:secret:MySecret',
+const testEvent: Wso2ApiBaseProperties = {
+  wso2Config: {
+    baseApiUrl: 'http://testwso2.com',
+    credentialsSecretManagerPath: 'arn:aws:secretsmanager:us-east-1:123123123:secret:MySecret',
+  },
   openapiDocument: petstoreOpenapi,
-  wso2ApiDefinition: testBasicWso2ApiDefs(),
+  apiDefinition: testBasicWso2ApiDefs(),
 };

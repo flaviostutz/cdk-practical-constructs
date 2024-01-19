@@ -5,23 +5,38 @@ import { LambdaConfig } from '../../lambda/types';
 
 import { Wso2ApiDefinitionV1 } from './v1/types';
 
-export type Wso2ApiProps = {
-  /**
-   * Entry path in Secret Manager with credentials for accessing WSO2 API with
-   * roles for listing APIs, creating client credentials, publishing APIs etc
-   * Example: 'wso2/customers/credentials' - with contents "{ user: 'myuser', pwd: 'mypass' }"
-   */
-  wso2CredentialsSecretManagerPath: string;
-  wso2BaseUrl: string;
-  wso2ApiDefinition: Wso2ApiDefinition;
-  openapiDocument: oas30.OpenAPIObject;
-  customResourceConfig?: Wso2LambdaConfig;
+export type Wso2ApiProps = Wso2ApiBaseProperties & {
   /**
    * Removes or retains API in WSO2 APIM server when this application is removed from CFN
    * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.RemovalPolicy.html
    * Defaults to DESTROY, which means that the API will be removed from WSO2 when this resource is deleted in CFN
    */
   removalPolicy?: RemovalPolicy;
+  /**
+   * Lambda config for the CustomResource that will be used for running the WSO2 API calls
+   * By default this Lambda will have access to all networks so it's able to invoke the WSO2 APIs.
+   * You can add custom CA pub certs (extraCaPubCert) or configure a specific VPC to run it (network) for example.
+   */
+  customResourceConfig?: Wso2LambdaConfig;
+};
+
+export type Wso2Config = {
+  /**
+   * WSO2 server API base URL. This is the base URL from which the API calls to WSO2 will be sent.
+   * @example https://mywso2.com/
+   */
+  baseApiUrl: string;
+  /**
+   * Tenant identification (when using multi tenant setups)
+   * @example mypublic.com
+   */
+  tenant?: string;
+  /**
+   * Entry path in Secret Manager with credentials for accessing WSO2 API with
+   * roles for listing APIs, creating client credentials, publishing APIs etc
+   * @example 'wso2/customers/credentials' - with contents "{ user: 'myuser', pwd: 'mypass' }"
+   */
+  credentialsSecretManagerPath: string;
 };
 
 /**
@@ -53,3 +68,20 @@ export type Wso2LambdaConfig = Pick<
   | 'logGroupSubscriberLambdaArn'
   | 'logRetention'
 >;
+
+export type Wso2ApiBaseProperties = {
+  /**
+   * Configurations related to WSO2 APIM host, credentials tenant etc
+   */
+  wso2Config: Wso2Config;
+  /**
+   * WSO2 specific document with API definitions
+   * Some default values might be applied on top of the input when using in the construct
+   */
+  apiDefinition: Wso2ApiDefinition;
+  /**
+   * An Openapi 3.0 document containing the documentation of the API.
+   * The paths/operations in this document will be used to configure routes in WSO2
+   */
+  openapiDocument: oas30.OpenAPIObject;
+};

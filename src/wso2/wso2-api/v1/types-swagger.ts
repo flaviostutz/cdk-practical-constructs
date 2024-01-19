@@ -28,7 +28,7 @@ export type API = {
    * Version of the API
    * @example v1
    * */
-  version: string;
+  version?: string;
   /**
    * @description If the provider value is not given user invoking the api will be used as the provider.
    *
@@ -441,7 +441,7 @@ export type APIScope = {
 export type APICorsConfiguration = {
   /** @default false */
   corsConfigurationEnabled?: boolean;
-  accessControlAllowOrigins?: string[];
+  accessControlAllowOrigins: string[];
   /** @default false */
   accessControlAllowCredentials?: boolean;
   accessControlAllowHeaders?: string[];
@@ -558,7 +558,7 @@ export type EndpointTarget = {
 
 export type EndpointHttp = {
   endpoint_type: 'http';
-  sandbox_endpoints: {
+  sandbox_endpoints?: {
     url: string;
   };
   production_endpoints: {
@@ -568,21 +568,21 @@ export type EndpointHttp = {
 
 export type EndpointFailover = {
   endpoint_type: 'failover';
-  sandbox_endpoints: {
+  sandbox_endpoints?: {
     url: string;
   };
   production_endpoints: {
     url: string;
   };
   production_failovers: [EndpointTarget];
-  sandbox_failovers: [EndpointTarget];
+  sandbox_failovers?: [EndpointTarget];
 };
 
 export type EndpointLoadBalance = {
   endpoint_type: 'load_balance';
   algoCombo: 'org.apache.synapse.endpoints.algorithms.RoundRobin';
   sessionManagement: 'None' | 'Transport' | 'SOAP' | 'ClientID';
-  sandbox_endpoints: [EndpointTarget];
+  sandbox_endpoints?: [EndpointTarget];
   production_endpoints: [EndpointTarget];
   /**
    * Session timeout in milliseconds
