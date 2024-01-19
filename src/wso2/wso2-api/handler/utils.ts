@@ -1,13 +1,13 @@
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
-export const getSecretValue = async (secretName = 'SECRET_NAME') => {
+export const getSecretValue = async (secretName = 'SECRET_NAME'): Promise<string> => {
   const client = new SecretsManagerClient();
   const response = await client.send(
     new GetSecretValueCommand({
       SecretId: secretName,
     }),
   );
-  console.log(response);
+  // console.log(response);
   // {
   //   '$metadata': {
   //     httpStatusCode: 200,
@@ -33,7 +33,8 @@ export const getSecretValue = async (secretName = 'SECRET_NAME') => {
     return response.SecretString;
   }
 
-  if (response.SecretBinary) {
-    return response.SecretBinary;
-  }
+  // if (response.SecretBinary) {
+  //   return response.SecretBinary;
+  // }
+  return '';
 };
