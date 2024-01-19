@@ -7,7 +7,7 @@ build: install
 	pnpm exec tsc --outDir dist
 
 	@# remove all tests from distribution
-	@-find -E ./dist -regex '.*\.test\..*|.*__tests.*' -exec rm -rf {} \;
+	@-find -E ./dist -regex '.*\.test\..*|.*__tests.*' -exec rm -rf {} \; 2> /dev/null
 
 lint:
 	pnpm exec eslint ./src --ext .ts
