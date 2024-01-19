@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CdkCustomResourceEvent, CdkCustomResourceResponse, Context } from 'aws-lambda';
+import { CdkCustomResourceEvent } from 'aws-lambda';
 
 import { petstoreOpenapi } from '../__tests__/petstore';
 import { Wso2ApiDefinition } from '../types';
@@ -43,30 +43,30 @@ const testCFNEventCreate = (resourceProperties: { [key: string]: any }): CdkCust
     ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
   };
 };
-const testCFNEventDelete = (
-  resourceProperties: { [key: string]: any },
-  physicalResourceId: string,
-): CdkCustomResourceEvent => {
-  return {
-    ...commonEvt,
-    RequestType: 'Delete',
-    ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
-    PhysicalResourceId: physicalResourceId,
-  };
-};
-const testCFNEventUpdate = (
-  resourceProperties: { [key: string]: any },
-  oldResourceProperties: { [key: string]: any },
-  physicalResourceId: string,
-): CdkCustomResourceEvent => {
-  return {
-    ...commonEvt,
-    RequestType: 'Update',
-    ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
-    PhysicalResourceId: physicalResourceId,
-    OldResourceProperties: oldResourceProperties,
-  };
-};
+// const testCFNEventDelete = (
+//   resourceProperties: { [key: string]: any },
+//   physicalResourceId: string,
+// ): CdkCustomResourceEvent => {
+//   return {
+//     ...commonEvt,
+//     RequestType: 'Delete',
+//     ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
+//     PhysicalResourceId: physicalResourceId,
+//   };
+// };
+// const testCFNEventUpdate = (
+//   resourceProperties: { [key: string]: any },
+//   oldResourceProperties: { [key: string]: any },
+//   physicalResourceId: string,
+// ): CdkCustomResourceEvent => {
+//   return {
+//     ...commonEvt,
+//     RequestType: 'Update',
+//     ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
+//     PhysicalResourceId: physicalResourceId,
+//     OldResourceProperties: oldResourceProperties,
+//   };
+// };
 
 const testEvent = {
   wso2BaseUrl: 'http://testwso2.com',
