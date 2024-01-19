@@ -1,4 +1,5 @@
 import { OpenAPIObject } from 'openapi3-ts/oas30';
+import { oas30 } from 'openapi3-ts';
 
 import { Wso2ApiDefinition } from './types';
 import { APIOperations } from './v1/types-swagger';
@@ -73,24 +74,19 @@ export const applyDefaultsWso2ApiDefinition = (
   apiDef: Wso2ApiDefinition,
   openapiDocument: OpenAPIObject,
 ): Wso2ApiDefinition => {
-  const apiDefr: Wso2ApiDefinition = {
+  let apiDefr: Wso2ApiDefinition = {
     ...defaultApiDef,
     ...apiDef,
     tags: [...(apiDef.tags ?? []), 'cdk-practical-constructs'],
     operations: [...wso2APIOperationsFromOpenapi(openapiDocument), ...(apiDef.operations ?? [])],
   };
 
-  // user openapi contact info for business/technical information of the api
-  if (
-    (!apiDefr.businessInformation && openapiDocument.info.contact?.email) ||
-    openapiDocument.info.contact?.name
-  ) {
-    apiDefr.businessInformation = {
-      businessOwnerEmail: openapiDocument.info.contact?.email,
-      technicalOwnerEmail: openapiDocument.info.contact?.email,
-      technicalOwner: openapiDocument.info.contact?.name,
-      businessOwner: openapiDocument.info.contact?.name,
-    };
+  // use openapiDocument info as defaults
+  apiDefr = applyOpenapiAsDefaults(openapiDocument, apiDefr);
+  if (!apiDefr.version) {
+    throw new Error(
+      '"version" must be defined either in "openapidocument.info.version" or in "apiDefinitions.version"',
+    );
   }
 
   // If cors was defined only with "origins", use a default configuration for the rest of the definition
@@ -170,4 +166,39 @@ const wso2APIOperationsFromOpenapi = (openapiDocument: OpenAPIObject): APIOperat
   }
 
   return wso2Operations;
+};
+
+const applyOpenapiAsDefaults = (
+  openapiDocument: oas30.OpenAPIObject,
+  apiDef: Wso2ApiDefinition,
+): Wso2ApiDefinition => {
+  const apiDefr = { ...apiDef };
+  // user openapi contact info for business/technical information of the api
+  if (
+    (!apiDefr.businessInformation && openapiDocument.info.contact?.email) ||
+    openapiDocument.info.contact?.name
+  ) {
+    apiDefr.businessInformation = {
+      businessOwnerEmail: openapiDocument.info.contact?.email,
+      technicalOwnerEmail: openapiDocument.info.contact?.email,
+      technicalOwner: openapiDocument.info.contact?.name,
+      businessOwner: openapiDocument.info.contact?.name,
+    };
+  }
+
+  if (!apiDefr.description && openapiDocument.info.description) {
+    apiDefr.description = openapiDocument.info.description;
+  }
+  if (!apiDefr.version && openapiDocument.info.version) {
+    apiDefr.version = openapiDocument.info.version;
+  }
+  if (!apiDefr.tags && openapiDocument.tags) {
+    apiDefr.tags = [];
+    for (let i = 0; i < openapiDocument.tags.length; i += 1) {
+      // eslint-disable-next-line fp/no-mutating-methods
+      apiDefr.tags.push(openapiDocument.tags[i].name);
+    }
+  }
+
+  return apiDefr;
 };

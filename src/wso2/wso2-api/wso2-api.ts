@@ -21,7 +21,7 @@ import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './wso2-api-
 export class Wso2Api extends Construct {
   readonly customResourceFunction: IFunction;
 
-  readonly wso2ApiDefinition: Wso2ApiDefinition;
+  readonly apiDefinition: Wso2ApiDefinition;
 
   readonly openapiDocument: OpenAPIObject;
 
@@ -38,10 +38,7 @@ export class Wso2Api extends Construct {
 
     validateProps(props);
 
-    const wso2ApiDefs = applyDefaultsWso2ApiDefinition(
-      props.wso2ApiDefinition,
-      props.openapiDocument,
-    );
+    const wso2ApiDefs = applyDefaultsWso2ApiDefinition(props.apiDefinition, props.openapiDocument);
 
     const { accountId, region } = new ScopedAws(scope);
 
@@ -58,13 +55,12 @@ export class Wso2Api extends Construct {
         PolicyStatement.fromJson({
           Effect: 'Allow',
           Action: 'secretsmanager:GetSecretValue',
-          Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${props.wso2CredentialsSecretManagerPath}*`,
+          Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${props.wso2Config.credentialsSecretManagerPath}*`,
         }),
       ],
       logRetention,
       ...props.customResourceConfig,
     });
-    customResourceFunction.defaultSecurityGroup?.addEgressRule(Peer.anyIpv4(), Port.allTraffic());
 
     // add default outbound rule for connecting to any host
     if (!props.customResourceConfig?.allowTLSOutboundTo) {
@@ -82,26 +78,26 @@ export class Wso2Api extends Construct {
     new CustomResource(this, 'Wso2ApiCustomResource', {
       serviceToken: customResourceProvider.serviceToken,
       properties: {
-        wso2BaseUrl: props.wso2BaseUrl,
-        wso2CredentialsSecretManagerPath: props.wso2CredentialsSecretManagerPath,
+        wso2Config: props.wso2Config,
+        apiDefinition: wso2ApiDefs,
         openapiDocument: props.openapiDocument,
-        wso2ApiDefinition: wso2ApiDefs,
       },
       resourceType: 'Custom::Wso2ApiCustomResource',
       removalPolicy: props.removalPolicy ?? RemovalPolicy.DESTROY,
     });
 
-    this.wso2ApiDefinition = wso2ApiDefs;
+    this.apiDefinition = wso2ApiDefs;
     this.openapiDocument = props.openapiDocument;
     this.customResourceFunction = customResourceFunction.nodeJsFunction;
   }
 }
 
 export const validateProps = (props: Wso2ApiProps): void => {
-  if (!props.wso2BaseUrl) throw new Error('wso2ApiBaseUrl is required');
-  if (!props.wso2CredentialsSecretManagerPath) {
-    throw new Error('wso2CredentialsSecretManagerPath is required');
+  if (!props.wso2Config) throw new Error('wso2Config is required');
+  if (!props.wso2Config.baseApiUrl) throw new Error('wso2Config.baseApiUrl is required');
+  if (!props.wso2Config.credentialsSecretManagerPath) {
+    throw new Error('wso2Config.credentialsSecretManagerPath is required');
   }
-  validateWso2ApiDefs(props.wso2ApiDefinition);
+  validateWso2ApiDefs(props.apiDefinition);
   lintOpenapiDocument(props.openapiDocument, false);
 };

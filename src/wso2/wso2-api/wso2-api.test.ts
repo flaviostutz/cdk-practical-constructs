@@ -19,15 +19,14 @@ describe('wso2-api-construct', () => {
     const wso2Api = new Wso2Api(stack, 'wso2', testProps1);
 
     expect(wso2Api.customResourceFunction).toBeDefined();
-    expect(wso2Api.wso2ApiDefinition.enableStore).toBeTruthy();
+    expect(wso2Api.apiDefinition.enableStore).toBeTruthy();
 
     const template = Template.fromStack(stack);
     // console.log(JSON.stringify(template.toJSON(), null, 2));
 
     template.hasResourceProperties('Custom::Wso2ApiCustomResource', {
-      wso2BaseUrl: testProps1.wso2BaseUrl,
-      wso2CredentialsSecretManagerPath: testProps1.wso2CredentialsSecretManagerPath,
-      wso2ApiDefinition: wso2Api.wso2ApiDefinition,
+      wso2Config: testProps1.wso2Config,
+      apiDefinition: wso2Api.apiDefinition,
       openapiDocument: testProps1.openapiDocument,
     });
   });
@@ -52,12 +51,12 @@ describe('wso2-api-construct', () => {
     const stack = new Stack(app);
 
     const testProps1 = testProps();
-    testProps1.wso2ApiDefinition.corsConfiguration = {
+    testProps1.apiDefinition.corsConfiguration = {
       accessControlAllowOrigins: ['testwebsite.com'],
     };
     const wso2Api = new Wso2Api(stack, 'wso2', testProps1);
 
-    expect(wso2Api.wso2ApiDefinition.corsConfiguration).toMatchObject({
+    expect(wso2Api.apiDefinition.corsConfiguration).toMatchObject({
       accessControlAllowHeaders: [
         'Authorization',
         'Access-Control-Allow-Origin',
@@ -92,9 +91,11 @@ const testWso2ApiDefs = (args: { context: string; backendUrl: string }): Wso2Api
 
 const testProps = (): Wso2ApiProps => {
   return {
-    wso2BaseUrl: 'http://localhost:8080/wso2',
-    wso2CredentialsSecretManagerPath: 'arn::creds',
-    wso2ApiDefinition: testWso2ApiDefs({
+    wso2Config: {
+      baseApiUrl: 'http://localhost:8080/wso2',
+      credentialsSecretManagerPath: 'arn::creds',
+    },
+    apiDefinition: testWso2ApiDefs({
       context: '/test1',
       backendUrl: 'http://localhost:8080/',
     }),

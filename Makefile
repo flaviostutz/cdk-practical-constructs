@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 build: install
-	rm -rf dist
+	@rm -rf dist
 
 	@# Don't bundle so internal CDK constructs continue working on clients
 	pnpm exec tsc --outDir dist
