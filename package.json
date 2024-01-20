@@ -40,7 +40,6 @@
     "@asteasolutions/zod-to-openapi": "^6.3.1",
     "@aws-sdk/client-secrets-manager": "^3.495.0",
     "@stoplight/spectral-cli": "^6.11.0",
-    "aws-cdk-lib": "2.117.0",
     "aws-lambda": "^1.0.7",
     "constructs": "^10.3.0",
     "esbuild": "^0.19.11",
@@ -51,6 +50,9 @@
     "tmp": "^0.2.1",
     "wso2apim-sdk": "^0.3.0",
     "zod": "^3.22.4"
+  },
+  "peerDependencies": {
+    "aws-cdk-lib": "2.117.0"
   },
   "publishConfig": {
     "access": "public",
