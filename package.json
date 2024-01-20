@@ -2,11 +2,11 @@
   "name": "cdk-practical-constructs",
   "version": "0.0.1",
   "description": "A collection of CDK constructs for making the development of AWS based applications easier and safer",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/lib/index.js",
+  "types": "dist/lib/index.d.ts",
   "files": [
-    "dist/src/**/*.js",
-    "dist/src/**/*.d.ts",
+    "dist/lib/**",
+    "package.json",
     "README.md"
   ],
   "packageManager": "pnpm@8.9.0",
@@ -40,6 +40,7 @@
     "@asteasolutions/zod-to-openapi": "^6.3.1",
     "@aws-sdk/client-secrets-manager": "^3.495.0",
     "@stoplight/spectral-cli": "^6.11.0",
+    "aws-cdk-lib": "2.117.0",
     "aws-lambda": "^1.0.7",
     "constructs": "^10.3.0",
     "esbuild": "^0.19.11",
@@ -50,9 +51,6 @@
     "tmp": "^0.2.1",
     "wso2apim-sdk": "^0.3.0",
     "zod": "^3.22.4"
-  },
-  "peerDependencies": {
-    "aws-cdk-lib": "2.117.0"
   },
   "publishConfig": {
     "access": "public",
