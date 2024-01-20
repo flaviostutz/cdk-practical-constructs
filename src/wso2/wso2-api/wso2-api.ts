@@ -50,7 +50,7 @@ export class Wso2Api extends Construct {
       timeout: Duration.seconds(120),
       runtime: Runtime.NODEJS_18_X,
       eventType: EventType.CustomResource,
-      entry: 'src/wso2/wso2-api/handler/index.ts',
+      entry: 'dist/wso2/wso2-api/handler/index.js',
       initialPolicy: [
         PolicyStatement.fromJson({
           Effect: 'Allow',
