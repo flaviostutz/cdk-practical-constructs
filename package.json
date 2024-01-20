@@ -2,11 +2,11 @@
   "name": "cdk-practical-constructs",
   "version": "0.0.1",
   "description": "A collection of CDK constructs for making the development of AWS based applications easier and safer",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "files": [
-    "dist/**/*.js",
-    "dist/**/*.d.ts",
+    "dist/src/**/*.js",
+    "dist/src/**/*.d.ts",
     "README.md"
   ],
   "packageManager": "pnpm@8.9.0",
