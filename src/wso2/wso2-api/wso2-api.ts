@@ -1,3 +1,5 @@
+import { existsSync } from 'fs';
+
 import { Construct } from 'constructs';
 import { Provider } from 'aws-cdk-lib/custom-resources';
 import { CustomResource, Duration, RemovalPolicy, ScopedAws } from 'aws-cdk-lib/core';
@@ -44,13 +46,20 @@ export class Wso2Api extends Construct {
 
     const logRetention = props.customResourceConfig?.logRetention ?? RetentionDays.ONE_MONTH;
 
+    // resolve the entry file from workspace (.ts file), or
+    // from the dist dir (.js file) when being used as a lib
+    let wso2LambdaEntry = `${__dirname}/handler/index.ts`;
+    if (!existsSync(wso2LambdaEntry)) {
+      wso2LambdaEntry = `${__dirname}/handler/index.js`;
+    }
+
     // lambda function used for invoking WSO2 APIs during CFN operations
     const customResourceFunction = new BaseNodeJsFunction(this, 'Wso2ApiCustomResourceFunction', {
       stage: 'dev',
       timeout: Duration.seconds(120),
       runtime: Runtime.NODEJS_18_X,
       eventType: EventType.CustomResource,
-      entry: 'dist/src/wso2/wso2-api/handler/index.js',
+      entry: wso2LambdaEntry,
       initialPolicy: [
         PolicyStatement.fromJson({
           Effect: 'Allow',

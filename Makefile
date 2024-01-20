@@ -5,6 +5,7 @@ build: install
 
 	@# Don't bundle so internal CDK constructs continue working on clients
 	pnpm exec tsc --outDir dist
+	mv dist/src dist/lib
 
 	@# remove all tests from distribution
 	@-find -E ./dist -regex '.*\.test\..*|.*__tests.*' -exec rm -rf {} \; 2> /dev/null
