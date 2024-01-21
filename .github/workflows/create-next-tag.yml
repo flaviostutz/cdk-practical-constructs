@@ -24,4 +24,4 @@ jobs:
           corepack enable
           git config --global user.email "flaviostutz@gmail.com"
           git config --global user.name "Flávio Stutz"
-          pnpm dlx monotag@1.4.4 tag-push
+          pnpm dlx monotag@1.6.3 tag-push
