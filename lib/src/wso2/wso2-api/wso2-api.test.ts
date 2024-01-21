@@ -93,7 +93,7 @@ const testProps = (): Wso2ApiProps => {
   return {
     wso2Config: {
       baseApiUrl: 'http://localhost:8080/wso2',
-      credentialsSecretManagerPath: 'arn::creds',
+      credentialsSecretId: 'arn::creds',
     },
     apiDefinition: testWso2ApiDefs({
       context: '/test1',

@@ -69,7 +69,7 @@ const testCFNEventCreate = (baseProperties: Wso2ApiBaseProperties): Wso2ApiCusto
 const testEvent: Wso2ApiBaseProperties = {
   wso2Config: {
     baseApiUrl: 'http://testwso2.com',
-    credentialsSecretManagerPath: 'arn:aws:secretsmanager:us-east-1:123123123:secret:MySecret',
+    credentialsSecretId: 'arn:aws:secretsmanager:us-east-1:123123123:secret:MySecret',
   },
   openapiDocument: petstoreOpenapi,
   apiDefinition: testBasicWso2ApiDefs(),

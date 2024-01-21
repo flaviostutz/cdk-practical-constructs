@@ -32,11 +32,11 @@ export type Wso2Config = {
    */
   tenant?: string;
   /**
-   * Entry path in Secret Manager with credentials for accessing WSO2 API with
-   * roles for listing APIs, creating client credentials, publishing APIs etc
-   * @example 'wso2/customers/credentials' - with contents "{ user: 'myuser', pwd: 'mypass' }"
+   * Secret id in Secret Manager with credentials for accessing WSO2 API. It will be used for
+   * listing APIs, creating client credentials, publishing APIs etc
+   * @example 'wso2/customers/credentials' - with json contents "{ user: 'myuser', pwd: 'mypass' }"
    */
-  credentialsSecretManagerPath: string;
+  credentialsSecretId: string;
 };
 
 /**
@@ -84,4 +84,11 @@ export type Wso2ApiBaseProperties = {
    * The paths/operations in this document will be used to configure routes in WSO2
    */
   openapiDocument: oas30.OpenAPIObject;
+  /**
+   * If true, during the creation of this CFN Resource, if an API in WSO2 already exists with the same tenant/name/version, it will fail.
+   * If false, an existing API in WSO2 can be used. This means that an API that wasn't created by this construct can
+   * be updated or even deleted by this Custom Resource (if 'Retain' is 'DESTROY' for this resource).
+   * @default true
+   */
+  failIfExists?: boolean;
 };

@@ -28,7 +28,7 @@ export type API = {
    * Version of the API
    * @example v1
    * */
-  version?: string;
+  version: string;
   /**
    * @description If the provider value is not given user invoking the api will be used as the provider.
    *

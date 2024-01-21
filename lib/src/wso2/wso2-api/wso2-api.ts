@@ -64,7 +64,7 @@ export class Wso2Api extends Construct {
         PolicyStatement.fromJson({
           Effect: 'Allow',
           Action: 'secretsmanager:GetSecretValue',
-          Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${props.wso2Config.credentialsSecretManagerPath}*`,
+          Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${props.wso2Config.credentialsSecretId}*`,
         }),
       ],
       logRetention,
@@ -104,9 +104,12 @@ export class Wso2Api extends Construct {
 export const validateProps = (props: Wso2ApiProps): void => {
   if (!props.wso2Config) throw new Error('wso2Config is required');
   if (!props.wso2Config.baseApiUrl) throw new Error('wso2Config.baseApiUrl is required');
-  if (!props.wso2Config.credentialsSecretManagerPath) {
+  if (!props.wso2Config.credentialsSecretId) {
     throw new Error('wso2Config.credentialsSecretManagerPath is required');
   }
   validateWso2ApiDefs(props.apiDefinition);
+  if (!props.openapiDocument.openapi.startsWith('3.0')) {
+    throw new Error('openapiDocument should be in openapi version 3.0');
+  }
   lintOpenapiDocument(props.openapiDocument, false);
 };

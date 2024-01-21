@@ -45,8 +45,8 @@ dependencies:
     specifier: ^0.2.1
     version: 0.2.1
   wso2apim-sdk:
-    specifier: ^0.3.0
-    version: 0.3.0(typescript@5.3.3)
+    specifier: ^0.4.0
+    version: 0.4.0(typescript@5.3.3)
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -6916,8 +6916,8 @@ packages:
       signal-exit: 3.0.7
     dev: true
 
-  /wso2apim-sdk@0.3.0(typescript@5.3.3):
-    resolution: {integrity: sha512-1KsttgiRlit+0ZvfFzwVmfenPFu323SUnvZQieTj4pwi9Cm16KEzwZHtVMsRuoeofQzG+WaotEiaEUUvsrlIPg==}
+  /wso2apim-sdk@0.4.0(typescript@5.3.3):
+    resolution: {integrity: sha512-6+8cfKT3u35eLXuBLYEhRUYqbpGhSBer72zkmpdxq3UGhXQudFCrtMZTu9L8OVY9E4lwoOG/04kfmy9n5jHi2w==}
     peerDependencies:
       typescript: 5.3.3
     dependencies:

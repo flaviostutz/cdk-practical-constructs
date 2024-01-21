@@ -1,40 +1,30 @@
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
-export const getSecretValue = async (secretName = 'SECRET_NAME'): Promise<string> => {
-  const client = new SecretsManagerClient();
+export const getSecretValue = async (secretId: string): Promise<string> => {
+  const client = new SecretsManagerClient({ region: 'eu-west-1' });
   const response = await client.send(
     new GetSecretValueCommand({
-      SecretId: secretName,
+      SecretId: secretId,
     }),
   );
-  // console.log(response);
-  // {
-  //   '$metadata': {
-  //     httpStatusCode: 200,
-  //     requestId: '584eb612-f8b0-48c9-855e-6d246461b604',
-  //     extendedRequestId: undefined,
-  //     cfId: undefined,
-  //     attempts: 1,
-  //     totalRetryDelay: 0
-  //   },
-  //   ARN: 'arn:aws:secretsmanager:us-east-1:xxxxxxxxxxxx:secret:binary-secret-3873048-xxxxxx',
-  //   CreatedDate: 2023-08-08T19:29:51.294Z,
-  //   Name: 'binary-secret-3873048',
-  //   SecretBinary: Uint8Array(11) [
-  //      98, 105, 110, 97, 114,
-  //     121,  32, 100, 97, 116,
-  //      97
-  //   ],
-  //   VersionId: '712083f4-0d26-415e-8044-16735142cd6a',
-  //   VersionStages: [ 'AWSCURRENT' ]
-  // }
-
   if (response.SecretString) {
     return response.SecretString;
   }
+  if (!response.SecretBinary) {
+    throw new Error('Invalid type of secret found');
+  }
+  const buff = Buffer.from(response.SecretBinary);
+  return buff.toString('ascii');
+};
 
-  // if (response.SecretBinary) {
-  //   return response.SecretBinary;
-  // }
-  return '';
+export const getHeaders = (
+  tenant: string | undefined,
+): { 'X-WSO2-Tenant'?: string | undefined; 'Content-Type'?: string | undefined } => {
+  if (tenant) {
+    return {
+      'X-WSO2-Tenant': tenant,
+      'Content-Type': 'application/json',
+    };
+  }
+  return {};
 };
