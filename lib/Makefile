@@ -28,6 +28,7 @@ clean:
 all: build lint test
 
 install:
+	corepack enable
 	pnpm install --frozen-lockfile --config.dedupe-peer-dependents=false
 
 publish:
