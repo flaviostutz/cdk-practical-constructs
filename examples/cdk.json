@@ -1,0 +1,3 @@
+{
+    "app": "pnpm exec ts-node --prefer-ts-exts src/cdk/app.ts"
+}
