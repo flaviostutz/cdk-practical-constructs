@@ -27,6 +27,7 @@
     "@types/aws-lambda": "^8.10.131",
     "@types/jest": "^29.4.0",
     "@types/lodash": "^4.14.202",
+    "@types/node": "18.11.18",
     "@types/npm-which": "^3.0.3",
     "@types/tmp": "^0.2.6",
     "aws-sdk-client-mock": "^3.0.1",

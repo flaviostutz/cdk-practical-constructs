@@ -1,9 +1,0 @@
-{
-  "name": "cdk-practical-constructs-root",
-  "packageManager": "pnpm@8.9.0",
-  "devDependencies": {
-  },
-  "dependencies": {
-    "esbuild": "^0.19.11"
-  }
-}
