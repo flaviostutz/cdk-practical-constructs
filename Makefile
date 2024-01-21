@@ -11,7 +11,7 @@ SHELL := /bin/bash
 	@echo ''
 	@echo '>>> Running /examples:$@...'
 	@echo ''
-	@cd examples; make $@
+	@cd examples; STAGE=dev make $@
 
 publish:
 	cd lib; make publish

@@ -19,9 +19,6 @@ clean:
 	rm -rf node_modules
 	rm -rf dist
 
-all-dev:
-	STAGE=dev make all
-
 all: build lint test
 
 install:
