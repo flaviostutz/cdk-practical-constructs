@@ -1,22 +1,19 @@
-// /* eslint-disable no-new */
-// import { App } from 'aws-cdk-lib/core';
+/* eslint-disable no-new */
+import { App } from 'aws-cdk-lib/core';
+import { resolveStageConfig } from 'cdk-practical-constructs';
 
-// import { resolveStackNameAndPropsForStage } from '../cdk-shared2-nn/stack';
-// import { globalConfig } from '../cdk-shared3-monorepo/globals';
+import { TestConfig, testStageConfigs } from './configs';
+import { AppStack } from './stack';
 
-// import { AppStack } from './stack';
+const app = new App();
 
-// const { STAGE } = requireEnvVars(['STAGE']);
+// this file is the entry point file and can have access to process env
+// eslint-disable-next-line no-process-env
+const stage = process.env.STAGE;
+if (!stage) throw new Error('Process env STAGE is required');
 
-// const app = new App();
+const stageConfig = resolveStageConfig<TestConfig>(stage, testStageConfigs);
 
-// const { stackName, stackProps } = resolveStackNameAndPropsForStage({
-//   stage: STAGE,
-//   globalConfig,
-//   serviceName: 'splunk-forward-service',
-//   snowApplicationServiceNamePrefix: 'Splunk Forward Service',
-// });
+new AppStack(app, 'example-stack', { stageConfig });
 
-// new AppStack(app, stackName, stackProps);
-
-// app.synth();
+app.synth();
