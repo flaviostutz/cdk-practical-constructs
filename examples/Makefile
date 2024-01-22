@@ -27,6 +27,12 @@ install:
 	pnpm update cdk-practical-constructs
 	pnpm install --frozen-lockfile --config.dedupe-peer-dependents=false
 
+deploy: prereqs
+	@set -x; pnpm exec cdk -o dist deploy --method-direct --require-approval never
+
+undeploy: prereqs
+	@set -x; pnpm exec cdk -o dist destroy -f --require-approval never
+
 prereqs:
 	@if [ "$${STAGE}" == "" ]; then \
 		echo "ENV STAGE is required"; \

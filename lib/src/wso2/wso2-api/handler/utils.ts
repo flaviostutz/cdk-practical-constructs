@@ -16,15 +16,3 @@ export const getSecretValue = async (secretId: string): Promise<string> => {
   const buff = Buffer.from(response.SecretBinary);
   return buff.toString('ascii');
 };
-
-export const getHeaders = (
-  tenant: string | undefined,
-): { 'X-WSO2-Tenant'?: string | undefined; 'Content-Type'?: string | undefined } => {
-  if (tenant) {
-    return {
-      'X-WSO2-Tenant': tenant,
-      'Content-Type': 'application/json',
-    };
-  }
-  return {};
-};

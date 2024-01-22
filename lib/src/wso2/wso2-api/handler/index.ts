@@ -1,11 +1,15 @@
 /* eslint-disable no-console */
 import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 import { Wso2ApimClientV1 } from 'wso2apim-sdk';
-import { definitions } from 'wso2apim-sdk/dist/v1/generated/types/publisher';
 
-import { Wso2ApiBaseProperties, Wso2ApiDefinition } from '../types';
+import { Wso2ApiBaseProperties } from '../types';
 
-import { createUpdateAndPublishApiInWso2, findWso2Api, prepareWso2ApiClient } from './wso2-v1';
+import {
+  createUpdateAndPublishApiInWso2,
+  findWso2Api,
+  prepareWso2ApiClient,
+  removeApiInWso2,
+} from './wso2-v1';
 
 export type Wso2ApiCustomResourceEvent = CdkCustomResourceEvent & {
   ResourceProperties: Wso2ApiBaseProperties;
@@ -13,17 +17,17 @@ export type Wso2ApiCustomResourceEvent = CdkCustomResourceEvent & {
 
 export type Wso2ApiCustomResourceResponse = CdkCustomResourceResponse & {
   Data?: {
-    EndpointUrlProduction?: string;
-    EndpointUrlSandbox?: string;
+    ApiEndpointUrl?: string;
     Error?: unknown;
   };
+  Status?: string;
+  Reason?: string;
 };
 
 export const handler = async (
   event: Wso2ApiCustomResourceEvent,
-  // context: Context,
 ): Promise<Wso2ApiCustomResourceResponse> => {
-  console.log(`Wso2 Custom Resource invoked with: ${JSON.stringify(event)}`);
+  console.log(`WSO2 API Custom Resource invoked with: ${JSON.stringify(event)}`);
 
   const response: Wso2ApiCustomResourceResponse = {
     StackId: event.StackId,
@@ -36,26 +40,39 @@ export const handler = async (
       throw new Error(`Only WSO2 version 'v1' is supported by this Custom Resource`);
     }
 
+    console.log('>>> Prepare WSO2 API client...');
     const wso2Client = await prepareWso2ApiClient(event.ResourceProperties.wso2Config);
 
     if (event.RequestType === 'Create' || event.RequestType === 'Update') {
-      const wso2ApiId = await createOrUpdateWso2Api(event, wso2Client);
+      console.log('>>> Creating or Updating WSO2 API...');
+      const { wso2ApiId, endpointUrl } = await createOrUpdateWso2Api(event, wso2Client);
       response.PhysicalResourceId = wso2ApiId;
+      response.Data = {
+        ApiEndpointUrl: endpointUrl,
+      };
       response.Status = 'SUCCESS';
       return response;
     }
     if (event.RequestType === 'Delete') {
-      await removeWso2Api(event, wso2Client);
+      console.log('>>> Deleting WSO2 API...');
+      await removeApiInWso2({
+        wso2Client,
+        wso2ApiId: event.PhysicalResourceId,
+      });
       response.Status = 'SUCCESS';
       return response;
     }
     throw new Error('Unrecognized RequestType');
   } catch (error) {
-    if (error instanceof Error) {
-      response.Reason = error.message;
+    console.log(`An error occurred. err=${error}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as any;
+    if (err.stack) {
+      console.log(err.stack);
+      response.Reason = `${err.message}\n${err.stack}`;
     }
     response.Status = 'FAILED';
-    response.Data = { Error: error };
+    response.Data = { Error: err };
     return response;
   }
 };
@@ -63,23 +80,22 @@ export const handler = async (
 const createOrUpdateWso2Api = async (
   event: Wso2ApiCustomResourceEvent,
   wso2Client: Wso2ApimClientV1,
-): Promise<string> => {
+): Promise<{ wso2ApiId: string; endpointUrl?: string }> => {
   if (!event.ResourceProperties.apiDefinition.version) {
     throw new Error('apidef.version should be defined');
   }
 
   // find existing WSO2 API
+  console.log('Searching if API already exists in WSO2...');
   const existingApi = await findWso2Api({
     wso2Client,
-    apiName: event.ResourceProperties.apiDefinition.name,
-    apiVersion: event.ResourceProperties.apiDefinition.version,
-    apiContext: event.ResourceProperties.apiDefinition.context,
-    apiTenant: event.ResourceProperties.wso2Config.tenant,
+    apiDefinition: event.ResourceProperties.apiDefinition,
+    wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
   });
 
   if (existingApi) {
     console.log(
-      `Found existing WSO2 API. apiId=${existingApi}; name=${existingApi.name}; version=${existingApi.version} context=${existingApi.context}`,
+      `Found existing WSO2 API. apiId=${existingApi.id}; name=${existingApi.name}; version=${existingApi.version} context=${existingApi.context}`,
     );
   }
 
@@ -100,21 +116,10 @@ const createOrUpdateWso2Api = async (
       wso2Client,
       apiDefinition: event.ResourceProperties.apiDefinition,
       openapiDocument: event.ResourceProperties.openapiDocument,
-      wso2Tenant: event.ResourceProperties.wso2Config.tenant,
+      wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
       existingWso2ApiId: existingApi?.id,
     });
   }
 
   throw new Error(`Invalid requestType found. requestType=${event.ResourceType}`);
-};
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const removeWso2Api = async (
-  event: Wso2ApiCustomResourceEvent,
-  wso2Client: Wso2ApimClientV1,
-): Promise<void> => {
-  if (event.RequestType === 'Delete') {
-    // TODO
-    console.log(`Removing WSO2 API apiId=${event.PhysicalResourceId}`);
-  }
 };

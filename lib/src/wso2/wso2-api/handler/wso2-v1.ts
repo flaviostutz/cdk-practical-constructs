@@ -1,21 +1,23 @@
+/* eslint-disable no-console */
 import { Wso2ApimClientV1, Wso2ApimSdk, publisherV1 } from 'wso2apim-sdk';
 import { OpenAPIObject } from 'openapi3-ts/oas30';
 import { isEqual } from 'lodash';
 import { oas30 } from 'openapi3-ts';
+import { definitions } from 'wso2apim-sdk/dist/v1/generated/types/devportal';
 
 import { Wso2ApiDefinition, Wso2Config } from '../types';
 
-import { getHeaders } from './utils';
+import { getSecretValue } from './utils';
 
 export const prepareWso2ApiClient = async (wso2Config: Wso2Config): Promise<Wso2ApimClientV1> => {
   // get wso2 user/pass
-  const creds = wso2Config.credentialsSecretId;
+  const creds = await getSecretValue(wso2Config.credentialsSecretId);
   let wso2Creds;
   try {
     wso2Creds = JSON.parse(creds);
   } catch (err) {
     throw new Error(
-      `Couldn't parse credentials from secret manager at ${wso2Config.credentialsSecretId}. Check if it's a json with attributes {'user':'someuser', 'pwd':'mypass'}`,
+      `Couldn't parse credentials from secret manager at ${wso2Config.credentialsSecretId}. Check if it's a json with attributes {'user':'someuser', 'pwd':'mypass'}. err=${err}`,
     );
   }
   if (!wso2Creds.user || !wso2Creds.pwd) {
@@ -38,19 +40,17 @@ export const prepareWso2ApiClient = async (wso2Config: Wso2Config): Promise<Wso2
 
 export const findWso2Api = async (args: {
   wso2Client: Wso2ApimClientV1;
-  apiName: string;
-  apiVersion: string;
-  apiContext: string;
-  apiTenant?: string;
+  apiDefinition: Wso2ApiDefinition;
+  wso2Tenant: string;
 }): Promise<publisherV1.definitions['APIInfo'] | undefined> => {
-  const searchQuery = `name:${args.apiName} version:${args.apiVersion} context:${args.apiContext}`;
+  const searchQuery = `name:${args.apiDefinition.name} version:${args.apiDefinition.version} context:${args.apiDefinition.context}`;
 
   const { data, error } = await args.wso2Client.publisher.GET('/apis', {
     params: {
       query: {
         query: searchQuery,
       },
-      header: getHeaders(args.apiTenant),
+      header: {},
     },
   });
   if (error) {
@@ -65,20 +65,21 @@ export const findWso2Api = async (args: {
 
   // no api found with query parameters
   if (apilist.list.length === 0) {
+    console.log(`No APIs were returned from WSO2 list with query='${searchQuery}'`);
     // eslint-disable-next-line no-undefined
     return undefined;
   }
 
   // filter out apis that were found but don't match our tenant
   const filteredApis = apilist.list.filter((api) => {
-    if (api.name !== args.apiName || api.version !== args.apiVersion) {
+    if (api.name !== args.apiDefinition.name || api.version !== args.apiDefinition.version) {
       return false;
     }
     if (!api.context) return false;
     // 'api.context' may contain the full context name in wso2, which means '/t/[tenant]/[api context]'
-    if (api.context.endsWith(args.apiContext)) {
-      if (args.apiTenant) {
-        return api.context.startsWith(`/t/${args.apiTenant}`);
+    if (api.context.endsWith(args.apiDefinition.context)) {
+      if (args.wso2Tenant) {
+        return api.context.startsWith(`/t/${args.wso2Tenant}`);
       }
       // when we don't have tenants, there is no /t/[tenant] prefix
       return true;
@@ -95,16 +96,40 @@ export const findWso2Api = async (args: {
     return undefined;
   }
   throw new Error(
-    `Cannot determine which WSO2 API is related to this Custom Resource. More than 1 API with search query '${searchQuery}' matches. name=${args.apiName} context=${args.apiContext} version=${args.apiVersion} tenant=${args.apiTenant}`,
+    `Cannot determine which WSO2 API is related to this Custom Resource. More than 1 API with search query '${searchQuery}' matches. name=${args.apiDefinition.name} context=${args.apiDefinition.context} version=${args.apiDefinition.version} tenant=${args.wso2Tenant}`,
   );
 };
 
 export type UpsertWso2Args = {
   wso2Client: Wso2ApimClientV1;
-  wso2Tenant?: string;
+  wso2Tenant: string;
   existingWso2ApiId: string | undefined;
   apiDefinition: Wso2ApiDefinition;
   openapiDocument: OpenAPIObject;
+};
+
+/**
+ * Delete API in WSO2 server
+ */
+export const removeApiInWso2 = async (args: {
+  wso2Client: Wso2ApimClientV1;
+  wso2ApiId: string;
+}): Promise<void> => {
+  if (!args.wso2ApiId) {
+    throw new Error('wso2ApiId is required for deleting API');
+  }
+
+  const { error } = await args.wso2Client.publisher.DELETE('/apis/{apiId}', {
+    params: {
+      path: {
+        apiId: args.wso2ApiId,
+      },
+      header: {},
+    },
+  });
+  if (error) {
+    throw new Error(`Error deleting API '${args.wso2ApiId}' in WSO2. err=${error}`);
+  }
 };
 
 /**
@@ -112,39 +137,41 @@ export type UpsertWso2Args = {
  * and change the API lifecycle to PUBLISHED
  * @returns {string} Id of the API in WSO2
  */
-export const createUpdateAndPublishApiInWso2 = async (args: UpsertWso2Args): Promise<string> => {
-  // TODO add backoff for all those operations
+export const createUpdateAndPublishApiInWso2 = async (
+  args: UpsertWso2Args,
+): Promise<{ wso2ApiId: string; endpointUrl?: string }> => {
+  // TODO add retry witth backoff for all these operations
 
-  // create or update api in WSO2
+  console.log('');
+  console.log(`>>> Create or update api in WSO2...`);
   const wso2ApiId = await createUpdateApiInWso2AndCheck(args);
 
-  // update Openapi definitions in WSO2 (Swagger)
+  console.log('');
+  console.log(`>>> Update Openapi definitions in WSO2 (Swagger)...`);
   await updateOpenapiInWso2AndCheck({
     ...args,
     wso2ApiId,
   });
 
-  // change api status to 'PUBLISHED'
-  await publishApiInWso2AndCheck({
+  console.log('');
+  console.log(`>>> Change api status to 'PUBLISHED'...`);
+  const endpointUrl = await publishApiInWso2AndCheck({
     wso2Client: args.wso2Client,
     wso2ApiId,
-    apiContext: args.apiDefinition.context,
-    apiName: args.apiDefinition.name,
-    apiTenant: args.wso2Tenant,
-    apiVersion: args.apiDefinition.version,
+    apiDefinition: args.apiDefinition,
+    wso2Tenant: args.wso2Tenant,
   });
 
-  return wso2ApiId;
+  return { wso2ApiId, endpointUrl };
 };
 
 export const publishApiInWso2AndCheck = async (args: {
   wso2Client: Wso2ApimClientV1;
+  apiDefinition: Wso2ApiDefinition;
   wso2ApiId: string;
-  apiContext: string;
-  apiName: string;
-  apiVersion: string;
-  apiTenant?: string;
-}): Promise<void> => {
+  wso2Tenant: string;
+}): Promise<string | undefined> => {
+  console.log(`Requesting to publish to WSO2`);
   const { error } = await args.wso2Client.publisher.POST('/apis/change-lifecycle', {
     params: {
       query: { apiId: args.wso2ApiId, action: 'Publish' },
@@ -154,13 +181,12 @@ export const publishApiInWso2AndCheck = async (args: {
   if (error) {
     throw new Error(`Error publishing api. err=${error}`);
   }
+  console.log(`Request to publish sent to WSO2`);
 
   const fapi = await findWso2Api({
-    apiContext: args.apiContext,
-    apiName: args.apiName,
-    apiVersion: args.apiVersion,
+    apiDefinition: args.apiDefinition,
     wso2Client: args.wso2Client,
-    apiTenant: args.apiTenant,
+    wso2Tenant: args.wso2Tenant,
   });
 
   if (!fapi) {
@@ -169,14 +195,67 @@ export const publishApiInWso2AndCheck = async (args: {
   if (fapi.lifeCycleStatus !== 'PUBLISHED') {
     throw new Error(`API ${args.wso2ApiId} is not in status 'PUBLISHED'`);
   }
+
+  // get invokable API Url
+  const apir = await args.wso2Client.devportal.GET('/apis/{apiId}', {
+    params: {
+      path: {
+        apiId: args.wso2ApiId,
+      },
+      header: {},
+    },
+  });
+  if (apir.error) {
+    throw new Error(`Error getting invokable api. err=${error}`);
+  }
+
+  // find the endpoint URL of the environment that was defined in this API
+  const apid = apir.data as definitions['API'];
+  const endpointUrl = apid.endpointURLs?.reduce((acc, elem) => {
+    if (
+      elem.environmentName &&
+      args.apiDefinition.gatewayEnvironments?.includes(elem.environmentName)
+    ) {
+      if (elem.URLs?.https) {
+        return elem.URLs?.https;
+      }
+      if (elem.defaultVersionURLs?.https) {
+        return elem.defaultVersionURLs?.https;
+      }
+    }
+    return acc;
+  }, '');
+
+  return endpointUrl;
 };
 
 export const updateOpenapiInWso2AndCheck = async (args: {
   wso2Client: Wso2ApimClientV1;
   wso2ApiId: string;
+  wso2Tenant: string;
   openapiDocument: oas30.OpenAPIObject;
   apiDefinition: Wso2ApiDefinition;
 }): Promise<void> => {
+  // TODO use axios for this
+  //     const url = `https://${wso2APIM.host}:${wso2APIM.port}/api/am/publisher/${wso2APIM.versionSlug}/apis/${apiId}/swagger`;
+  //     const config = {
+  //       headers: {
+  //         'Authorization': 'Bearer ' + accessToken,
+  //         'Content-Type': 'multipart/form-data'
+  //       },
+  //       httpsAgent: new https.Agent({
+  //         rejectUnauthorized: false
+  //       })
+  //     const data = new FormData();
+  //     data.append('apiDefinition', JSON.stringify(swaggerSpec));
+
+  //     return axios.put(url, data, config)
+  //       .then((_) => undefined).catch((err) => {
+  //         utils.renderError(err);
+  //       }); // eat the http response, not needed outside of this api layer
+  //   }
+
+  console.log(`Requesting update openapi to WSO2`);
   const { data, error } = await args.wso2Client.publisher.PUT('/apis/{apiId}/swagger', {
     params: {
       path: {
@@ -191,6 +270,7 @@ export const updateOpenapiInWso2AndCheck = async (args: {
   if (error) {
     throw new Error(`Error updating Openapi document for API in WSO2. err=${error}`);
   }
+  console.log(`Requested update openapi to WSO2`);
   const dataRes = data as publisherV1.definitions['API'];
   if (!dataRes.id) throw new Error(`'api' id wasn't returned as part of the API creation response`);
   checkApiExistsAndMatches(args);
@@ -208,12 +288,13 @@ export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promi
           openAPIVersion: 'V3',
         },
       },
-      header: getHeaders(args.wso2Tenant),
+      header: {},
     });
     if (error) {
       throw new Error(`Error creating new API in WSO2. err=${error}`);
     }
     const dataRes = data as publisherV1.definitions['API'];
+    console.log(`API created in WSO2`);
     if (!dataRes.id)
       throw new Error(`'api' id wasn't returned as part of the API creation response`);
     checkApiExistsAndMatches(args);
@@ -221,6 +302,7 @@ export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promi
   }
 
   // update existing API in WSO2
+  console.log(`Requesting API update to WSO2`);
   const { data, error } = await args.wso2Client.publisher.PUT('/apis/{apiId}', {
     params: {
       path: {
@@ -232,6 +314,7 @@ export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promi
       header: {},
     },
   });
+  console.log(`Requested API update to WSO2`);
 
   if (error) {
     throw new Error(`Error updating API in WSO2. err=${error}`);
@@ -254,11 +337,9 @@ const checkApiExistsAndMatches = async (
 ): Promise<void> => {
   // TODO check if the returned contents won't come with default values and things that doesn't actually indicates a real issue but makes it doesnt match
   const fapi = await findWso2Api({
-    apiContext: args.apiDefinition.context,
-    apiName: args.apiDefinition.name,
-    apiVersion: args.apiDefinition.version,
+    apiDefinition: args.apiDefinition,
     wso2Client: args.wso2Client,
-    apiTenant: args.wso2Tenant,
+    wso2Tenant: args.wso2Tenant,
   });
 
   // check if they are equal, but make sure to add "id" because during creation it won't be passed

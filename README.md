@@ -101,5 +101,12 @@ TODO
 
 ## Construct WSO2 API
 
+
+
+### Usage
+
+Supported output attributes of this Custom Resource (you can use GetAtt on these):
+  - ApiEndpointUrl: returns the endpoint that can be used to invoke this API in WSO2
+
 For this construct, lots of experiences were extracted from [serverless-wso2-apim](https://github.com/ramgrandhi/serverless-wso2-apim). Thanks for the good work, Ram!
 
