@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable fp/no-mutating-methods */
 
-import { cloneDeep } from 'lodash';
+import cloneDeep from 'lodash.clonedeep';
 import { App, Stack } from 'aws-cdk-lib/core';
 import { Template } from 'aws-cdk-lib/assertions';
 

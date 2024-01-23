@@ -9,6 +9,7 @@ export const petstoreOpenapi: OpenAPIObject = {
       name: 'MIT',
     },
   },
+  tags: [{ name: 'tag1' }],
   servers: [
     {
       url: 'http://petstore.swagger.io/v1',

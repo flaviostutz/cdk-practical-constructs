@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
-import { Wso2ApimClientV1 } from 'wso2apim-sdk';
+import { AxiosInstance } from 'axios';
 
 import { Wso2ApiBaseProperties } from '../types';
 
 import {
   createUpdateAndPublishApiInWso2,
   findWso2Api,
-  prepareWso2ApiClient,
+  prepareAxiosForWso2Api,
   removeApiInWso2,
 } from './wso2-v1';
 
@@ -41,11 +41,12 @@ export const handler = async (
     }
 
     console.log('>>> Prepare WSO2 API client...');
-    const wso2Client = await prepareWso2ApiClient(event.ResourceProperties.wso2Config);
+    // const wso2Client = await prepareWso2ApiClient(event.ResourceProperties.wso2Config);
+    const wso2Axios = await prepareAxiosForWso2Api(event.ResourceProperties.wso2Config);
 
     if (event.RequestType === 'Create' || event.RequestType === 'Update') {
       console.log('>>> Creating or Updating WSO2 API...');
-      const { wso2ApiId, endpointUrl } = await createOrUpdateWso2Api(event, wso2Client);
+      const { wso2ApiId, endpointUrl } = await createOrUpdateWso2Api(event, wso2Axios);
       response.PhysicalResourceId = wso2ApiId;
       response.Data = {
         ApiEndpointUrl: endpointUrl,
@@ -56,7 +57,7 @@ export const handler = async (
     if (event.RequestType === 'Delete') {
       console.log('>>> Deleting WSO2 API...');
       await removeApiInWso2({
-        wso2Client,
+        wso2Axios,
         wso2ApiId: event.PhysicalResourceId,
       });
       response.Status = 'SUCCESS';
@@ -79,7 +80,7 @@ export const handler = async (
 
 const createOrUpdateWso2Api = async (
   event: Wso2ApiCustomResourceEvent,
-  wso2Client: Wso2ApimClientV1,
+  wso2Axios: AxiosInstance,
 ): Promise<{ wso2ApiId: string; endpointUrl?: string }> => {
   if (!event.ResourceProperties.apiDefinition.version) {
     throw new Error('apidef.version should be defined');
@@ -88,7 +89,7 @@ const createOrUpdateWso2Api = async (
   // find existing WSO2 API
   console.log('Searching if API already exists in WSO2...');
   const existingApi = await findWso2Api({
-    wso2Client,
+    wso2Axios,
     apiDefinition: event.ResourceProperties.apiDefinition,
     wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
   });
@@ -113,7 +114,7 @@ const createOrUpdateWso2Api = async (
 
   if (event.RequestType === 'Create' || event.RequestType === 'Update') {
     return createUpdateAndPublishApiInWso2({
-      wso2Client,
+      wso2Axios,
       apiDefinition: event.ResourceProperties.apiDefinition,
       openapiDocument: event.ResourceProperties.openapiDocument,
       wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',

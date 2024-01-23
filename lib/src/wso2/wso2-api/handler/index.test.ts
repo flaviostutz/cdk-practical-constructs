@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import fetchMock, { enableFetchMocks } from 'jest-fetch-mock';
 import nock from 'nock';
 import { mockClient } from 'aws-sdk-client-mock';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
@@ -13,40 +12,125 @@ import { Wso2ApiCustomResourceEvent, handler } from './index';
 
 const baseWso2Url = 'https://mywso2.com';
 
-// nock doesn't work with api fetch
-enableFetchMocks();
-
 describe('wso2 custom resource lambda', () => {
-  it.only('basic wso2 api creation', async () => {
+  it('basic wso2 api creation', async () => {
     nockBasicWso2SDK();
 
-    // api list mock
+    // api list mock (check if api exists)
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis$/)
+      .query(true)
+      .reply(200, { list: [] });
+
+    // api create mock
     const testDefs = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
-    fetchMock.doMockOnceIf(/.*\/apis/, JSON.stringify({ list: [testDefs] }), {
-      status: 200,
-    });
+    nock(baseWso2Url)
+      .post(/.*\/publisher\/v1\/apis/)
+      .query({ openAPIVersion: 'V3' })
+      .reply(201, testDefs);
 
-    // api update mock
-    fetchMock.doMockOnceIf(/.*\/apis\/.+/, JSON.stringify(testDefs), {
-      status: 201,
-    });
+    // api list mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis$/)
+      .query(true)
+      .times(3) // check if updated, check if published
+      .reply(200, { list: [testDefs] });
 
-    // api openapi update mock
-    fetchMock.doMockOnceIf(/.*\/apis\/123-456\/swagger/, '', {
-      status: 200,
-    });
+    nockAfterUpdateCreate(testDefs);
 
     const eres = await handler(
       testCFNEventCreate({
         ...testEvent,
       }),
     );
-    expect(eres.Data?.Error).toBe('aa');
-    expect(eres.PhysicalResourceId).toBe('test123Swagger Petstore');
+    expect(eres.PhysicalResourceId).toBe('123-456');
   });
+});
+
+it('basic wso2 api update', async () => {
+  nockBasicWso2SDK();
+
+  // api list mock
+  const testDefs = {
+    ...testBasicWso2ApiDefs(),
+    id: '123-456',
+  };
+  nock(baseWso2Url)
+    .get(/.*\/publisher\/v1\/apis$/)
+    .query(true)
+    .times(3) // check create or update, check if updated, check if published
+    .reply(200, { list: [testDefs] });
+
+  // api update mock
+  nock(baseWso2Url)
+    .put(/.*\/publisher\/v1\/apis\/.*/)
+    .reply(201, testDefs);
+
+  nockAfterUpdateCreate(testDefs);
+
+  const eres = await handler(
+    testCFNEventCreate({
+      ...testEvent,
+    }),
+  );
+  expect(eres.PhysicalResourceId).toBe('123-456');
+  expect(eres.Status).toBe('SUCCESS');
+});
+
+it('basic wso2 api change on UPDATE operation', async () => {
+  nockBasicWso2SDK();
+
+  // api list mock
+  const testDefs = {
+    ...testBasicWso2ApiDefs(),
+    id: '123-456',
+  };
+  nock(baseWso2Url)
+    .get(/.*\/publisher\/v1\/apis$/)
+    .query(true)
+    .times(3) // check create or update, check if updated, check if published
+    .reply(200, { list: [testDefs] });
+
+  // api update mock
+  nock(baseWso2Url)
+    .put(/.*\/publisher\/v1\/apis\/.*/)
+    .reply(201, testDefs);
+
+  nockAfterUpdateCreate(testDefs);
+
+  const eres = await handler(
+    testCFNEventUpdate(
+      {
+        ...testEvent,
+      },
+      '123-456',
+      {},
+    ),
+  );
+  expect(eres.PhysicalResourceId).toBe('123-456');
+  expect(eres.Status).toBe('SUCCESS');
+});
+
+it('basic wso2 api delete on DELETE operation', async () => {
+  nockBasicWso2SDK();
+
+  // api update mock
+  nock(baseWso2Url)
+    .delete(/.*\/publisher\/v1\/apis\/.*/)
+    .reply(200);
+
+  const eres = await handler(
+    testCFNEventDelete(
+      {
+        ...testEvent,
+      },
+      '123-456',
+    ),
+  );
+  expect(eres.Status).toBe('SUCCESS');
 });
 
 const testBasicWso2ApiDefs = (): Wso2ApiDefinition => {
@@ -55,6 +139,7 @@ const testBasicWso2ApiDefs = (): Wso2ApiDefinition => {
     context: '/testcontext1',
     name: 'myapitest',
     version: '1.0.0',
+    lifeCycleStatus: 'PUBLISHED',
   };
 };
 
@@ -74,30 +159,30 @@ const testCFNEventCreate = (baseProperties: Wso2ApiBaseProperties): Wso2ApiCusto
     ResourceProperties: { ...baseProperties, ServiceToken: 'arn:somelambdatest' },
   };
 };
-// const testCFNEventDelete = (
-//   resourceProperties: { [key: string]: any },
-//   physicalResourceId: string,
-// ): Wso2ApiCustomResourceEvent => {
-//   return {
-//     ...commonEvt,
-//     RequestType: 'Delete',
-//     ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
-//     PhysicalResourceId: physicalResourceId,
-//   };
-// };
-// const testCFNEventUpdate = (
-//   resourceProperties: { [key: string]: any },
-//   oldResourceProperties: { [key: string]: any },
-//   physicalResourceId: string,
-// ): Wso2ApiCustomResourceEvent => {
-//   return {
-//     ...commonEvt,
-//     RequestType: 'Update',
-//     ResourceProperties: { ...resourceProperties, ServiceToken: 'arn:somelambdatest' },
-//     PhysicalResourceId: physicalResourceId,
-//     OldResourceProperties: oldResourceProperties,
-//   };
-// };
+const testCFNEventDelete = (
+  baseProperties: Wso2ApiBaseProperties,
+  PhysicalResourceId: string,
+): Wso2ApiCustomResourceEvent => {
+  return {
+    ...commonEvt,
+    RequestType: 'Delete',
+    ResourceProperties: { ...baseProperties, ServiceToken: 'arn:somelambdatest' },
+    PhysicalResourceId,
+  };
+};
+const testCFNEventUpdate = (
+  baseProperties: Wso2ApiBaseProperties,
+  PhysicalResourceId: string,
+  oldResourceProperties: Record<string, string>,
+): Wso2ApiCustomResourceEvent => {
+  return {
+    ...commonEvt,
+    RequestType: 'Update',
+    ResourceProperties: { ...baseProperties, ServiceToken: 'arn:somelambdatest' },
+    PhysicalResourceId,
+    OldResourceProperties: oldResourceProperties,
+  };
+};
 
 const testEvent: Wso2ApiBaseProperties = {
   wso2Config: {
@@ -132,4 +217,27 @@ const nockBasicWso2SDK = (): void => {
       200,
       '<ns:getVersionResponse xmlns:ns="http://version.services.core.carbon.wso2.org"><return>WSO2 API Manager-3.2.0</return></ns:getVersionResponse>',
     );
+};
+
+const nockAfterUpdateCreate = (testDefs: Wso2ApiDefinition): void => {
+  // api openapi update mock
+  nock(baseWso2Url)
+    .put(/.*\/publisher\/v1\/apis\/123-456\/swagger/)
+    .reply(200);
+
+  // api openapi get mock
+  nock(baseWso2Url)
+    .get(/.*\/publisher\/v1\/apis\/123-456\/swagger/)
+    .reply(200, JSON.stringify(testEvent.openapiDocument), ['Content-Type', 'text/plain']);
+
+  // api change to published mock
+  nock(baseWso2Url)
+    .post(/.*\/publisher\/v1\/apis\/change-lifecycle/)
+    .query({ apiId: '123-456', action: 'Publish' })
+    .reply(200);
+
+  // api get endpoint urls mock
+  nock(baseWso2Url)
+    .get(/.*\/store\/v1\/apis\/123-456$/)
+    .reply(200, testDefs);
 };
