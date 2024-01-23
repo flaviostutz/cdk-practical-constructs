@@ -16,7 +16,7 @@ dependencies:
     version: 1.0.7
   cdk-practical-constructs:
     specifier: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
-    version: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz(typescript@5.3.3)
+    version: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
   constructs:
     specifier: ^10.3.0
     version: 10.3.0
@@ -4083,6 +4083,10 @@ packages:
       jest-util: 29.7.0
     dev: true
 
+  /exponential-backoff@3.1.1:
+    resolution: {integrity: sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==}
+    dev: false
+
   /extend-shallow@2.0.1:
     resolution: {integrity: sha512-zCnTtlxNoAiDc3gqY2aYAWFx7XWWiasuF2K8Me5WbN8otHKTUKBwjPtNpRs/rbUZm7KxWAaNj7P1a/p52GbVug==}
     engines: {node: '>=0.10.0'}
@@ -5502,6 +5506,10 @@ packages:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     dev: true
 
+  /lodash.isequal@4.5.0:
+    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+    dev: false
+
   /lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
 
@@ -5858,16 +5866,6 @@ packages:
     dependencies:
       mimic-fn: 2.1.0
     dev: true
-
-  /openapi-fetch@0.8.2:
-    resolution: {integrity: sha512-4g+NLK8FmQ51RW6zLcCBOVy/lwYmFJiiT+ckYZxJWxUxH4XFhsNcX2eeqVMfVOi+mDNFja6qDXIZAz2c5J/RVw==}
-    dependencies:
-      openapi-typescript-helpers: 0.0.5
-    dev: false
-
-  /openapi-typescript-helpers@0.0.5:
-    resolution: {integrity: sha512-MRffg93t0hgGZbYTxg60hkRIK2sRuEOHEtCUgMuLgbCC33TMQ68AmxskzUlauzZYD47+ENeGV/ElI7qnWqrAxA==}
-    dev: false
 
   /openapi3-ts@4.2.1:
     resolution: {integrity: sha512-KL1mKwkZii5ce+tb24KCUmQHyWB/oanG5fzUY35UB+wenWJv4Kr/IWBntpn5R8ODiJcxx13ZDophcpHnLGeIOw==}
@@ -6770,6 +6768,7 @@ packages:
     resolution: {integrity: sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==}
     engines: {node: '>=14.17'}
     hasBin: true
+    dev: true
 
   /unbox-primitive@1.0.2:
     resolution: {integrity: sha512-61pPlCD9h51VoreyJ0BReideM3MDKMKnh6+V9L08331ipq6Q8OFXZYiqP6n/tbHx4s5I9uRhcye6BrbkizkBDw==}
@@ -6969,19 +6968,6 @@ packages:
       signal-exit: 3.0.7
     dev: true
 
-  /wso2apim-sdk@0.3.0(typescript@5.3.3):
-    resolution: {integrity: sha512-1KsttgiRlit+0ZvfFzwVmfenPFu323SUnvZQieTj4pwi9Cm16KEzwZHtVMsRuoeofQzG+WaotEiaEUUvsrlIPg==}
-    peerDependencies:
-      typescript: 5.3.3
-    dependencies:
-      axios: 1.6.5
-      openapi-fetch: 0.8.2
-      qs: 6.11.2
-      typescript: 5.3.3
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
   /xml2js@0.5.0:
     resolution: {integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA==}
     engines: {node: '>=4.0.0'}
@@ -7042,9 +7028,8 @@ packages:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
     dev: false
 
-  file:../lib/dist/cdk-practical-constructs-0.0.1.tgz(typescript@5.3.3):
-    resolution: {integrity: sha512-BqdpC+1dMnozkdTCZJhMYN/ITqirFyxKBAM9njRiNtBa7pKv2NdGoctyk1fFPFEiTAvgrK2UwAov4SohO/BK+g==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
-    id: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
+  file:../lib/dist/cdk-practical-constructs-0.0.1.tgz:
+    resolution: {integrity: sha512-XAUaW0hEYITHxf2RhwD2Vizvh95WFW6S2kO8vkZRUztb9+lPgfTtQjcnKfTiGVgjgh1Eib+kNY+9QQUJ0Nz0NQ==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
     name: cdk-practical-constructs
     version: 0.0.1
     dependencies:
@@ -7054,18 +7039,22 @@ packages:
       '@stoplight/spectral-cli': 6.11.0
       aws-cdk-lib: 2.117.0(constructs@10.3.0)
       aws-lambda: 1.0.7
+      axios: 1.6.5
       constructs: 10.3.0
       esbuild: 0.19.11
+      exponential-backoff: 3.1.1
+      form-data: 4.0.0
       fs: 0.0.1-security
+      lodash.clonedeep: 4.5.0
+      lodash.isequal: 4.5.0
       npm-which: 3.0.1
       openapi3-ts: 4.2.1
+      qs: 6.11.2
       scoperjs: 1.0.1
       tmp: 0.2.1
-      wso2apim-sdk: 0.3.0(typescript@5.3.3)
       zod: 3.22.4
     transitivePeerDependencies:
       - aws-crt
       - debug
       - encoding
-      - typescript
     dev: false

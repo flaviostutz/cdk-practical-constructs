@@ -84,10 +84,11 @@ export const handler = async (
     const err = error as any;
     if (err.stack) {
       console.log(err.stack);
-      response.Reason = `${err.message}\n${err.stack}`;
+      response.Reason = truncateStr(`${err.message}\n${err.stack}`, 2500);
+    } else {
+      response.Data = { Error: truncateStr(err, 2500) };
     }
     response.Status = 'FAILED';
-    response.Data = { Error: err };
     return response;
   }
 };
@@ -188,4 +189,8 @@ const applyRetryDefaults = (retryOptions?: RetryOptions): RetryOptions => {
     };
   }
   return ropts;
+};
+
+const truncateStr = (str: string, size: number): string => {
+  return str.substring(0, Math.min(str.length, size));
 };
