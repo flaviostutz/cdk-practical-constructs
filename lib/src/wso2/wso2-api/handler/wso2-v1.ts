@@ -4,8 +4,9 @@ import isEqual from 'lodash.isequal';
 import { oas30 } from 'openapi3-ts';
 import axios, { AxiosInstance } from 'axios';
 import FormData from 'form-data';
+import { backOff } from 'exponential-backoff';
 
-import { Wso2ApiDefinition, Wso2Config } from '../types';
+import { RetryOptions, Wso2ApiDefinition, Wso2Config } from '../types';
 import { APIv1, APIv1DevPortal as DevPortalAPIv1, Wso2ApiListV1 } from '../v1/types';
 import {
   Wso2ApimConfig,
@@ -39,17 +40,17 @@ export const prepareAxiosForWso2Api = async (wso2Config: Wso2Config): Promise<Ax
     username = `${wso2Creds.user}@${wso2Config.tenant}`;
   }
 
-  const config: Wso2ApimConfig = {
+  const wso2ApimConfig: Wso2ApimConfig = {
     baseUrl: wso2Config.baseApiUrl,
     username,
     password: wso2Creds.pwd,
     clientName: 'cdk-practical-constructs-wso2',
   };
 
-  const clientCredentials = await registerClient(config);
-  const accessToken = await getBearerToken(config, clientCredentials);
+  const clientCredentials = await registerClient(wso2ApimConfig);
+  const accessToken = await getBearerToken(wso2ApimConfig, clientCredentials);
 
-  await checkWso2ServerVersion(config, 'v1');
+  await checkWso2ServerVersion(wso2ApimConfig, 'v1');
 
   const client = axios.create({
     baseURL: wso2Config.baseApiUrl,
@@ -58,21 +59,21 @@ export const prepareAxiosForWso2Api = async (wso2Config: Wso2Config): Promise<Ax
     },
   });
 
-  client.interceptors.request.use((request) => {
-    console.log(`> REQUEST: ${request.method?.toUpperCase()} ${request.url}`);
-    return request;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  client.interceptors.request.use((config: any) => {
+    // eslint-disable-next-line no-param-reassign
+    config.metadata = { startTime: new Date().getTime() };
+    console.log(`> REQUEST: ${config.method?.toUpperCase()} ${wso2Config.baseApiUrl}${config.url}`);
+    return config;
   });
 
-  client.interceptors.response.use(
-    (response) => {
-      console.log(`> RESPONSE: ${response.status} ${response.statusText ?? ''}`);
-      return response;
-    },
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
-    (error) => {
-      console.log(`Request error: ${error}`);
-    },
-  );
+  client.interceptors.response.use((response) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const elapsedTime = new Date().getTime() - response.config.metadata.startTime;
+    console.log(`> RESPONSE: ${response.status} (${elapsedTime}ms)`);
+    return response;
+  });
 
   // axiosDebug.addLogger(client);
 
@@ -136,9 +137,10 @@ export const findWso2Api = async (args: {
 export type UpsertWso2Args = {
   wso2Axios: AxiosInstance;
   wso2Tenant: string;
-  existingWso2ApiId: string | undefined;
+  existingWso2Api?: Pick<APIv1, 'id' | 'lastUpdatedTime'>;
   apiDefinition: Wso2ApiDefinition;
   openapiDocument: OpenAPIObject;
+  retryOptions: RetryOptions;
 };
 
 /**
@@ -166,23 +168,36 @@ export const createUpdateAndPublishApiInWso2 = async (
 
   console.log('');
   console.log(`>>> Create or update api in WSO2...`);
-  const wso2ApiId = await createUpdateApiInWso2AndCheck(args);
+  // will retry create/update api operation if fails
+  const wso2ApiId = await backOff(
+    async () => createUpdateApiInWso2AndCheck(args),
+    args.retryOptions.mutationRetries,
+  );
 
   console.log('');
   console.log(`>>> Update Openapi definitions in WSO2 (Swagger)...`);
-  await updateOpenapiInWso2AndCheck({
-    ...args,
-    wso2ApiId,
-  });
+  // will retry publishing openapi if fails
+  await backOff(
+    async () =>
+      updateOpenapiInWso2AndCheck({
+        ...args,
+        wso2ApiId,
+      }),
+    args.retryOptions.mutationRetries,
+  );
 
   console.log('');
   console.log(`>>> Change api status to 'PUBLISHED'...`);
-  const endpointUrl = await publishApiInWso2AndCheck({
-    wso2Axios: args.wso2Axios,
-    wso2ApiId,
-    apiDefinition: args.apiDefinition,
-    wso2Tenant: args.wso2Tenant,
-  });
+  // will retry changing to PUBLISHED if fails
+  const endpointUrl = await backOff(async () =>
+    publishApiInWso2AndCheck({
+      wso2Axios: args.wso2Axios,
+      wso2ApiId,
+      apiDefinition: args.apiDefinition,
+      wso2Tenant: args.wso2Tenant,
+      retryOptions: args.retryOptions,
+    }),
+  );
 
   console.log('API created/updated and published succesfully on WSO2 server');
 
@@ -194,6 +209,7 @@ export const publishApiInWso2AndCheck = async (args: {
   apiDefinition: Wso2ApiDefinition;
   wso2ApiId: string;
   wso2Tenant: string;
+  retryOptions: RetryOptions;
 }): Promise<string | undefined> => {
   console.log(`Changing API status to PUBLISHED in WSO2`);
   await args.wso2Axios.post(
@@ -207,20 +223,24 @@ export const publishApiInWso2AndCheck = async (args: {
     },
   );
 
-  console.log('Checking if API is PUBLISHED');
-  const fapi = await findWso2Api({
-    apiDefinition: args.apiDefinition,
-    wso2Axios: args.wso2Axios,
-    wso2Tenant: args.wso2Tenant,
-  });
+  // wait for API to be created by retrying checks
+  await backOff(async () => {
+    console.log('');
+    console.log('Checking if API is PUBLISHED...');
+    const fapi = await findWso2Api({
+      apiDefinition: args.apiDefinition,
+      wso2Axios: args.wso2Axios,
+      wso2Tenant: args.wso2Tenant,
+    });
 
-  if (!fapi) {
-    throw new Error(`API ${args.wso2ApiId} could not be found`);
-  }
-  if (fapi.lifeCycleStatus !== 'PUBLISHED') {
-    throw new Error(`API ${args.wso2ApiId} is in status ${fapi.lifeCycleStatus} (not PUBLISHED)`);
-  }
-  console.log('API status PUBLISHED check OK');
+    if (!fapi) {
+      throw new Error(`API ${args.wso2ApiId} could not be found`);
+    }
+    if (fapi.lifeCycleStatus !== 'PUBLISHED') {
+      throw new Error(`API ${args.wso2ApiId} is in status ${fapi.lifeCycleStatus} (not PUBLISHED)`);
+    }
+    console.log('API status PUBLISHED check OK');
+  }, args.retryOptions.checkRetries);
 
   // get endpoint url
   console.log(`Getting API endpoint url`);
@@ -252,6 +272,7 @@ export const updateOpenapiInWso2AndCheck = async (args: {
   wso2Tenant: string;
   openapiDocument: oas30.OpenAPIObject;
   apiDefinition: Wso2ApiDefinition;
+  retryOptions: RetryOptions;
 }): Promise<void> => {
   console.log('Updating Openapi document in WSO2');
   const fdata = new FormData();
@@ -261,23 +282,26 @@ export const updateOpenapiInWso2AndCheck = async (args: {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 
-  console.log('Checking if Openapi was updated on WSO2');
-  const res = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${args.wso2ApiId}/swagger`, {
-    responseType: 'text',
-    transformResponse: [(v): typeof v => v],
-  });
-  const resOpenapiStr = res.data as string;
-  if (openapiDocumentStr !== resOpenapiStr) {
-    throw new Error(
-      `Openapi doc downloaded from WSO2 doesn't match submitted definition.\nEXPECTED='${openapiDocumentStr}'\nACTUAL='${resOpenapiStr}'`,
-    );
-  }
-  console.log('API Openapi document check OK');
+  await backOff(async () => {
+    console.log('');
+    console.log('Checking if Openapi was updated on WSO2...');
+    const res = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${args.wso2ApiId}/swagger`, {
+      responseType: 'text',
+      transformResponse: [(v): typeof v => v],
+    });
+    const resOpenapiStr = res.data as string;
+    if (openapiDocumentStr !== resOpenapiStr) {
+      throw new Error(
+        `Openapi doc downloaded from WSO2 doesn't match submitted definition.\nEXPECTED='${openapiDocumentStr}'\nACTUAL='${resOpenapiStr}'`,
+      );
+    }
+    console.log('API Openapi document check OK');
+  }, args.retryOptions.checkRetries);
 };
 
 export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promise<string> => {
   // create new API in WSO2
-  if (!args.existingWso2ApiId) {
+  if (!args.existingWso2Api) {
     console.log(`Creating new API in WSO2`);
     const apir = await args.wso2Axios.post(
       `/api/am/publisher/v1/apis?openAPIVersion=V3`,
@@ -290,20 +314,22 @@ export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promi
     }
     console.log(`API created in WSO2`);
 
-    await checkApiExistsAndMatches(args);
+    // wait for API to be created by retrying checks
+    await backOff(async () => checkApiExistsAndMatches(args), args.retryOptions.checkRetries);
     return dataRes.id;
   }
 
   // update existing API in WSO2
   console.log(`Updating API definitions in WSO2`);
   const res = await args.wso2Axios.put(
-    `/api/am/publisher/v1/apis/${args.existingWso2ApiId}`,
+    `/api/am/publisher/v1/apis/${args.existingWso2Api.id}`,
     args.apiDefinition,
   );
   const dataRes = res.data as APIv1;
   if (!dataRes.id) throw new Error(`'api' id wasn't returned as part of the API creation response`);
 
-  await checkApiExistsAndMatches(args);
+  // wait for API to be created by retrying checks
+  await backOff(async () => checkApiExistsAndMatches(args), args.retryOptions.checkRetries);
   return dataRes.id;
 };
 
@@ -315,10 +341,11 @@ export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promi
  * are different
  */
 const checkApiExistsAndMatches = async (
-  args: Pick<UpsertWso2Args, 'apiDefinition' | 'wso2Axios' | 'wso2Tenant'>,
+  args: Pick<UpsertWso2Args, 'apiDefinition' | 'wso2Axios' | 'wso2Tenant' | 'existingWso2Api'>,
 ): Promise<void> => {
   // TODO check if the returned contents won't come with default values and things that doesn't actually indicates a real issue but makes it doesnt match
-  console.log('Checking if API exists and matches the desired definition in WSO2');
+  console.log('');
+  console.log('Checking if API exists and matches the desired definition in WSO2...');
   const fapi = await findWso2Api({
     apiDefinition: args.apiDefinition,
     wso2Axios: args.wso2Axios,
@@ -330,6 +357,14 @@ const checkApiExistsAndMatches = async (
   }
 
   console.log(`API ${fapi.id} found in WSO2. Checking contents...`);
+
+  if (args.existingWso2Api && fapi.lastUpdatedTime && args.existingWso2Api.lastUpdatedTime) {
+    if (fapi.lastUpdatedTime <= args.existingWso2Api.lastUpdatedTime) {
+      throw new Error(
+        `API defs weren't updated in WSO2 yet (lastUpdatedTime is the same as before sending update)`,
+      );
+    }
+  }
 
   // check if they are equal, but make sure to add "id" because during creation it won't be passed
   if (

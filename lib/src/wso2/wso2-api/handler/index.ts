@@ -2,7 +2,7 @@
 import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 import { AxiosInstance } from 'axios';
 
-import { Wso2ApiBaseProperties } from '../types';
+import { RetryOptions, Wso2ApiBaseProperties } from '../types';
 
 import {
   createUpdateAndPublishApiInWso2,
@@ -20,14 +20,24 @@ export type Wso2ApiCustomResourceResponse = CdkCustomResourceResponse & {
     ApiEndpointUrl?: string;
     Error?: unknown;
   };
-  Status?: string;
+  Status?: 'SUCCESS' | 'FAILED';
   Reason?: string;
 };
 
 export const handler = async (
   event: Wso2ApiCustomResourceEvent,
 ): Promise<Wso2ApiCustomResourceResponse> => {
-  console.log(`WSO2 API Custom Resource invoked with: ${JSON.stringify(event)}`);
+  // console.log(`WSO2 API Custom Resource invoked with: ${JSON.stringify(event)}`);
+
+  if (!event.ResourceProperties.apiDefinition) {
+    throw new Error('event.apiDefinition should be defined');
+  }
+  if (!event.ResourceProperties.wso2Config) {
+    throw new Error('event.wso2Config should be defined');
+  }
+  if (!event.ResourceProperties.openapiDocument) {
+    throw new Error('event.openapiDocument should be defined');
+  }
 
   const response: Wso2ApiCustomResourceResponse = {
     StackId: event.StackId,
@@ -45,6 +55,9 @@ export const handler = async (
     const wso2Axios = await prepareAxiosForWso2Api(event.ResourceProperties.wso2Config);
 
     if (event.RequestType === 'Create' || event.RequestType === 'Update') {
+      if (event.RequestType === 'Update') {
+        response.PhysicalResourceId = event.PhysicalResourceId;
+      }
       console.log('>>> Creating or Updating WSO2 API...');
       const { wso2ApiId, endpointUrl } = await createOrUpdateWso2Api(event, wso2Axios);
       response.PhysicalResourceId = wso2ApiId;
@@ -56,6 +69,7 @@ export const handler = async (
     }
     if (event.RequestType === 'Delete') {
       console.log('>>> Deleting WSO2 API...');
+      response.PhysicalResourceId = event.PhysicalResourceId;
       await removeApiInWso2({
         wso2Axios,
         wso2ApiId: event.PhysicalResourceId,
@@ -118,9 +132,60 @@ const createOrUpdateWso2Api = async (
       apiDefinition: event.ResourceProperties.apiDefinition,
       openapiDocument: event.ResourceProperties.openapiDocument,
       wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
-      existingWso2ApiId: existingApi?.id,
+      existingWso2Api: existingApi,
+      retryOptions: applyRetryDefaults(event.ResourceProperties.retryOptions),
     });
   }
 
   throw new Error(`Invalid requestType found. requestType=${event.ResourceType}`);
+};
+
+const defaultRetryOpts = {
+  checkRetries: {
+    startingDelay: 500,
+    delayFirstAttempt: true,
+    maxDelay: 10000,
+    numOfAttempts: 10,
+    timeMultiple: 1.5,
+    // 500, 750, 1125, 1687 (4s), 2531, 3796, 5696 (16s), 8542 (24s), 10000, 10000, 10000, 10000, 10000 (74s)
+  },
+  mutationRetries: {
+    startingDelay: 2000,
+    delayFirstAttempt: false,
+    maxDelay: 5000,
+    numOfAttempts: 2,
+    timeMultiple: 1.5,
+    // 2000, 3000
+  },
+};
+const applyRetryDefaults = (retryOptions?: RetryOptions): RetryOptions => {
+  const ropts: RetryOptions = {
+    // default config for backoff
+    ...defaultRetryOpts,
+  };
+
+  if (retryOptions?.checkRetries) {
+    ropts.checkRetries = retryOptions?.checkRetries;
+  }
+  if (retryOptions?.mutationRetries) {
+    ropts.mutationRetries = retryOptions?.mutationRetries;
+  }
+
+  if (ropts.checkRetries) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ropts.checkRetries.retry = (err: any, attemptNumber: number): boolean => {
+      console.log(`Error detected. err=${err}`);
+      console.log(`Retrying (#${attemptNumber})...`);
+      return true;
+    };
+  }
+  if (ropts.mutationRetries) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ropts.mutationRetries.retry = (err: any, attemptNumber: number): boolean => {
+      console.log(`Error detected. err=${err}`);
+      console.log(`Retrying (#${attemptNumber})...`);
+      return true;
+    };
+  }
+  return ropts;
 };

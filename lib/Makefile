@@ -22,7 +22,8 @@ lint-fix:
 test: unit-tests
 
 unit-tests:
-	pnpm exec jest --verbose
+	@# can't be in parallel because we use nock that has shared contexts
+	pnpm exec jest -i --verbose
 
 clean:
 	rm -rf node_modules

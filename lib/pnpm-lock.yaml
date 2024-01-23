@@ -32,6 +32,9 @@ dependencies:
   esbuild:
     specifier: ^0.19.11
     version: 0.19.11
+  exponential-backoff:
+    specifier: ^3.1.1
+    version: 3.1.1
   form-data:
     specifier: ^4.0.0
     version: 4.0.0
@@ -4199,6 +4202,10 @@ packages:
       jest-message-util: 29.7.0
       jest-util: 29.7.0
     dev: true
+
+  /exponential-backoff@3.1.1:
+    resolution: {integrity: sha512-dX7e/LHVJ6W3DE1MHWi9S1EYzDESENfLrYohG2G++ovZrYOkm4Knwa0mc1cn84xJOR4KEU0WSchhLbd0UklbHw==}
+    dev: false
 
   /extend-shallow@2.0.1:
     resolution: {integrity: sha512-zCnTtlxNoAiDc3gqY2aYAWFx7XWWiasuF2K8Me5WbN8otHKTUKBwjPtNpRs/rbUZm7KxWAaNj7P1a/p52GbVug==}

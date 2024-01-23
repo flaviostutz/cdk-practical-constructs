@@ -19,6 +19,10 @@ import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './wso2-api-
 /**
  * WSO2 API CDK construct for creating WSO2 APIs based on Openapi and WSO2-specific configurations
  * This construct is related to one "physical" api in WSO2.
+ *
+ * The internal implementation tries to protect itself from various scenarios where larger or more complex
+ * WSO2 clusters might lead to out-of-order or delays in operations that happen assynchronously after the API
+ * accepts the requests, so for every mutation, there is a check to verify sanity.
  */
 export class Wso2Api extends Construct {
   readonly customResourceFunction: IFunction;
@@ -90,6 +94,7 @@ export class Wso2Api extends Construct {
         wso2Config: props.wso2Config,
         apiDefinition: wso2ApiDefs,
         openapiDocument: props.openapiDocument,
+        retryOptions: props.retryOptions,
       },
       resourceType: 'Custom::Wso2ApiCustomResource',
       removalPolicy: props.removalPolicy ?? RemovalPolicy.DESTROY,

@@ -1,5 +1,6 @@
 import type { oas30 } from 'openapi3-ts';
 import { RemovalPolicy } from 'aws-cdk-lib/core';
+import { BackoffOptions } from 'exponential-backoff';
 
 import { LambdaConfig } from '../../lambda/types';
 
@@ -91,4 +92,25 @@ export type Wso2ApiBaseProperties = {
    * @default true
    */
   failIfExists?: boolean;
+  /**
+   * Automatic retry for checks and mutations
+   * This is a best effort to make the deployment successful even when WSO2 cluster is unstable,
+   * but if you use long retries your CFN stack might take too long to fail when the WSO2 server
+   * is unavailable, as it will continue retrying for minutes.
+   */
+  retryOptions?: RetryOptions;
+};
+
+export type RetryOptions = {
+  /**
+   * Retry options for check operations such as getting API to compare with desired contents.
+   *
+   * @default "{ startingDelay: 500, timeMultiple: 1.5, numOfAttempts: 10, maxDelay: 10000 }" which means retries on [500ms, 750ms, 1125ms, 1687ms (elapsed: 4s), 2531, 3796, 5696, 8542 (elapsed: 24s), 10000, 10000, 10000, 10000, 10000 (elapsed: 74s max)]
+   */
+  checkRetries?: BackoffOptions;
+  /**
+   * Retry options for operations such as create/update API on WSO2, change api lifecycle, publish Openapi docs etc
+   * @default "{ startingDelay: 2000, timeMultiple: 1.5, numOfAttempts: 2, maxDelay: 5000 }" which means retries on [500ms, 750ms, 1125ms, 1687ms (elapsed: 4s), 2531, 3796, 5696, 8542 (elapsed: 24s), 10000, 10000, 10000, 10000, 10000 (elapsed: 74s max)]
+   */
+  mutationRetries?: BackoffOptions;
 };
