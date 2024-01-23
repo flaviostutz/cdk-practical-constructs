@@ -7029,7 +7029,7 @@ packages:
     dev: false
 
   file:../lib/dist/cdk-practical-constructs-0.0.1.tgz:
-    resolution: {integrity: sha512-bYUcryRXq0Prewkra4FMY6PZMTVr0s2/yTBrtmVYU1kUM3HE7Ey8HQpBuCnX1hylIxziKXqGOVJMJPFl0iEpcA==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
+    resolution: {integrity: sha512-IE1yVj+m8pQqg1W93tIeqbIEaMlFTKVznmclRlkIwq4D9F2m6yWip319r7lSdJ0LzMLRUGNK73jrk3S8BKmxZA==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
     name: cdk-practical-constructs
     version: 0.0.1
     dependencies:

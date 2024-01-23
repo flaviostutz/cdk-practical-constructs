@@ -178,6 +178,8 @@ describe('wso2 custom resource lambda', () => {
       .times(1) // check updated (works on 4th time)
       .reply(200, { list: [testDefs] });
 
+    nockAfterUpdateCreate(testDefs);
+
     const eres = await handler(
       testCFNEventUpdate(
         {
@@ -196,7 +198,7 @@ describe('wso2 custom resource lambda', () => {
       ),
     );
     expect(eres.PhysicalResourceId).toBe('123-456');
-    expect(eres.Status).toBe('FAILED');
+    expect(eres.Status).toBe('SUCCESS');
     nfail.done();
     nsuccess.done();
   });
@@ -228,24 +230,30 @@ describe('wso2 custom resource lambda', () => {
       .times(4) // check create or update (failing 4 times)
       .reply(500);
 
-    const eres = await handler(
-      testCFNEventUpdate(
-        {
-          ...testEvent,
-          retryOptions: {
-            checkRetries: {
-              startingDelay: 100,
-              numOfAttempts: 4,
-              timeMultiple: 1.1,
+    const fn = async (): Promise<void> => {
+      await handler(
+        testCFNEventUpdate(
+          {
+            ...testEvent,
+            retryOptions: {
+              checkRetries: {
+                startingDelay: 100,
+                numOfAttempts: 4,
+                timeMultiple: 1.1,
+              },
+              mutationRetries: {
+                startingDelay: 0,
+                numOfAttempts: 0,
+                timeMultiple: 0,
+              },
             },
           },
-        },
-        '123-456',
-        {},
-      ),
-    );
-    expect(eres.PhysicalResourceId).toBe('123-456');
-    expect(eres.Status).toBe('FAILED');
+          '123-456',
+          {},
+        ),
+      );
+    };
+    await expect(fn).rejects.toThrow('Request failed with status code 500');
     nfail.done();
   });
 
@@ -383,5 +391,12 @@ describe('wso2 custom resource lambda', () => {
       .get(/.*\/store\/v1\/apis\/123-456$/)
       .times(1)
       .reply(200, testDefs);
+
+    // api get apis mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis$/)
+      .query(true)
+      .times(1) // check if it is published
+      .reply(200, { list: [testDefs] });
   };
 });

@@ -84,12 +84,13 @@ export const handler = async (
     const err = error as any;
     if (err.stack) {
       console.log(err.stack);
-      response.Reason = truncateStr(`${err.message}\n${err.stack}`, 2500);
-    } else {
-      response.Data = { Error: truncateStr(err, 2500) };
+      // response.Reason = truncateStr(`${err.message}\n${err.stack}`, 2500);
+      // } else {
+      //   response.Data = { Error: truncateStr(err, 2500) };
     }
-    response.Status = 'FAILED';
-    return response;
+    throw error;
+    // response.Status = 'FAILED';
+    // return response;
   }
 };
 
@@ -176,7 +177,7 @@ const applyRetryDefaults = (retryOptions?: RetryOptions): RetryOptions => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ropts.checkRetries.retry = (err: any, attemptNumber: number): boolean => {
       console.log(`Error detected. err=${err}`);
-      console.log(`Retrying (#${attemptNumber})...`);
+      console.log(`Retrying check (#${attemptNumber})...`);
       return true;
     };
   }
@@ -184,13 +185,13 @@ const applyRetryDefaults = (retryOptions?: RetryOptions): RetryOptions => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ropts.mutationRetries.retry = (err: any, attemptNumber: number): boolean => {
       console.log(`Error detected. err=${err}`);
-      console.log(`Retrying (#${attemptNumber})...`);
+      console.log(`Retrying mutation (#${attemptNumber})...`);
       return true;
     };
   }
   return ropts;
 };
 
-const truncateStr = (str: string, size: number): string => {
-  return str.substring(0, Math.min(str.length, size));
-};
+// const truncateStr = (str: string, size: number): string => {
+//   return str.substring(0, Math.min(str.length, size));
+// };
