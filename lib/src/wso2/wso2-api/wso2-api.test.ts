@@ -24,7 +24,7 @@ describe('wso2-api-construct', () => {
     const template = Template.fromStack(stack);
     // console.log(JSON.stringify(template.toJSON(), null, 2));
 
-    template.hasResourceProperties('Custom::Wso2ApiCustomResource', {
+    template.hasResourceProperties('Custom::Wso2Api', {
       wso2Config: testProps1.wso2Config,
       apiDefinition: wso2Api.apiDefinition,
       openapiDocument: testProps1.openapiDocument,

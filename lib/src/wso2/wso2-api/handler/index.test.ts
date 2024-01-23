@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -29,9 +30,16 @@ const testRetryOptions = {
   },
 };
 
+const originalConsoleLog = console.log;
+
 describe('wso2 custom resource lambda', () => {
   beforeEach(() => {
     nock.cleanAll();
+    // silence verbose console logs. comment this for debugging
+    console.log = (): void => {};
+  });
+  afterEach(() => {
+    console.log = originalConsoleLog;
   });
 
   it('basic wso2 api create', async () => {

@@ -9,12 +9,12 @@ export const testStageConfigs: StagesConfig<TestConfig> = {
   default: {
     lambda: {
       allowAllOutbound: true,
-      logRetention: RetentionDays.ONE_WEEK,
+      logGroupRetention: RetentionDays.ONE_WEEK,
     },
   },
   dev: {
     lambda: {
-      logRetention: RetentionDays.ONE_DAY,
+      logGroupRetention: RetentionDays.ONE_DAY,
       bundling: {
         sourceMap: true,
       },
@@ -22,7 +22,7 @@ export const testStageConfigs: StagesConfig<TestConfig> = {
   },
   prd: {
     lambda: {
-      logRetention: RetentionDays.SIX_MONTHS,
+      logGroupRetention: RetentionDays.SIX_MONTHS,
     },
   },
 };

@@ -1,7 +1,6 @@
 import { existsSync } from 'fs';
 
 import { Construct } from 'constructs';
-import { Provider } from 'aws-cdk-lib/custom-resources';
 import { CustomResource, Duration, RemovalPolicy, ScopedAws } from 'aws-cdk-lib/core';
 import { IFunction, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
@@ -48,7 +47,8 @@ export class Wso2Api extends Construct {
 
     const { accountId, region } = new ScopedAws(scope);
 
-    const logRetention = props.customResourceConfig?.logRetention ?? RetentionDays.ONE_MONTH;
+    const logGroupRetention =
+      props.customResourceConfig?.logGroupRetention ?? RetentionDays.ONE_MONTH;
 
     // resolve the entry file from workspace (.ts file), or
     // from the dist dir (.js file) when being used as a lib
@@ -71,7 +71,7 @@ export class Wso2Api extends Construct {
           Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${props.wso2Config.credentialsSecretId}*`,
         }),
       ],
-      logRetention,
+      logGroupRetention,
       ...props.customResourceConfig,
     });
 
@@ -80,24 +80,25 @@ export class Wso2Api extends Construct {
       customResourceFunction.defaultSecurityGroup?.addEgressRule(Peer.anyIpv4(), Port.allTraffic());
     }
 
-    const customResourceProvider = new Provider(this, 'Wso2ApiCustomResourceProvider', {
-      onEventHandler: customResourceFunction.nodeJsFunction,
-      logRetention,
-    });
+    // const customResourceProvider = new Provider(this, 'Wso2ApiCustomResourceProvider', {
+    //   onEventHandler: customResourceFunction.nodeJsFunction,
+    //   logRetention,
+    //   totalTimeout: Duration.minutes(10),
+    // });
 
-    // TODO test if large open api documents can be passed by Custom Resource properties
+    // TODO check if large open api documents can be passed by Custom Resource properties
 
     // eslint-disable-next-line no-new
     new CustomResource(this, 'Wso2ApiCustomResource', {
-      serviceToken: customResourceProvider.serviceToken,
+      serviceToken: customResourceFunction.nodeJsFunction.functionArn,
       properties: {
         wso2Config: props.wso2Config,
         apiDefinition: wso2ApiDefs,
         openapiDocument: props.openapiDocument,
         retryOptions: props.retryOptions,
       },
-      resourceType: 'Custom::Wso2ApiCustomResource',
-      removalPolicy: props.removalPolicy ?? RemovalPolicy.DESTROY,
+      resourceType: 'Custom::Wso2Api',
+      removalPolicy: props.removalPolicy ?? RemovalPolicy.RETAIN,
     });
 
     this.apiDefinition = wso2ApiDefs;

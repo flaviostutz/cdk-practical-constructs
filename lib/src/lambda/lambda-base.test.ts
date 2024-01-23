@@ -3,6 +3,7 @@ import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { Template } from 'aws-cdk-lib/assertions';
 import { Peer, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { Schedule } from 'aws-cdk-lib/aws-applicationautoscaling';
+import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 
 import { vpcFromConfig } from '../utils';
 
@@ -29,6 +30,7 @@ describe('lambda-base', () => {
       provisionedConcurrentExecutions: {
         minCapacity: 3,
       },
+      logGroupRetention: RetentionDays.FIVE_DAYS,
     };
 
     if (!lambdaConfig.network) throw new Error('lambdaConfig.network should be defined');
@@ -61,6 +63,7 @@ describe('lambda-base', () => {
     // execute synth and test results
     const template = Template.fromStack(stack);
     // console.log(JSON.stringify(template.toJSON(), null, 2));
+
     template.hasResourceProperties('AWS::Lambda::Function', {
       Code: {
         S3Bucket: {
@@ -85,6 +88,11 @@ describe('lambda-base', () => {
       },
     });
 
+    template.hasResourceProperties('AWS::Logs::LogGroup', {
+      LogGroupName: '/aws/lambda/test-lambda-dev',
+      RetentionInDays: 5,
+    });
+
     template.hasResourceProperties('AWS::EC2::SecurityGroup', {
       GroupDescription: 'Default security group for Lambda test-lambda',
       SecurityGroupEgress: [
@@ -102,14 +110,7 @@ describe('lambda-base', () => {
     template.hasResourceProperties('AWS::Logs::SubscriptionFilter', {
       DestinationArn: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
       LogGroupName: {
-        'Fn::GetAtt': ['testlambdatestlambdadevLogRetention7398ECBA', 'LogGroupName'],
-      },
-    });
-
-    template.hasResourceProperties('AWS::Logs::SubscriptionFilter', {
-      DestinationArn: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
-      LogGroupName: {
-        'Fn::GetAtt': ['testlambdatestlambdadevLogRetention7398ECBA', 'LogGroupName'],
+        Ref: 'testlambdadefaultloggroup43FBE067',
       },
     });
 

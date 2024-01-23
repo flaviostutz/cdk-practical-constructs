@@ -10,7 +10,7 @@ export type Wso2ApiProps = Wso2ApiBaseProperties & {
   /**
    * Removes or retains API in WSO2 APIM server when this application is removed from CFN
    * https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.RemovalPolicy.html
-   * Defaults to DESTROY, which means that the API will be removed from WSO2 when this resource is deleted in CFN
+   * Defaults to RETAIN, which means that the API will be kept in WSO2 when this resource is deleted in CFN
    */
   removalPolicy?: RemovalPolicy;
   /**
@@ -67,7 +67,8 @@ export type Wso2LambdaConfig = Pick<
   | 'extraCaPubCert'
   | 'network'
   | 'logGroupSubscriberLambdaArn'
-  | 'logRetention'
+  | 'logGroupRetention'
+  | 'logGroupRemovalPolicy'
 >;
 
 export type Wso2ApiBaseProperties = {

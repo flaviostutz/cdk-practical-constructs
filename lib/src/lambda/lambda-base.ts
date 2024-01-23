@@ -5,7 +5,7 @@ import { Construct } from 'constructs';
 import { ISecurityGroup, IVpc, Peer, Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { LambdaDestination } from 'aws-cdk-lib/aws-logs-destinations';
 import { Runtime, Function, Alias, IAlias } from 'aws-cdk-lib/aws-lambda';
-import { FilterPattern, RetentionDays, SubscriptionFilter } from 'aws-cdk-lib/aws-logs';
+import { FilterPattern, LogGroup, RetentionDays, SubscriptionFilter } from 'aws-cdk-lib/aws-logs';
 import {
   IScalableTarget,
   PredefinedMetric,
@@ -13,6 +13,7 @@ import {
   ServiceNamespace,
 } from 'aws-cdk-lib/aws-applicationautoscaling';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { RemovalPolicy } from 'aws-cdk-lib';
 
 import { vpcFromConfig } from '../utils';
 
@@ -53,11 +54,24 @@ export class BaseNodeJsFunction extends Construct {
     const { defaultSG, securityGroups } = addSecurityGroups(this, propsWithDefaults);
     this.defaultSecurityGroup = defaultSG;
 
-    const nodeJsFunc = new NodejsFunction(this, `${id}-${propsWithDefaults.stage}`, {
+    const defaultLogGroup = addDefaultLogGroup(this, propsWithDefaults);
+
+    const nodeJsProps = {
       ...propsWithDefaults,
+      logGroup: defaultLogGroup,
       environment,
       securityGroups,
-    });
+    };
+
+    if (!nodeJsProps.functionName) {
+      throw new Error('functionName should be defined');
+    }
+
+    // Delete logRetention from props to avoid it's usage by the NodeJsFunction (it's a deprecated attribute).
+    // We are creating a log group with retention policies in this construct instead
+    // eslint-disable-next-line fp/no-delete
+
+    const nodeJsFunc = new NodejsFunction(this, nodeJsProps.functionName, nodeJsProps);
 
     const { liveAlias, scalableTarget } = addAliasAndAutoscaling(
       this,
@@ -119,7 +133,6 @@ export const getPropsWithDefaults = (
       },
     },
     functionName: `${id}-${props.stage}`,
-    logRetention: props.logRetention ?? RetentionDays.SIX_MONTHS,
     vpcSubnets:
       props.vpcSubnets ??
       // eslint-disable-next-line no-undefined
@@ -219,6 +232,19 @@ const addLogSubscriber = (
   });
   logGroupFuncSubscriber.addPermission('allow-log-subscriber', {
     principal: new ServicePrincipal('logs.eu-west-1.amazonaws.com'),
+  });
+};
+
+/**
+ * Creates a default log group for this Lambda function with a log retention configuration
+ * LogRetention from NodeJsFunction is deprecated and uses custom resources, which are not
+ * necessary anymore.
+ */
+const addDefaultLogGroup = (scope: Construct, props: BaseNodeJsProps): LogGroup => {
+  return new LogGroup(scope, 'default-log-group', {
+    removalPolicy: props.logGroupRemovalPolicy ?? RemovalPolicy.RETAIN,
+    retention: props.logGroupRetention ?? RetentionDays.INFINITE,
+    logGroupName: `/aws/lambda/${props.functionName}`,
   });
 };
 
