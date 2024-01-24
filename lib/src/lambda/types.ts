@@ -1,5 +1,5 @@
 import { Schedule } from 'aws-cdk-lib/aws-applicationautoscaling';
-import { ISecurityGroup } from 'aws-cdk-lib/aws-ec2';
+import { IPeer, ISecurityGroup, Port } from 'aws-cdk-lib/aws-ec2';
 import { NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { RemovalPolicy } from 'aws-cdk-lib/core';
@@ -23,13 +23,18 @@ export type ScheduledProvisionedConcurrentExecution = {
  */
 export type LambdaConfig = Omit<
   NodejsFunctionProps,
-  'logGroupRetentionRole' | 'logRetentionRetryOptions' | 'logRetention'
+  'logGroupRetentionRole' | 'logRetentionRetryOptions' | 'logRetention' | 'allowAllOutbound'
 > & {
   /**
-   * Cidr for a egress rule allowing connections from this Lambda to TLS services in port 443
+   * Allow connections to any outbound host in any port
+   * @default false
+   */
+  allowAllOutbound?: boolean;
+  /**
+   * Egress rules allowing connections from this Lambda to other services
    * @default none
    */
-  allowTLSOutboundTo?: string;
+  allowOutboundTo?: { peer: IPeer; port: Port }[];
   /**
    * Add these security groups to the Lambda function
    * @default none

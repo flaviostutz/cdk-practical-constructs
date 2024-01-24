@@ -59,6 +59,7 @@ export class Wso2Api extends Construct {
 
     // lambda function used for invoking WSO2 APIs during CFN operations
     const customResourceFunction = new BaseNodeJsFunction(this, `${id}-wso2api-custom-lambda`, {
+      ...props.customResourceConfig,
       stage: 'dev',
       timeout: Duration.seconds(120),
       runtime: Runtime.NODEJS_18_X,
@@ -74,8 +75,8 @@ export class Wso2Api extends Construct {
         }),
       ],
       logGroupRetention,
-      allowAllOutbound: !props.customResourceConfig?.allowTLSOutboundTo,
-      ...props.customResourceConfig,
+      // allow all outbound by default
+      allowAllOutbound: typeof props.customResourceConfig?.network !== 'undefined',
     });
 
     const customResourceProvider = new Provider(this, `${id}-wso2api-custom-provider`, {

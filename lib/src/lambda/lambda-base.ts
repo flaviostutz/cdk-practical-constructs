@@ -1,8 +1,8 @@
 /* eslint-disable no-new */
 /* eslint-disable no-console */
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
+import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-import { ISecurityGroup, IVpc, Peer, Port, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { ISecurityGroup, IVpc, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { LambdaDestination } from 'aws-cdk-lib/aws-logs-destinations';
 import { Runtime, Function, Alias, IAlias } from 'aws-cdk-lib/aws-lambda';
 import { FilterPattern, LogGroup, RetentionDays, SubscriptionFilter } from 'aws-cdk-lib/aws-logs';
@@ -30,6 +30,7 @@ import { BaseNodeJsProps, LambdaConfig } from './types';
  *   - typed configuration props for common usage scenarios
  *   - autoscaling of provisioned concurrent invocations (so you lower cold starts). You can also use automatic scheduling to tweak min/max depending on a cron expression. See props.provisionedConcurrentExecutions
  *   - explicit private VPC configuration (see props.network)
+ *   - allowAllOutbound is false by default. Use allowOutboundTo to specify hosts
  *   - source code path standardization to "[basePath]/[lambdaEventType]/[lambdaName]/index.ts" (can be overwritten by explicit props.entry)
  *   - custom CA support for HTTP calls (NodeJS NODE_EXTRA_CA_CERTS). See props.extraCaPubCert
  *   - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriberLambdaArn
@@ -68,12 +69,19 @@ export class BaseNodeJsFunction extends Construct {
     }
 
     // create NodeJsFunction
-    const nodeJsProps = {
+    const nodeJsProps: NodejsFunctionProps = {
       ...propsWithDefaults,
       ...defaultLogGroupProp,
       environment,
       securityGroups,
+      // eslint-disable-next-line no-undefined
+      allowAllOutbound: undefined,
     };
+
+    // this is managed by our security group, so don't send this to NodeJsFunction
+    // eslint-disable-next-line fp/no-delete
+    // delete nodeJsProps.allowAllOutbound;
+
     if (!nodeJsProps.functionName) {
       throw new Error('functionName should be defined');
     }
@@ -303,8 +311,8 @@ const addSecurityGroups = (
   securityGroups?: ISecurityGroup[];
 } => {
   if (!props.vpc) {
-    if (props.allowTLSOutboundTo) {
-      throw new Error(`'allowTLSOutboundTo' can only be used if vpc or network is defined`);
+    if (props.allowOutboundTo) {
+      throw new Error(`'allowOutboundTo' can only be used if vpc or network is defined`);
     }
     return {};
   }
@@ -319,14 +327,12 @@ const addSecurityGroups = (
   const defaultSG = new SecurityGroup(scope, `sg-default-${scope.node.id}`, {
     vpc: props.vpc,
     description: `Default security group for Lambda ${scope.node.id}`,
-    allowAllOutbound: false,
+    allowAllOutbound: typeof props.allowAllOutbound !== 'undefined' ?? props.allowAllOutbound,
   });
-  if (props.allowTLSOutboundTo) {
-    defaultSG.addEgressRule(
-      Peer.ipv4(props.allowTLSOutboundTo),
-      Port.tcp(443),
-      'Allow connection to TLS services',
-    );
+  if (props.allowOutboundTo) {
+    props.allowOutboundTo.forEach((ato) => {
+      defaultSG.addEgressRule(ato.peer, ato.port, `Allow connection to ${ato.peer}:${ato.port}`);
+    });
   }
   // eslint-disable-next-line fp/no-mutating-methods
   securityGroups.push(defaultSG);

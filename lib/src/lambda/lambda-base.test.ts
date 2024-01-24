@@ -25,7 +25,7 @@ describe('lambda-base', () => {
       },
       eventType: EventType.Http,
       baseCodePath: 'src/apigateway/__tests__',
-      allowTLSOutboundTo: '0.0.0.0/0',
+      // allowAllOutbound: true,
       extraCaPubCert: 'CERTIFICATE CONTENTS!',
       provisionedConcurrentExecutions: {
         minCapacity: 3,
@@ -95,10 +95,7 @@ describe('lambda-base', () => {
 
     template.hasResourceProperties('AWS::EC2::SecurityGroup', {
       GroupDescription: 'Default security group for Lambda test-lambda',
-      SecurityGroupEgress: [
-        { CidrIp: '0.0.0.0/0', FromPort: 443, IpProtocol: 'tcp' },
-        { CidrIp: '1.2.3.4/32', FromPort: 8888, IpProtocol: 'tcp' },
-      ],
+      SecurityGroupEgress: [{ CidrIp: '1.2.3.4/32', FromPort: 8888, IpProtocol: 'tcp' }],
     });
 
     template.hasResourceProperties('AWS::EC2::SecurityGroup', {
@@ -131,7 +128,7 @@ describe('lambda-base', () => {
         stage: 'dev',
         eventType: EventType.Http,
         baseCodePath: 'src/lambda/__tests__',
-        allowTLSOutboundTo: '0.0.0.0/0', // shouldn't be used when no VPC or network is defined
+        allowOutboundTo: [{ peer: Peer.ipv4('0.0.0.0/0'), port: Port.tcp(443) }],
       });
     };
     expect(f).toThrow();

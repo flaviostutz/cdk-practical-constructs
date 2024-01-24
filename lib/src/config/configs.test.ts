@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Peer, Port } from 'aws-cdk-lib/aws-ec2';
 
 import { LambdaConfig } from '..';
 
@@ -12,7 +13,7 @@ type TestConfig = StageConfig & {
 const testStageConfigs: StagesConfig<TestConfig> = {
   default: {
     lambda: {
-      allowAllOutbound: true,
+      allowOutboundTo: [{ peer: Peer.anyIpv4(), port: Port.allTraffic() }],
       logGroupRetention: RetentionDays.ONE_WEEK,
     },
   },
@@ -34,25 +35,25 @@ const testStageConfigs: StagesConfig<TestConfig> = {
 describe('configs', () => {
   it('resolve config with dev overrides', async () => {
     const stageConfig = resolveStageConfig<TestConfig>('dev', testStageConfigs);
-    expect(stageConfig.lambda.allowAllOutbound).toBeTruthy();
+    expect(stageConfig.lambda.allowOutboundTo?.length).toBe(1);
     expect(stageConfig.lambda.logGroupRetention).toBe(RetentionDays.ONE_DAY);
   });
 
   it('resolve stage "dev-pr-123" with same contents as stage "dev"', async () => {
     const stageConfig = resolveStageConfig<TestConfig>('dev-pr-123', testStageConfigs);
-    expect(stageConfig.lambda.allowAllOutbound).toBeTruthy();
+    expect(stageConfig.lambda.allowOutboundTo?.length).toBe(1);
     expect(stageConfig.lambda.logGroupRetention).toBe(RetentionDays.ONE_DAY);
   });
 
   it('resolve prd config with defaults', async () => {
     const stageConfig = resolveStageConfig<TestConfig>('tst', testStageConfigs);
-    expect(stageConfig.lambda.allowAllOutbound).toBeTruthy();
+    expect(stageConfig.lambda.allowOutboundTo?.length).toBe(1);
     expect(stageConfig.lambda.logGroupRetention).toBe(RetentionDays.ONE_WEEK);
   });
 
   it('resolve acc config with defaults', async () => {
     const stageConfig = resolveStageConfig<TestConfig>('prd', testStageConfigs);
-    expect(stageConfig.lambda.allowAllOutbound).toBeTruthy();
+    expect(stageConfig.lambda.allowOutboundTo?.length).toBe(1);
     expect(stageConfig.lambda.logGroupRetention).toBe(RetentionDays.SIX_MONTHS);
   });
 });

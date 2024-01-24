@@ -62,7 +62,7 @@ export type Wso2ApiDefinition =
 
 export type Wso2LambdaConfig = Pick<
   LambdaConfig,
-  | 'allowTLSOutboundTo'
+  | 'allowOutboundTo'
   | 'securityGroups'
   | 'extraCaPubCert'
   | 'network'
