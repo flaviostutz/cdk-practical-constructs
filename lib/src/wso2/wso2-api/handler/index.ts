@@ -84,13 +84,8 @@ export const handler = async (
     const err = error as any;
     if (err.stack) {
       console.log(err.stack);
-      // response.Reason = truncateStr(`${err.message}\n${err.stack}`, 2500);
-      // } else {
-      //   response.Data = { Error: truncateStr(err, 2500) };
     }
     throw error;
-    // response.Status = 'FAILED';
-    // return response;
   }
 };
 

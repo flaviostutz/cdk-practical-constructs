@@ -294,8 +294,8 @@ const addDefaultLogGroup = (scope: Construct, props: BaseNodeJsProps): LogGroup 
     return undefined;
   }
   return new LogGroup(scope, 'default-log-group', {
-    removalPolicy: props.logGroupRemovalPolicy ?? RemovalPolicy.RETAIN,
-    retention: props.logGroupRetention ?? RetentionDays.INFINITE,
+    removalPolicy: props.logGroupRemovalPolicy ?? RemovalPolicy.DESTROY,
+    retention: props.logGroupRetention ?? RetentionDays.ONE_YEAR,
     logGroupName: `/aws/lambda/${props.functionName}`,
   });
 };

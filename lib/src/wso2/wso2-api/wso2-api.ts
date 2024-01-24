@@ -66,6 +66,7 @@ export class Wso2Api extends Construct {
       eventType: EventType.CustomResource,
       createLiveAlias: false,
       createDefaultLogGroup: true, // TODO change to false?
+      logGroupRemovalPolicy: RemovalPolicy.DESTROY,
       entry: wso2LambdaEntry,
       initialPolicy: [
         PolicyStatement.fromJson({

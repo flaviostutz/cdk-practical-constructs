@@ -82,12 +82,12 @@ export type LambdaConfig = Omit<
   createDefaultLogGroup?: boolean;
   /**
    * Retention days for default log group for this Lambda
-   * @default RetentionDays.INFINITE
+   * @default RetentionDays.ONE_YEAR
    */
   logGroupRetention?: RetentionDays;
   /**
    * Removal policy for default log group for this Lambda
-   * @default RemovalPolicy.RETAIN
+   * @default RemovalPolicy.DESTROY
    */
   logGroupRemovalPolicy?: RemovalPolicy;
   /**
