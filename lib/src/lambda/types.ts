@@ -18,25 +18,63 @@ export type ScheduledProvisionedConcurrentExecution = {
   name?: string;
 };
 
+/**
+ * Lambda configurations
+ */
 export type LambdaConfig = Omit<
   NodejsFunctionProps,
   'logGroupRetentionRole' | 'logRetentionRetryOptions' | 'logRetention'
 > & {
   /**
    * Cidr for a egress rule allowing connections from this Lambda to TLS services in port 443
+   * @default none
    */
   allowTLSOutboundTo?: string;
+  /**
+   * Add these security groups to the Lambda function
+   * @default none
+   */
   securityGroups?: ISecurityGroup[];
+  /**
+   * Define an event type that will be used for naming the path of the handler.
+   * Ignored if "entry" is used
+   * @default none
+   */
   eventType?: EventType;
+  /**
+   * Base code path for looking for handler entry point
+   * Default entry point is "[baseCodePath]/[eventType]/[functionName]/index.ts"
+   * @defaul src/handlers
+   */
   baseCodePath?: string;
+  /**
+   * Min and max auto-scaling of provisioned concurrent executions for Lambda
+   * If only min is defined, a fixed provisioned concurrent will be set
+   * If min and max is set, auto-scaling is configured
+   * @default none - No provisioned concurrent executions is set
+   */
   provisionedConcurrentExecutions?: {
     minCapacity?: number;
     maxCapacity?: number;
     target?: number;
     schedules?: ScheduledProvisionedConcurrentExecution[];
   };
+  /**
+   * String with contents of a public certificate of a CA to be added to the Lambda
+   * function filesystem so that HTTPS calls uses it
+   * @default none
+   */
   extraCaPubCert?: string;
+  /**
+   * Static network configuration for private VPCs
+   * @default none - will use default vpc if available
+   */
   network?: NetworkConfig;
+  /**
+   * Create a log group with name /aws/lambda/[function-name] and associate to this function
+   * @default true
+   */
+  createDefaultLogGroup?: boolean;
   /**
    * Retention days for default log group for this Lambda
    * @default RetentionDays.INFINITE
@@ -47,7 +85,16 @@ export type LambdaConfig = Omit<
    * @default RemovalPolicy.RETAIN
    */
   logGroupRemovalPolicy?: RemovalPolicy;
+  /**
+   * Register this lambda Arn as a subscriber of the default log group.
+   * @default none
+   */
   logGroupSubscriberLambdaArn?: string;
+  /**
+   * Create an alias named "live" that points to the latest version of this function
+   * @defaults true
+   */
+  createLiveAlias?: boolean;
 };
 
 export enum EventType {

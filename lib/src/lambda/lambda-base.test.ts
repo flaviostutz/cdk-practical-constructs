@@ -150,7 +150,7 @@ describe('lambda-base', () => {
         baseCodePath: 'src/lambda/__tests__',
       });
     };
-    expect(f2).toThrow('eventType is required if entry is not defined');
+    expect(f2).toThrow(`'eventType' is required if 'entry' is not defined`);
 
     expect(func.nodeJsFunction.isBoundToVpc).toBe(false);
 

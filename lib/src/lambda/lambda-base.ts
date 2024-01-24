@@ -40,7 +40,9 @@ export class BaseNodeJsFunction extends Construct {
 
   public readonly defaultSecurityGroup?: ISecurityGroup;
 
-  public readonly liveAlias: IAlias;
+  public readonly defaultLogGroup?: LogGroup;
+
+  public readonly liveAlias?: IAlias;
 
   public readonly provisionedConcurrencyScalableTarget?: IScalableTarget;
 
@@ -54,39 +56,49 @@ export class BaseNodeJsFunction extends Construct {
     const { defaultSG, securityGroups } = addSecurityGroups(this, propsWithDefaults);
     this.defaultSecurityGroup = defaultSG;
 
+    // Don't use logRetention from NodeJsFunction because it's a deprecated attribute.
+    // We are creating a log group with retention policies in this construct instead
+    // that uses native log retention mechanisms
+    let defaultLogGroupProp: { logGroup?: LogGroup } = {};
     const defaultLogGroup = addDefaultLogGroup(this, propsWithDefaults);
+    if (defaultLogGroup) {
+      defaultLogGroupProp = {
+        logGroup: defaultLogGroup,
+      };
+    }
 
+    // create NodeJsFunction
     const nodeJsProps = {
       ...propsWithDefaults,
-      logGroup: defaultLogGroup,
+      ...defaultLogGroupProp,
       environment,
       securityGroups,
     };
-
     if (!nodeJsProps.functionName) {
       throw new Error('functionName should be defined');
     }
 
-    // Delete logRetention from props to avoid it's usage by the NodeJsFunction (it's a deprecated attribute).
-    // We are creating a log group with retention policies in this construct instead
-    // eslint-disable-next-line fp/no-delete
-
     const nodeJsFunc = new NodejsFunction(this, nodeJsProps.functionName, nodeJsProps);
+    this.nodeJsFunction = nodeJsFunc;
 
+    // create log subscriber
+    if (defaultLogGroupProp.logGroup) {
+      addLogSubscriber(this, nodeJsFunc, propsWithDefaults);
+      this.defaultLogGroup = defaultLogGroupProp.logGroup;
+    }
+
+    // create alias and autoscaling
     const { liveAlias, scalableTarget } = addAliasAndAutoscaling(
       this,
       nodeJsFunc,
       propsWithDefaults,
     );
-
-    this.liveAlias = liveAlias;
+    if (liveAlias) {
+      this.liveAlias = liveAlias;
+    }
     if (scalableTarget) {
       this.provisionedConcurrencyScalableTarget = scalableTarget;
     }
-
-    addLogSubscriber(this, nodeJsFunc, propsWithDefaults);
-
-    this.nodeJsFunction = nodeJsFunc;
   }
 }
 
@@ -104,10 +116,32 @@ export const getPropsWithDefaults = (
     vpc = vpcFromConfig(scope, props.network);
   }
 
+  let createLiveAlias = true;
+  if (typeof props.createLiveAlias !== 'undefined') {
+    // eslint-disable-next-line prefer-destructuring
+    createLiveAlias = props.createLiveAlias;
+  }
+  if (!createLiveAlias && props.provisionedConcurrentExecutions) {
+    throw new Error(
+      `'provisionedConcurrentExecutions' cannot be used if 'createLiveAlias' is false`,
+    );
+  }
+
+  let createDefaultLogGroup = true;
+  if (typeof props.createDefaultLogGroup !== 'undefined') {
+    // eslint-disable-next-line prefer-destructuring
+    createDefaultLogGroup = props.createDefaultLogGroup;
+  }
+  if (!createDefaultLogGroup && props.logGroupSubscriberLambdaArn) {
+    throw new Error(
+      `'logGroupSubscriberLambdaArn' cannot be used if 'createDefaultLogGroup' is false`,
+    );
+  }
+
   let { entry } = props;
   if (!entry) {
     if (!props.eventType) {
-      throw new Error('eventType is required if entry is not defined');
+      throw new Error(`'eventType' is required if 'entry' is not defined`);
     }
     const eventTypeStr = props.eventType.toLowerCase();
     entry = `${props.baseCodePath || 'src/handlers'}/${eventTypeStr}/${id}/index.ts`;
@@ -115,6 +149,8 @@ export const getPropsWithDefaults = (
 
   return {
     ...props,
+    createDefaultLogGroup,
+    createLiveAlias,
     vpc,
     runtime: props.runtime ?? Runtime.NODEJS_18_X,
     entry,
@@ -147,8 +183,12 @@ const addAliasAndAutoscaling = (
   scope: Construct,
   nodeJsFunc: NodejsFunction,
   props: LambdaConfig,
-): { liveAlias: IAlias; scalableTarget?: IScalableTarget | null } => {
+): { liveAlias?: IAlias; scalableTarget?: IScalableTarget | null } => {
   const version = nodeJsFunc.currentVersion;
+
+  if (!props.createLiveAlias) {
+    return {};
+  }
 
   const liveAlias = new Alias(scope, 'LiveAlias', {
     aliasName: 'live',
@@ -240,7 +280,11 @@ const addLogSubscriber = (
  * LogRetention from NodeJsFunction is deprecated and uses custom resources, which are not
  * necessary anymore.
  */
-const addDefaultLogGroup = (scope: Construct, props: BaseNodeJsProps): LogGroup => {
+const addDefaultLogGroup = (scope: Construct, props: BaseNodeJsProps): LogGroup | undefined => {
+  if (!props.createDefaultLogGroup) {
+    // eslint-disable-next-line no-undefined
+    return undefined;
+  }
   return new LogGroup(scope, 'default-log-group', {
     removalPolicy: props.logGroupRemovalPolicy ?? RemovalPolicy.RETAIN,
     retention: props.logGroupRetention ?? RetentionDays.INFINITE,

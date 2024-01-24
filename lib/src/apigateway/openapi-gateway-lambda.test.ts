@@ -307,6 +307,9 @@ describe('openapi-gateway-lambda', () => {
 
 const testUserGetOperation = (scope: Construct, lambdaConfig: BaseNodeJsProps): LambdaOperation => {
   const lambdaFunction = new BaseNodeJsFunction(scope, 'user-get-lambda', lambdaConfig);
+  if (!lambdaFunction.liveAlias) {
+    throw new Error('alias should be created');
+  }
   return {
     lambdaAlias: lambdaFunction.liveAlias,
     routeConfig: testUserGetRouteConfig,
@@ -318,6 +321,9 @@ const testUserPostOperation = (
   lambdaConfig: BaseNodeJsProps,
 ): LambdaOperation => {
   const lambdaFunction = new BaseNodeJsFunction(scope, 'user-post-lambda', lambdaConfig);
+  if (!lambdaFunction.liveAlias) {
+    throw new Error('alias should be created');
+  }
   return {
     lambdaAlias: lambdaFunction.liveAlias,
     routeConfig: testUserPostRouteConfig,

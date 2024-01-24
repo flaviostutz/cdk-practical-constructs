@@ -7,13 +7,14 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Peer, Port } from 'aws-cdk-lib/aws-ec2';
 import { OpenAPIObject } from 'openapi3-ts/oas30';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { Provider } from 'aws-cdk-lib/custom-resources';
 
 import { EventType } from '../../lambda/types';
 import { lintOpenapiDocument } from '../../utils/openapi-lint';
 import { BaseNodeJsFunction } from '../../lambda/lambda-base';
 
 import { Wso2ApiDefinition, Wso2ApiProps } from './types';
-import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './wso2-api-defs';
+import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './api-defs';
 
 /**
  * WSO2 API CDK construct for creating WSO2 APIs based on Openapi and WSO2-specific configurations
@@ -58,11 +59,13 @@ export class Wso2Api extends Construct {
     }
 
     // lambda function used for invoking WSO2 APIs during CFN operations
-    const customResourceFunction = new BaseNodeJsFunction(this, 'Wso2ApiCustomResourceFunction', {
+    const customResourceFunction = new BaseNodeJsFunction(this, `${id}-wso2api-custom-lambda`, {
       stage: 'dev',
       timeout: Duration.seconds(120),
       runtime: Runtime.NODEJS_18_X,
       eventType: EventType.CustomResource,
+      createLiveAlias: false,
+      createDefaultLogGroup: true, // TODO change to false?
       entry: wso2LambdaEntry,
       initialPolicy: [
         PolicyStatement.fromJson({
@@ -80,17 +83,15 @@ export class Wso2Api extends Construct {
       customResourceFunction.defaultSecurityGroup?.addEgressRule(Peer.anyIpv4(), Port.allTraffic());
     }
 
-    // const customResourceProvider = new Provider(this, 'Wso2ApiCustomResourceProvider', {
-    //   onEventHandler: customResourceFunction.nodeJsFunction,
-    //   logRetention,
-    //   totalTimeout: Duration.minutes(10),
-    // });
+    const customResourceProvider = new Provider(this, `${id}-wso2api-custom-provider`, {
+      onEventHandler: customResourceFunction.nodeJsFunction,
+    });
 
     // TODO check if large open api documents can be passed by Custom Resource properties
 
     // eslint-disable-next-line no-new
-    new CustomResource(this, 'Wso2ApiCustomResource', {
-      serviceToken: customResourceFunction.nodeJsFunction.functionArn,
+    new CustomResource(this, `${id}-wso2api-custom-resource`, {
+      serviceToken: customResourceProvider.serviceToken,
       properties: {
         wso2Config: props.wso2Config,
         apiDefinition: wso2ApiDefs,

@@ -79,7 +79,7 @@ export const handler = async (
     }
     throw new Error('Unrecognized RequestType');
   } catch (error) {
-    console.log(`An error occurred. err=${error}`);
+    console.log(`An error has occurred. err=${error}`);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const err = error as any;
     if (err.stack) {
