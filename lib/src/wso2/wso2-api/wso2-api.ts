@@ -4,7 +4,6 @@ import { Construct } from 'constructs';
 import { CustomResource, Duration, RemovalPolicy, ScopedAws } from 'aws-cdk-lib/core';
 import { IFunction, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
-import { Peer, Port } from 'aws-cdk-lib/aws-ec2';
 import { OpenAPIObject } from 'openapi3-ts/oas30';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Provider } from 'aws-cdk-lib/custom-resources';
@@ -75,13 +74,9 @@ export class Wso2Api extends Construct {
         }),
       ],
       logGroupRetention,
+      allowAllOutbound: !props.customResourceConfig?.allowTLSOutboundTo,
       ...props.customResourceConfig,
     });
-
-    // add default outbound rule for connecting to any host
-    if (!props.customResourceConfig?.allowTLSOutboundTo) {
-      customResourceFunction.defaultSecurityGroup?.addEgressRule(Peer.anyIpv4(), Port.allTraffic());
-    }
 
     const customResourceProvider = new Provider(this, `${id}-wso2api-custom-provider`, {
       onEventHandler: customResourceFunction.nodeJsFunction,
