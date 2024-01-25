@@ -8,7 +8,8 @@ import { Template } from 'aws-cdk-lib/assertions';
 
 import { petstoreOpenapi } from './__tests__/petstore';
 import { Wso2Api } from './wso2-api';
-import { Wso2ApiDefinition, Wso2ApiProps } from './types';
+import { Wso2ApiProps } from './types';
+import { Wso2ApiDefinitionV1 } from './v1/types';
 
 describe('wso2-api-construct', () => {
   it('minimal wso2 api', async () => {
@@ -69,9 +70,8 @@ describe('wso2-api-construct', () => {
   });
 });
 
-const testWso2ApiDefs = (args: { context: string; backendUrl: string }): Wso2ApiDefinition => {
+const testWso2ApiDefs = (args: { context: string; backendUrl: string }): Wso2ApiDefinitionV1 => {
   return {
-    wso2Version: 'v1',
     version: '1.0.0',
     type: 'HTTP',
     endpointConfig: {

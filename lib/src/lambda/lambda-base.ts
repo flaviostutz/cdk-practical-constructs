@@ -293,6 +293,7 @@ const addDefaultLogGroup = (scope: Construct, props: BaseNodeJsProps): LogGroup 
     // eslint-disable-next-line no-undefined
     return undefined;
   }
+
   return new LogGroup(scope, 'default-log-group', {
     removalPolicy: props.logGroupRemovalPolicy ?? RemovalPolicy.DESTROY,
     retention: props.logGroupRetention ?? RetentionDays.ONE_YEAR,

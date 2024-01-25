@@ -38,6 +38,11 @@ export type Wso2Config = {
    * @example 'wso2/customers/credentials' - with json contents "{ user: 'myuser', pwd: 'mypass' }"
    */
   credentialsSecretId: string;
+  /**
+   * Version of the WSO2 server API
+   * @default v1
+   */
+  apiVersion?: 'v1';
 };
 
 /**
@@ -45,20 +50,7 @@ export type Wso2Config = {
  * Fields may vary depending on the WSO2 server version (wso2Version)
  */
 
-export type Wso2ApiDefinition =
-  | ({
-      /**
-       * Server API version. Use 'v1' for WSO2 server 3.x and 'v2' for WSO2 server 4.x
-       */
-      wso2Version: 'v1';
-    } & Wso2ApiDefinitionV1)
-  | ({
-      /**
-       * Server API version. Use 'v1' for WSO2 server 3.x and 'v2' for WSO2 server 4.x
-       */
-      // TODO remove later (just for testing)
-      wso2Version: 'v2';
-    } & Wso2ApiDefinitionV1);
+// export type Wso2ApiDefinition = Wso2ApiDefinitionV1;
 
 export type Wso2LambdaConfig = Pick<
   LambdaConfig,
@@ -80,7 +72,7 @@ export type Wso2ApiBaseProperties = {
    * WSO2 specific document with API definitions
    * Some default values might be applied on top of the input when using in the construct
    */
-  apiDefinition: Wso2ApiDefinition;
+  apiDefinition: Wso2ApiDefinitionV1;
   /**
    * An Openapi 3.0 document containing the documentation of the API.
    * The paths/operations in this document will be used to configure routes in WSO2

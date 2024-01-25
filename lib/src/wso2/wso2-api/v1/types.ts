@@ -1,11 +1,11 @@
 import { API } from './types-swagger';
 
-export type APIv1 = API;
+export type PublisherPortalAPIv1 = API;
 
-export type Wso2ApiDefinitionV1 = Omit<APIv1, 'createdTime' | 'lastUpdatedTime'>;
+export type Wso2ApiDefinitionV1 = Omit<PublisherPortalAPIv1, 'createdTime' | 'lastUpdatedTime'>;
 
 // used for queries in publisher and devportal apis
-export type APIv1DevPortal = APIv1 & {
+export type DevPortalAPIv1 = PublisherPortalAPIv1 & {
   endpointURLs: [
     {
       environmentName: string;
@@ -28,5 +28,12 @@ export type APIv1DevPortal = APIv1 & {
 
 export type Wso2ApiListV1 = {
   count: number;
-  list: Array<APIv1>;
+  list: Array<ApiFromListV1>;
+};
+
+export type ApiFromListV1 = Pick<
+  PublisherPortalAPIv1,
+  'id' | 'name' | 'type' | 'context' | 'version' | 'provider'
+> & {
+  status: string;
 };

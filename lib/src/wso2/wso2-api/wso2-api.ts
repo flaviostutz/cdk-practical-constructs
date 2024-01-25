@@ -12,8 +12,9 @@ import { EventType } from '../../lambda/types';
 import { lintOpenapiDocument } from '../../utils/openapi-lint';
 import { BaseNodeJsFunction } from '../../lambda/lambda-base';
 
-import { Wso2ApiDefinition, Wso2ApiProps } from './types';
+import { Wso2ApiProps } from './types';
 import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './api-defs';
+import { Wso2ApiDefinitionV1 } from './v1/types';
 
 /**
  * WSO2 API CDK construct for creating WSO2 APIs based on Openapi and WSO2-specific configurations
@@ -26,7 +27,7 @@ import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './api-defs'
 export class Wso2Api extends Construct {
   readonly customResourceFunction: IFunction;
 
-  readonly apiDefinition: Wso2ApiDefinition;
+  readonly apiDefinition: Wso2ApiDefinitionV1;
 
   readonly openapiDocument: OpenAPIObject;
 
@@ -66,7 +67,7 @@ export class Wso2Api extends Construct {
       eventType: EventType.CustomResource,
       createLiveAlias: false,
       createDefaultLogGroup: true, // TODO change to false?
-      logGroupRemovalPolicy: RemovalPolicy.DESTROY,
+      logGroupRemovalPolicy: RemovalPolicy.RETAIN, // TODO change to DESTROY after
       entry: wso2LambdaEntry,
       initialPolicy: [
         PolicyStatement.fromJson({

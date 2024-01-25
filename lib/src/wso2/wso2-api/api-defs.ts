@@ -1,13 +1,10 @@
 import { OpenAPIObject } from 'openapi3-ts/oas30';
 import { oas30 } from 'openapi3-ts';
 
-import { Wso2ApiDefinition } from './types';
 import { APIOperations } from './v1/types-swagger';
+import { Wso2ApiDefinitionV1 } from './v1/types';
 
-export const validateWso2ApiDefs = (apiDef: Wso2ApiDefinition): void => {
-  if (apiDef.wso2Version !== 'v1') {
-    throw new Error("wso2Version should always be 'v1' ('v2' not supported yet)");
-  }
+export const validateWso2ApiDefs = (apiDef: Wso2ApiDefinitionV1): void => {
   if (!apiDef.context) {
     throw new Error('context is required (it is used in api url prefix)');
   }
@@ -24,7 +21,7 @@ export const validateWso2ApiDefs = (apiDef: Wso2ApiDefinition): void => {
   validateVisibility(apiDef);
 };
 
-const validateVisibility = (apiDef: Wso2ApiDefinition): void => {
+const validateVisibility = (apiDef: Wso2ApiDefinitionV1): void => {
   if (apiDef.visibility) {
     if (!['RESTRICTED', 'PRIVATE', 'PUBLIC'].includes(apiDef.visibility)) {
       throw new Error('visibility must be RESTRICTED, PRIVATE or PUBLIC');
@@ -47,7 +44,7 @@ const validateVisibility = (apiDef: Wso2ApiDefinition): void => {
   }
 };
 
-const defaultApiDef: Partial<Wso2ApiDefinition> = {
+const defaultApiDef: Partial<Wso2ApiDefinitionV1> = {
   securityScheme: ['oauth2'],
   lifeCycleStatus: 'CREATED',
   isDefaultVersion: true,
@@ -71,10 +68,10 @@ const defaultApiDef: Partial<Wso2ApiDefinition> = {
  * fields in wso2 api def
  */
 export const applyDefaultsWso2ApiDefinition = (
-  apiDef: Wso2ApiDefinition,
+  apiDef: Wso2ApiDefinitionV1,
   openapiDocument: OpenAPIObject,
-): Wso2ApiDefinition => {
-  let apiDefr: Wso2ApiDefinition = {
+): Wso2ApiDefinitionV1 => {
+  let apiDefr: Wso2ApiDefinitionV1 = {
     ...defaultApiDef,
     ...apiDef,
     tags: [...(apiDef.tags ?? []), 'cdk-practical-constructs'],
@@ -170,8 +167,8 @@ const wso2APIOperationsFromOpenapi = (openapiDocument: OpenAPIObject): APIOperat
 
 const applyOpenapiAsDefaults = (
   openapiDocument: oas30.OpenAPIObject,
-  apiDef: Wso2ApiDefinition,
-): Wso2ApiDefinition => {
+  apiDef: Wso2ApiDefinitionV1,
+): Wso2ApiDefinitionV1 => {
   const apiDefr = { ...apiDef };
   // user openapi contact info for business/technical information of the api
   if (

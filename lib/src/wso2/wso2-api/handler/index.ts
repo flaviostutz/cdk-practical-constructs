@@ -3,6 +3,7 @@ import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 import { AxiosInstance } from 'axios';
 
 import { RetryOptions, Wso2ApiBaseProperties } from '../types';
+import { PublisherPortalAPIv1 } from '../v1/types';
 
 import {
   createUpdateAndPublishApiInWso2,
@@ -46,10 +47,6 @@ export const handler = async (
   };
 
   try {
-    if (event.ResourceProperties.apiDefinition.wso2Version !== 'v1') {
-      throw new Error(`Only WSO2 version 'v1' is supported by this Custom Resource`);
-    }
-
     console.log('>>> Prepare WSO2 API client...');
     // const wso2Client = await prepareWso2ApiClient(event.ResourceProperties.wso2Config);
     const wso2Axios = await prepareAxiosForWso2Api(event.ResourceProperties.wso2Config);
@@ -105,10 +102,13 @@ const createOrUpdateWso2Api = async (
     wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
   });
 
+  let apiBeforeUpdate;
   if (existingApi) {
     console.log(
       `Found existing WSO2 API. apiId=${existingApi.id}; name=${existingApi.name}; version=${existingApi.version} context=${existingApi.context}`,
     );
+    const apir = await wso2Axios.get(`/api/am/publisher/v1/apis/${existingApi.id}`);
+    apiBeforeUpdate = apir.data as PublisherPortalAPIv1;
   }
 
   if (event.RequestType === 'Create' && existingApi && event.ResourceProperties.failIfExists) {
@@ -129,7 +129,7 @@ const createOrUpdateWso2Api = async (
       apiDefinition: event.ResourceProperties.apiDefinition,
       openapiDocument: event.ResourceProperties.openapiDocument,
       wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
-      existingWso2Api: existingApi,
+      apiBeforeUpdate,
       retryOptions: applyRetryDefaults(event.ResourceProperties.retryOptions),
     });
   }

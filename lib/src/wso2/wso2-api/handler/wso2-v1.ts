@@ -1,19 +1,24 @@
 /* eslint-disable no-console */
 import { OpenAPIObject } from 'openapi3-ts/oas30';
-import isEqual from 'lodash.isequal';
 import { oas30 } from 'openapi3-ts';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosError, AxiosInstance } from 'axios';
 import FormData from 'form-data';
 import { backOff } from 'exponential-backoff';
 
-import { RetryOptions, Wso2ApiDefinition, Wso2Config } from '../types';
-import { APIv1, APIv1DevPortal as DevPortalAPIv1, Wso2ApiListV1 } from '../v1/types';
 import {
   Wso2ApimConfig,
   checkWso2ServerVersion,
   getBearerToken,
   registerClient,
 } from '../../wso2-utils';
+import { RetryOptions, Wso2Config } from '../types';
+import {
+  ApiFromListV1,
+  DevPortalAPIv1,
+  PublisherPortalAPIv1,
+  Wso2ApiDefinitionV1,
+  Wso2ApiListV1,
+} from '../v1/types';
 
 import { getSecretValue } from './utils';
 
@@ -64,27 +69,59 @@ export const prepareAxiosForWso2Api = async (wso2Config: Wso2Config): Promise<Ax
     // eslint-disable-next-line no-param-reassign
     config.metadata = { startTime: new Date().getTime() };
     console.log(`> REQUEST: ${config.method?.toUpperCase()} ${wso2Config.baseApiUrl}${config.url}`);
+    console.log(
+      JSON.stringify({
+        baseURL: config.baseURL,
+        url: config.url,
+        params: config.params,
+        method: config.method,
+        headers: config.headers,
+        status: config.status,
+        data: config.data,
+      }),
+    );
     return config;
   });
 
-  client.interceptors.response.use((response) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const elapsedTime = new Date().getTime() - response.config.metadata.startTime;
-    console.log(`> RESPONSE: ${response.status} (${elapsedTime}ms)`);
-    return response;
-  });
-
-  // axiosDebug.addLogger(client);
+  client.interceptors.response.use(
+    (response) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const elapsedTime = new Date().getTime() - response.config.metadata.startTime;
+      console.log(`> RESPONSE: ${response.status} (${elapsedTime}ms)`);
+      console.log(
+        JSON.stringify({
+          status: response.status,
+          headers: response.headers,
+          data: response.data,
+        }),
+      );
+      return response;
+    },
+    // eslint-disable-next-line promise/prefer-await-to-callbacks
+    (error: Error | AxiosError) => {
+      if (axios.isAxiosError(error)) {
+        console.log(`RESPONSE ERROR: status=${error.response?.status}`);
+        console.log(
+          JSON.stringify({
+            status: error.response?.status,
+            headers: error.response?.headers,
+            data: error.response?.data,
+          }),
+        );
+      }
+      throw error;
+    },
+  );
 
   return client;
 };
 
 export const findWso2Api = async (args: {
   wso2Axios: AxiosInstance;
-  apiDefinition: Wso2ApiDefinition;
+  apiDefinition: Wso2ApiDefinitionV1;
   wso2Tenant: string;
-}): Promise<APIv1 | undefined> => {
+}): Promise<ApiFromListV1 | undefined> => {
   const searchQuery = `name:${args.apiDefinition.name} version:${args.apiDefinition.version} context:${args.apiDefinition.context}`;
 
   const res = await args.wso2Axios.get(`/api/am/publisher/v1/apis`, {
@@ -137,8 +174,11 @@ export const findWso2Api = async (args: {
 export type UpsertWso2Args = {
   wso2Axios: AxiosInstance;
   wso2Tenant: string;
-  existingWso2Api?: Pick<APIv1, 'id' | 'lastUpdatedTime'>;
-  apiDefinition: Wso2ApiDefinition;
+  apiBeforeUpdate?: {
+    id?: string;
+    lastUpdatedTime?: string;
+  };
+  apiDefinition: Wso2ApiDefinitionV1;
   openapiDocument: OpenAPIObject;
   retryOptions: RetryOptions;
 };
@@ -206,7 +246,7 @@ export const createUpdateAndPublishApiInWso2 = async (
 
 export const publishApiInWso2AndCheck = async (args: {
   wso2Axios: AxiosInstance;
-  apiDefinition: Wso2ApiDefinition;
+  apiDefinition: Wso2ApiDefinitionV1;
   wso2ApiId: string;
   wso2Tenant: string;
   retryOptions: RetryOptions;
@@ -236,8 +276,8 @@ export const publishApiInWso2AndCheck = async (args: {
     if (!fapi) {
       throw new Error(`API ${args.wso2ApiId} could not be found`);
     }
-    if (fapi.lifeCycleStatus !== 'PUBLISHED') {
-      throw new Error(`API ${args.wso2ApiId} is in status ${fapi.lifeCycleStatus} (not PUBLISHED)`);
+    if (fapi.status !== 'PUBLISHED') {
+      throw new Error(`API ${args.wso2ApiId} is in status ${fapi.status} (not PUBLISHED)`);
     }
     console.log('API status PUBLISHED check OK');
   }, args.retryOptions.checkRetries);
@@ -271,7 +311,7 @@ export const updateOpenapiInWso2AndCheck = async (args: {
   wso2ApiId: string;
   wso2Tenant: string;
   openapiDocument: oas30.OpenAPIObject;
-  apiDefinition: Wso2ApiDefinition;
+  apiDefinition: Wso2ApiDefinitionV1;
   retryOptions: RetryOptions;
 }): Promise<void> => {
   console.log('Updating Openapi document in WSO2');
@@ -301,14 +341,14 @@ export const updateOpenapiInWso2AndCheck = async (args: {
 
 export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promise<string> => {
   // create new API in WSO2
-  if (!args.existingWso2Api) {
+  if (!args.apiBeforeUpdate) {
     console.log(`Creating new API in WSO2`);
     const apir = await args.wso2Axios.post(
       `/api/am/publisher/v1/apis?openAPIVersion=V3`,
       args.apiDefinition,
     );
 
-    const dataRes = apir.data as APIv1;
+    const dataRes = apir.data as PublisherPortalAPIv1;
     if (!dataRes.id) {
       throw new Error(`'api' id wasn't returned as part of the API creation response`);
     }
@@ -322,10 +362,10 @@ export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promi
   // update existing API in WSO2
   console.log(`Updating API definitions in WSO2`);
   const res = await args.wso2Axios.put(
-    `/api/am/publisher/v1/apis/${args.existingWso2Api.id}`,
+    `/api/am/publisher/v1/apis/${args.apiBeforeUpdate.id}`,
     args.apiDefinition,
   );
-  const dataRes = res.data as APIv1;
+  const dataRes = res.data as PublisherPortalAPIv1;
   if (!dataRes.id) throw new Error(`'api' id wasn't returned as part of the API creation response`);
 
   // wait for API to be created by retrying checks
@@ -341,39 +381,54 @@ export const createUpdateApiInWso2AndCheck = async (args: UpsertWso2Args): Promi
  * are different
  */
 const checkApiExistsAndMatches = async (
-  args: Pick<UpsertWso2Args, 'apiDefinition' | 'wso2Axios' | 'wso2Tenant' | 'existingWso2Api'>,
+  args: Pick<UpsertWso2Args, 'apiDefinition' | 'wso2Axios' | 'wso2Tenant' | 'apiBeforeUpdate'>,
 ): Promise<void> => {
   // TODO check if the returned contents won't come with default values and things that doesn't actually indicates a real issue but makes it doesnt match
   console.log('');
   console.log('Checking if API exists and matches the desired definition in WSO2...');
-  const fapi = await findWso2Api({
+  const searchApi = await findWso2Api({
     apiDefinition: args.apiDefinition,
     wso2Axios: args.wso2Axios,
     wso2Tenant: args.wso2Tenant,
   });
 
-  if (!fapi) {
+  if (!searchApi) {
     throw new Error(`API couldn't be found on WSO2`);
   }
 
-  console.log(`API ${fapi.id} found in WSO2. Checking contents...`);
+  console.log(`API '${searchApi.id}' found in WSO2 search`);
 
-  if (args.existingWso2Api && fapi.lastUpdatedTime && args.existingWso2Api.lastUpdatedTime) {
-    if (fapi.lastUpdatedTime <= args.existingWso2Api.lastUpdatedTime) {
-      throw new Error(
-        `API defs weren't updated in WSO2 yet (lastUpdatedTime is the same as before sending update)`,
-      );
-    }
+  const apir = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${searchApi.id}`);
+  const apiDetails = apir.data as PublisherPortalAPIv1;
+
+  if (!apiDetails.lastUpdatedTime) {
+    throw new Error('lastUpdatedTime is null in api');
   }
 
-  // check if they are equal, but make sure to add "id" because during creation it won't be passed
   if (
-    !isEqual(fapi, {
-      ...args.apiDefinition,
-      id: fapi?.id,
-    })
+    apiDetails.name !== searchApi.name ||
+    apiDetails.context !== searchApi.context ||
+    apiDetails.version !== searchApi.version ||
+    apiDetails.lifeCycleStatus !== searchApi.status
   ) {
-    throw new Error(`WSO2 Api Definition returned from query doesn't match the submitted contents`);
+    throw new Error(
+      `Some contents from the search API results are different from the ones fetched in /api/{id}. 
+      ${JSON.stringify(apiDetails)} -- ${JSON.stringify(searchApi)}`,
+    );
   }
-  console.log('API content check OK');
+
+  if (!args.apiBeforeUpdate) {
+    console.log(`API '${searchApi.id}' check OK`);
+    return;
+  }
+
+  // This is an update. Check if timestamp has changed
+  if (!args.apiBeforeUpdate.lastUpdatedTime) {
+    throw new Error('lastUpdatedTime is null in api before updated');
+  }
+  if (apiDetails.lastUpdatedTime <= args.apiBeforeUpdate.lastUpdatedTime) {
+    throw new Error(`API 'lastUpdatedTime' has not changed after updating the API definitions yet`);
+  }
+
+  console.log(`API '${searchApi.id}' check OK`);
 };

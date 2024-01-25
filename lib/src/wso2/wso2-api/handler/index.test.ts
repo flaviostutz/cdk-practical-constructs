@@ -7,7 +7,8 @@ import { mockClient } from 'aws-sdk-client-mock';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 import { petstoreOpenapi } from '../__tests__/petstore';
-import { Wso2ApiBaseProperties, Wso2ApiDefinition } from '../types';
+import { Wso2ApiBaseProperties } from '../types';
+import { ApiFromListV1, PublisherPortalAPIv1, Wso2ApiDefinitionV1 } from '../v1/types';
 
 import { Wso2ApiCustomResourceEvent, handler } from './index';
 
@@ -52,14 +53,14 @@ describe('wso2 custom resource lambda', () => {
       .times(1) // check create or update
       .reply(200, { list: [] });
 
-    const testDefs = {
+    const testDefs: Wso2ApiDefinitionV1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
 
     // api create mock
     nock(baseWso2Url)
-      .post(/.*\/publisher\/v1\/apis/)
+      .post(/.*\/publisher\/v1\/apis\?.*$/)
       .reply(201, testDefs);
 
     // api list mock
@@ -67,7 +68,13 @@ describe('wso2 custom resource lambda', () => {
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
       .times(2) // check if updated, check if published
-      .reply(200, { list: [testDefs] });
+      .reply(200, toResultList(testDefs));
+
+    // api get mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/[^\\/]*$/)
+      .times(2) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
 
     nockAfterUpdateCreate(testDefs);
 
@@ -84,20 +91,38 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs = {
+    const testDefs: Wso2ApiDefinitionV1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
+
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
-      .times(3) // check create or update, check if updated, check if published
-      .reply(200, { list: [testDefs] });
+      .times(1) // check create or update
+      .reply(200, toResultList({ ...testDefs, lastUpdatedTime: '2020-10-10' }));
+
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis$/)
+      .query(true)
+      .times(2) // check if updated, check if published
+      .reply(200, toResultList(testDefs));
 
     // api update mock
     nock(baseWso2Url)
-      .put(/.*\/publisher\/v1\/apis\/.*/)
+      .put(/.*\/publisher\/v1\/apis\/.*$/)
       .reply(201, testDefs);
+
+    // api get mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
+
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-11' });
 
     nockAfterUpdateCreate(testDefs);
 
@@ -114,7 +139,7 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs = {
+    const testDefs: Wso2ApiDefinitionV1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
@@ -122,11 +147,22 @@ describe('wso2 custom resource lambda', () => {
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
       .times(3) // check create or update, check if updated, check if published
-      .reply(200, { list: [testDefs] });
+      .reply(200, toResultList(testDefs));
+
+    // api get mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
+
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-11' });
 
     // api update mock
     nock(baseWso2Url)
-      .put(/.*\/publisher\/v1\/apis\/.*/)
+      .put(/.*\/publisher\/v1\/apis\/.*$/)
       .reply(201, testDefs);
 
     nockAfterUpdateCreate(testDefs);
@@ -148,7 +184,7 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs = {
+    const testDefs: Wso2ApiDefinitionV1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
@@ -156,11 +192,11 @@ describe('wso2 custom resource lambda', () => {
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
       .times(1) // check create or update
-      .reply(200, { list: [testDefs] });
+      .reply(200, toResultList(testDefs));
 
     // api update mock
     nock(baseWso2Url)
-      .put(/.*\/publisher\/v1\/apis\/.*/)
+      .put(/.*\/publisher\/v1\/apis\/.*$/)
       .times(1)
       .reply(200, testDefs);
 
@@ -176,7 +212,18 @@ describe('wso2 custom resource lambda', () => {
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
       .times(1) // check updated (works on 4th time)
-      .reply(200, { list: [testDefs] });
+      .reply(200, toResultList(testDefs));
+
+    // api get mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
+
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-11' });
 
     nockAfterUpdateCreate(testDefs);
 
@@ -207,19 +254,25 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs = {
+    const testDefs: Wso2ApiDefinitionV1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
     nock(baseWso2Url)
-      .get(/.*\/publisher\/v1\/apis$/)
+      .get(/.*\/publisher\/v1\/apis/)
       .query(true)
       .times(1) // check create or update
-      .reply(200, { list: [testDefs] });
+      .reply(200, toResultList(testDefs));
+
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .query(true)
+      .times(1) // get api as existing
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
 
     // api update mock
     nock(baseWso2Url)
-      .put(/.*\/publisher\/v1\/apis\/.*/)
+      .put(/.*\/publisher\/v1\/apis\/.*$/)
       .times(1)
       .reply(200, testDefs);
 
@@ -262,7 +315,7 @@ describe('wso2 custom resource lambda', () => {
 
     // api update mock
     nock(baseWso2Url)
-      .delete(/.*\/publisher\/v1\/apis\/.*/)
+      .delete(/.*\/publisher\/v1\/apis\/.*$/)
       .reply(200);
 
     const eres = await handler(
@@ -276,9 +329,24 @@ describe('wso2 custom resource lambda', () => {
     expect(eres.Status).toBe('SUCCESS');
   });
 
-  const testBasicWso2ApiDefs = (): Wso2ApiDefinition => {
+  const toResultList = (apiDefs: PublisherPortalAPIv1): { list: ApiFromListV1[] } => {
     return {
-      wso2Version: 'v1',
+      list: [
+        {
+          id: apiDefs.id ?? 'INVALID',
+          context: apiDefs.context,
+          name: apiDefs.name,
+          status: apiDefs.lifeCycleStatus ?? 'INVALID',
+          version: apiDefs.version,
+          provider: apiDefs.provider,
+          type: apiDefs.type,
+        },
+      ],
+    };
+  };
+
+  const testBasicWso2ApiDefs = (): Wso2ApiDefinitionV1 => {
+    return {
       context: '/testcontext1',
       name: 'myapitest',
       version: '1.0.0',
@@ -333,6 +401,7 @@ describe('wso2 custom resource lambda', () => {
     wso2Config: {
       baseApiUrl: baseWso2Url,
       credentialsSecretId: 'arn:aws:secretsmanager:us-east-1:123123123:secret:MySecret',
+      apiVersion: 'v1',
     },
     openapiDocument: petstoreOpenapi,
     apiDefinition: testBasicWso2ApiDefs(),
@@ -366,7 +435,7 @@ describe('wso2 custom resource lambda', () => {
       );
   };
 
-  const nockAfterUpdateCreate = (testDefs: Wso2ApiDefinition): void => {
+  const nockAfterUpdateCreate = (testDefs: Wso2ApiDefinitionV1): void => {
     // api openapi update mock
     nock(baseWso2Url)
       .put(/.*\/publisher\/v1\/apis\/123-456\/swagger/)
@@ -397,6 +466,6 @@ describe('wso2 custom resource lambda', () => {
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
       .times(1) // check if it is published
-      .reply(200, { list: [testDefs] });
+      .reply(200, toResultList(testDefs));
   };
 });
