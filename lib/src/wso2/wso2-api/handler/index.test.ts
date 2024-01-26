@@ -37,7 +37,7 @@ describe('wso2 custom resource lambda', () => {
   beforeEach(() => {
     nock.cleanAll();
     // silence verbose console logs. comment this for debugging
-    console.log = (): void => {};
+    // console.log = (): void => {};
   });
   afterEach(() => {
     console.log = originalConsoleLog;
@@ -336,7 +336,7 @@ describe('wso2 custom resource lambda', () => {
           id: apiDefs.id ?? 'INVALID',
           context: apiDefs.context,
           name: apiDefs.name,
-          status: apiDefs.lifeCycleStatus ?? 'INVALID',
+          lifeCycleStatus: apiDefs.lifeCycleStatus ?? 'INVALID',
           version: apiDefs.version,
           provider: apiDefs.provider,
           type: apiDefs.type,

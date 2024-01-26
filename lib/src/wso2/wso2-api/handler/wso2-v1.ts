@@ -20,7 +20,7 @@ import {
   Wso2ApiListV1,
 } from '../v1/types';
 
-import { getSecretValue } from './utils';
+import { areAttributeNamesEqual, getSecretValue } from './utils';
 
 export const prepareAxiosForWso2Api = async (wso2Config: Wso2Config): Promise<AxiosInstance> => {
   // get wso2 user/pass
@@ -276,8 +276,8 @@ export const publishApiInWso2AndCheck = async (args: {
     if (!fapi) {
       throw new Error(`API ${args.wso2ApiId} could not be found`);
     }
-    if (fapi.status !== 'PUBLISHED') {
-      throw new Error(`API ${args.wso2ApiId} is in status ${fapi.status} (not PUBLISHED)`);
+    if (fapi.lifeCycleStatus !== 'PUBLISHED') {
+      throw new Error(`API ${args.wso2ApiId} is in status ${fapi.lifeCycleStatus} (not PUBLISHED)`);
     }
     console.log('API status PUBLISHED check OK');
   }, args.retryOptions.checkRetries);
@@ -329,11 +329,17 @@ export const updateOpenapiInWso2AndCheck = async (args: {
       responseType: 'text',
       transformResponse: [(v): typeof v => v],
     });
-    const resOpenapiStr = res.data as string;
-    if (openapiDocumentStr !== resOpenapiStr) {
-      throw new Error(
-        `Openapi doc downloaded from WSO2 doesn't match submitted definition.\nEXPECTED='${openapiDocumentStr}'\nACTUAL='${resOpenapiStr}'`,
+    const openapiFromWso2Str = res.data as string;
+
+    // The document returned by WSO2 have differences introduced by WSO2 itself
+    // so we can't do a strict check. Check for a few things in the document to check sanity
+    const openapiFromWso2 = JSON.parse(openapiFromWso2Str) as oas30.OpenAPIObject;
+
+    if (!openapiSimilarWso2(openapiFromWso2, args.openapiDocument)) {
+      console.log(
+        `Openapi doc downloaded from WSO2 doesn't match submitted definition. EXPECTED='${openapiDocumentStr}'\nACTUAL='${openapiFromWso2Str}`,
       );
+      throw new Error(`Openapi doc downloaded from WSO2 doesn't match submitted definition`);
     }
     console.log('API Openapi document check OK');
   }, args.retryOptions.checkRetries);
@@ -409,7 +415,7 @@ const checkApiExistsAndMatches = async (
     apiDetails.name !== searchApi.name ||
     apiDetails.context !== searchApi.context ||
     apiDetails.version !== searchApi.version ||
-    apiDetails.lifeCycleStatus !== searchApi.status
+    apiDetails.lifeCycleStatus !== searchApi.lifeCycleStatus
   ) {
     throw new Error(
       `Some contents from the search API results are different from the ones fetched in /api/{id}. 
@@ -431,4 +437,26 @@ const checkApiExistsAndMatches = async (
   }
 
   console.log(`API '${searchApi.id}' check OK`);
+};
+
+/**
+ * Verifies if openapi spec sent and downloaded from Wso2 seems the same
+ * WSO2 adds attributes to the original Openapi spec, so we have to do
+ * an best effort to do this check
+ */
+export const openapiSimilarWso2 = (
+  subOpenapi: oas30.OpenAPIObject,
+  wso2Openapi: oas30.OpenAPIObject,
+): boolean => {
+  if (
+    subOpenapi.info.title !== wso2Openapi.info.title ||
+    subOpenapi.paths.length !== wso2Openapi.paths.length ||
+    subOpenapi.servers?.length !== wso2Openapi.servers?.length ||
+    !areAttributeNamesEqual(subOpenapi.components?.schemas, wso2Openapi.components?.schemas) ||
+    !areAttributeNamesEqual(subOpenapi.paths, wso2Openapi.paths) ||
+    subOpenapi.openapi !== wso2Openapi.openapi
+  ) {
+    return false;
+  }
+  return true;
 };

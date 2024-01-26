@@ -82,7 +82,7 @@ export const handler = async (
     if (err.stack) {
       console.log(err.stack);
     }
-    throw error;
+    throw new Error(truncateStr(`${error}`, 1000));
   }
 };
 
@@ -187,6 +187,6 @@ const applyRetryDefaults = (retryOptions?: RetryOptions): RetryOptions => {
   return ropts;
 };
 
-// const truncateStr = (str: string, size: number): string => {
-//   return str.substring(0, Math.min(str.length, size));
-// };
+const truncateStr = (str: string, size: number): string => {
+  return str.substring(0, Math.min(str.length, size));
+};

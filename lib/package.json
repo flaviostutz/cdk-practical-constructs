@@ -28,7 +28,6 @@
     "@types/aws-lambda": "^8.10.131",
     "@types/jest": "^29.4.0",
     "@types/lodash.clonedeep": "^4.5.9",
-    "@types/lodash.isequal": "^4.5.8",
     "@types/node": "18.11.18",
     "@types/npm-which": "^3.0.3",
     "@types/qs": "^6.9.11",
