@@ -17,7 +17,7 @@ export const petstoreOpenapi: OpenAPIObject = {
   paths: {
     '/pets': {
       get: {
-        summary: 'List all pets',
+        summary: 'List all pets 1',
         operationId: 'listPets',
         tags: ['pets'],
         parameters: [

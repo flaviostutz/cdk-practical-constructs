@@ -2,18 +2,15 @@
 import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 import { AxiosInstance } from 'axios';
 
-import { RetryOptions, Wso2ApiBaseProperties } from '../types';
 import { PublisherPortalAPIv1 } from '../v1/types';
+import { Wso2ApiCustomResourceProperties } from '../types';
+import { prepareAxiosForWso2Calls } from '../../wso2-utils';
+import { applyRetryDefaults, truncateStr } from '../../utils';
 
-import {
-  createUpdateAndPublishApiInWso2,
-  findWso2Api,
-  prepareAxiosForWso2Api,
-  removeApiInWso2,
-} from './wso2-v1';
+import { createUpdateAndPublishApiInWso2, findWso2Api, removeApiInWso2 } from './wso2-v1';
 
 export type Wso2ApiCustomResourceEvent = CdkCustomResourceEvent & {
-  ResourceProperties: Wso2ApiBaseProperties;
+  ResourceProperties: Wso2ApiCustomResourceProperties;
 };
 
 export type Wso2ApiCustomResourceResponse = CdkCustomResourceResponse & {
@@ -49,7 +46,7 @@ export const handler = async (
   try {
     console.log('>>> Prepare WSO2 API client...');
     // const wso2Client = await prepareWso2ApiClient(event.ResourceProperties.wso2Config);
-    const wso2Axios = await prepareAxiosForWso2Api(event.ResourceProperties.wso2Config);
+    const wso2Axios = await prepareAxiosForWso2Calls(event.ResourceProperties.wso2Config);
 
     if (event.RequestType === 'Create' || event.RequestType === 'Update') {
       if (event.RequestType === 'Update') {
@@ -59,7 +56,8 @@ export const handler = async (
       const { wso2ApiId, endpointUrl } = await createOrUpdateWso2Api(event, wso2Axios);
       response.PhysicalResourceId = wso2ApiId;
       response.Data = {
-        ApiEndpointUrl: endpointUrl,
+        EndpointUrl: endpointUrl,
+        Wso2ApiId: wso2ApiId,
       };
       response.Status = 'SUCCESS';
       return response;
@@ -135,58 +133,4 @@ const createOrUpdateWso2Api = async (
   }
 
   throw new Error(`Invalid requestType found. requestType=${event.ResourceType}`);
-};
-
-const defaultRetryOpts = {
-  checkRetries: {
-    startingDelay: 500,
-    delayFirstAttempt: true,
-    maxDelay: 10000,
-    numOfAttempts: 10,
-    timeMultiple: 1.5,
-    // 500, 750, 1125, 1687 (4s), 2531, 3796, 5696 (16s), 8542 (24s), 10000, 10000, 10000, 10000, 10000 (74s)
-  },
-  mutationRetries: {
-    startingDelay: 2000,
-    delayFirstAttempt: false,
-    maxDelay: 5000,
-    numOfAttempts: 2,
-    timeMultiple: 1.5,
-    // 2000, 3000
-  },
-};
-const applyRetryDefaults = (retryOptions?: RetryOptions): RetryOptions => {
-  const ropts: RetryOptions = {
-    // default config for backoff
-    ...defaultRetryOpts,
-  };
-
-  if (retryOptions?.checkRetries) {
-    ropts.checkRetries = retryOptions?.checkRetries;
-  }
-  if (retryOptions?.mutationRetries) {
-    ropts.mutationRetries = retryOptions?.mutationRetries;
-  }
-
-  if (ropts.checkRetries) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ropts.checkRetries.retry = (err: any, attemptNumber: number): boolean => {
-      console.log(`Error detected. err=${err}`);
-      console.log(`Retrying check (#${attemptNumber})...`);
-      return true;
-    };
-  }
-  if (ropts.mutationRetries) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ropts.mutationRetries.retry = (err: any, attemptNumber: number): boolean => {
-      console.log(`Error detected. err=${err}`);
-      console.log(`Retrying mutation (#${attemptNumber})...`);
-      return true;
-    };
-  }
-  return ropts;
-};
-
-const truncateStr = (str: string, size: number): string => {
-  return str.substring(0, Math.min(str.length, size));
 };

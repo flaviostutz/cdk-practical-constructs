@@ -1,31 +1,23 @@
 import { Construct } from 'constructs';
 import { CustomResource, RemovalPolicy } from 'aws-cdk-lib/core';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
-import { OpenAPIObject } from 'openapi3-ts/oas30';
 
-import { lintOpenapiDocument } from '../../utils/openapi-lint';
 import { addLambdaAndProviderForWso2Operations } from '../utils';
 
-import { Wso2ApiCustomResourceProperties, Wso2ApiProps } from './types';
-import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './api-defs';
-import { Wso2ApiDefinitionV1 } from './v1/types';
+import { Wso2ApplicationCustomResourceProperties, Wso2ApplicationProps } from './types';
 
 /**
- * WSO2 API CDK construct for creating WSO2 APIs based on Openapi and WSO2-specific configurations
- * This construct is related to one "physical" api in WSO2.
+ * WSO2 API CDK construct for creating WSO2 Application
+ * This construct is related to one "physical" application in WSO2.
  *
  * The internal implementation tries to protect itself from various scenarios where larger or more complex
  * WSO2 clusters might lead to out-of-order or delays in operations that happen assynchronously after the API
  * accepts the requests, so for every mutation, there is a check to verify sanity.
  */
-export class Wso2Api extends Construct {
+export class Wso2Application extends Construct {
   readonly customResourceFunction: IFunction;
 
-  readonly apiDefinition: Wso2ApiDefinitionV1;
-
-  readonly openapiDocument: OpenAPIObject;
-
-  constructor(scope: Construct, id: string, props: Wso2ApiProps) {
+  constructor(scope: Construct, id: string, props: Wso2ApplicationProps) {
     super(scope, id);
 
     // Do as much of the logic in the construct as possible and leave only
@@ -38,46 +30,44 @@ export class Wso2Api extends Construct {
 
     validateProps(props);
 
-    const wso2ApiDefs = applyDefaultsWso2ApiDefinition(props.apiDefinition, props.openapiDocument);
-
     const { customResourceProvider, customResourceFunction } =
       addLambdaAndProviderForWso2Operations({
         scope: this,
-        id: `${id}-wso2api`,
+        id: `${id}-wso2app`,
         props,
         baseDir: __dirname,
       });
 
-    // TODO check if large open api documents can be passed by Custom Resource properties
-
     // eslint-disable-next-line no-new
-    new CustomResource(this, `${id}-wso2api-custom-resource`, {
+    new CustomResource(this, `${id}-wso2app-custom-resource`, {
       serviceToken: customResourceProvider.serviceToken,
       properties: {
         wso2Config: props.wso2Config,
-        apiDefinition: wso2ApiDefs,
-        openapiDocument: props.openapiDocument,
+        applicationDefinition: props.applicationDefinition,
         retryOptions: props.retryOptions,
-      } as Wso2ApiCustomResourceProperties,
-      resourceType: 'Custom::Wso2Api',
+      } as Wso2ApplicationCustomResourceProperties,
+      resourceType: 'Custom::Wso2Application',
       removalPolicy: props.removalPolicy ?? RemovalPolicy.RETAIN,
     });
 
-    this.apiDefinition = wso2ApiDefs;
-    this.openapiDocument = props.openapiDocument;
     this.customResourceFunction = customResourceFunction.nodeJsFunction;
   }
 }
 
-export const validateProps = (props: Wso2ApiProps): void => {
+export const validateProps = (props: Wso2ApplicationProps): void => {
   if (!props.wso2Config) throw new Error('wso2Config is required');
   if (!props.wso2Config.baseApiUrl) throw new Error('wso2Config.baseApiUrl is required');
   if (!props.wso2Config.credentialsSecretId) {
     throw new Error('wso2Config.credentialsSecretManagerPath is required');
   }
-  validateWso2ApiDefs(props.apiDefinition);
-  if (!props.openapiDocument.openapi.startsWith('3.0')) {
-    throw new Error('openapiDocument should be in openapi version 3.0');
+
+  if (!props.applicationDefinition) {
+    throw new Error('applicationDefinition is required');
   }
-  lintOpenapiDocument(props.openapiDocument, false);
+  if (!props.applicationDefinition.name) {
+    throw new Error('applicationDefinition.name is required');
+  }
+  if (!props.applicationDefinition.throttlingPolicy) {
+    throw new Error('applicationDefinition.throttlingPolicy is required');
+  }
 };

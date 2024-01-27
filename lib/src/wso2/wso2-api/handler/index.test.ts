@@ -7,8 +7,8 @@ import { mockClient } from 'aws-sdk-client-mock';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 import { petstoreOpenapi } from '../__tests__/petstore';
-import { Wso2ApiBaseProperties } from '../types';
 import { ApiFromListV1, PublisherPortalAPIv1, Wso2ApiDefinitionV1 } from '../v1/types';
+import { Wso2ApiCustomResourceProperties } from '../types';
 
 import { Wso2ApiCustomResourceEvent, handler } from './index';
 
@@ -37,7 +37,7 @@ describe('wso2 custom resource lambda', () => {
   beforeEach(() => {
     nock.cleanAll();
     // silence verbose console logs. comment this for debugging
-    // console.log = (): void => {};
+    console.log = (): void => {};
   });
   afterEach(() => {
     console.log = originalConsoleLog;
@@ -364,7 +364,7 @@ describe('wso2 custom resource lambda', () => {
   };
 
   const testCFNEventCreate = (
-    baseProperties: Wso2ApiBaseProperties,
+    baseProperties: Wso2ApiCustomResourceProperties,
   ): Wso2ApiCustomResourceEvent => {
     return {
       ...commonEvt,
@@ -373,7 +373,7 @@ describe('wso2 custom resource lambda', () => {
     };
   };
   const testCFNEventDelete = (
-    baseProperties: Wso2ApiBaseProperties,
+    baseProperties: Wso2ApiCustomResourceProperties,
     PhysicalResourceId: string,
   ): Wso2ApiCustomResourceEvent => {
     return {
@@ -384,7 +384,7 @@ describe('wso2 custom resource lambda', () => {
     };
   };
   const testCFNEventUpdate = (
-    baseProperties: Wso2ApiBaseProperties,
+    baseProperties: Wso2ApiCustomResourceProperties,
     PhysicalResourceId: string,
     oldResourceProperties: Record<string, string>,
   ): Wso2ApiCustomResourceEvent => {
@@ -397,7 +397,7 @@ describe('wso2 custom resource lambda', () => {
     };
   };
 
-  const testEvent: Wso2ApiBaseProperties = {
+  const testEvent: Wso2ApiCustomResourceProperties = {
     wso2Config: {
       baseApiUrl: baseWso2Url,
       credentialsSecretId: 'arn:aws:secretsmanager:us-east-1:123123123:secret:MySecret',

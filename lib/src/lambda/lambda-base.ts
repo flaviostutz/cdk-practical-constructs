@@ -328,7 +328,9 @@ const addSecurityGroups = (
   const defaultSG = new SecurityGroup(scope, `sg-default-${scope.node.id}`, {
     vpc: props.vpc,
     description: `Default security group for Lambda ${scope.node.id}`,
-    allowAllOutbound: typeof props.allowAllOutbound !== 'undefined' ?? props.allowAllOutbound,
+    allowAllOutbound:
+      (typeof props.allowAllOutbound !== 'undefined' && props.allowAllOutbound) ??
+      props.allowAllOutbound,
   });
   if (props.allowOutboundTo) {
     props.allowOutboundTo.forEach((ato) => {

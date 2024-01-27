@@ -1,22 +1,3 @@
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
-
-export const getSecretValue = async (secretId: string): Promise<string> => {
-  const client = new SecretsManagerClient({ region: 'eu-west-1' });
-  const response = await client.send(
-    new GetSecretValueCommand({
-      SecretId: secretId,
-    }),
-  );
-  if (response.SecretString) {
-    return response.SecretString;
-  }
-  if (!response.SecretBinary) {
-    throw new Error('Invalid type of secret found');
-  }
-  const buff = Buffer.from(response.SecretBinary);
-  return buff.toString('ascii');
-};
-
 export const areAttributeNamesEqual = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj1: Record<string, any> | undefined,
