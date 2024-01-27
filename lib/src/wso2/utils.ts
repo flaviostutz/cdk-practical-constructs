@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { existsSync } from 'fs';
 
-import { Duration, RemovalPolicy, ScopedAws } from 'aws-cdk-lib';
+import { Duration, ScopedAws } from 'aws-cdk-lib';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
@@ -35,13 +35,13 @@ export const addLambdaAndProviderForWso2Operations = (args: {
   // lambda function used for invoking WSO2 APIs during CFN operations
   const customResourceFunction = new BaseNodeJsFunction(args.scope, `${args.id}-custom-lambda`, {
     ...args.props.customResourceConfig,
-    stage: 'dev',
+    stage: 'w',
     timeout: Duration.seconds(120),
     runtime: Runtime.NODEJS_18_X,
     eventType: EventType.CustomResource,
     createLiveAlias: false,
     createDefaultLogGroup: true,
-    logGroupRemovalPolicy: RemovalPolicy.DESTROY,
+    logGroupRemovalPolicy: args.props.removalPolicy,
     entry: wso2LambdaEntry,
     initialPolicy: [
       PolicyStatement.fromJson({
