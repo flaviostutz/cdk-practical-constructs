@@ -21,6 +21,9 @@ lint-fix:
 
 test: unit-tests
 
+test-watch:
+	pnpm exec jest -i --watch
+
 unit-tests:
 	@# can't be in parallel because we use nock that has shared contexts
 	pnpm exec jest -i --verbose

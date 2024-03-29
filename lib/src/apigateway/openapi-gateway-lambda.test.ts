@@ -267,8 +267,10 @@ describe('openapi-gateway-lambda', () => {
   });
 
   it('generateOpenapiDocWithExtensions', async () => {
-    const openapidoc = generateOpenapiDocWithExtensions(testGatewayProps());
-    // console.log(JSON.stringify(openapidoc, null, 2));
+    const awsRegion = 'eu-west-1';
+    const lambdaArn = 'arn:aws:lambda:eu-west-1:123123123:function:my-function:live';
+    const openapidoc = generateOpenapiDocWithExtensions(testGatewayProps(), awsRegion);
+
     expect(
       // @ts-ignore
       openapidoc['x-amazon-apigateway-request-validators'].requestparams.validateRequestBody,
@@ -279,7 +281,7 @@ describe('openapi-gateway-lambda', () => {
     );
     // @ts-ignore
     expect(openapidoc.paths['/users/{id}'].get['x-amazon-apigateway-integration']).toStrictEqual({
-      uri: 'arn:aws:lambda:eu-west-1:123123123:function:my-function:live',
+      uri: `arn:aws:apigateway:${awsRegion}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`,
       httpMethod: 'POST',
       type: 'AWS_PROXY',
     });
