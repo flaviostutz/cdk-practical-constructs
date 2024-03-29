@@ -45,7 +45,7 @@
     "@stoplight/spectral-cli": "^6.11.0",
     "aws-cdk-lib": "2.117.0",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.6.5",
+    "axios": "^1.6.8",
     "constructs": "^10.3.0",
     "esbuild": "^0.19.11",
     "exponential-backoff": "^3.1.1",
