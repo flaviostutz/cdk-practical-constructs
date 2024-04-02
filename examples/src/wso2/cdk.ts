@@ -12,7 +12,6 @@ export const addWso2Api = (scope: Construct): void => {
       credentialsSecretId: 'shared/wso2-creds',
     },
     apiDefinition: {
-      wso2Version: 'v1',
       version: 'v1',
       type: 'HTTP',
       endpointConfig: {
