@@ -14,7 +14,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import type { oas30, oas31 } from 'openapi3-ts';
 import { Construct } from 'constructs';
-import { Size } from 'aws-cdk-lib';
+import { ScopedAws, Size } from 'aws-cdk-lib';
 import { ILogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { OpenAPIRegistry, OpenApiGeneratorV31, RouteConfig } from '@asteasolutions/zod-to-openapi';
@@ -42,13 +42,15 @@ export class OpenApiGatewayLambda extends Construct {
   constructor(scope: Construct, id: string, props: OpenApiGatewayLambdaProps) {
     super(scope, id);
 
+    const { region: awsRegion } = new ScopedAws(scope);
+
     const propsWithDefaults = getPropsWithDefaults(id, props);
     const { deployOptions, logGroupAccessLog } = addLogGroupForTracing(this, propsWithDefaults);
 
     addGatewayToLambdaPermissions(this, propsWithDefaults.openapiOperations);
 
     // zod-to-openapi only supports openapi 3.1
-    let openapiDoc31 = generateOpenapiDocWithExtensions(propsWithDefaults);
+    let openapiDoc31 = generateOpenapiDocWithExtensions(propsWithDefaults, awsRegion);
 
     const { openapiDoc31WithVPCE } = addVPCEndpointConfig(propsWithDefaults, openapiDoc31);
     openapiDoc31 = openapiDoc31WithVPCE;
@@ -183,6 +185,7 @@ export const addVPCEndpointConfig = (
 
 export const generateOpenapiDocWithExtensions = (
   props: OpenApiGatewayLambdaProps,
+  awsRegion: string,
 ): oas31.OpenAPIObject => {
   // generate basic openapi document
   const registry = new OpenAPIRegistry();
@@ -245,8 +248,9 @@ export const generateOpenapiDocWithExtensions = (
           // https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
           // @ts-ignore
           jsonObj['x-amazon-apigateway-integration'] = {
-            // `arn:aws:lambda:\${AWS::Region}:\${AWS::AccountId}:function:my-function:${lambdaOp.lambdaAlias.aliasName}`
-            uri: lambdaOp.lambdaAlias.functionArn,
+            // We need to use a api gw lambda invocation function to invocate the lambda we are integrating
+            // https://stackoverflow.com/a/50696321
+            uri: `arn:aws:apigateway:${awsRegion}:lambda:path/2015-03-31/functions/${lambdaOp.lambdaAlias.functionArn}/invocations`,
             // "passthroughBehavior": "when_no_match",
             httpMethod: 'POST',
             type: 'AWS_PROXY',
