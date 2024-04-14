@@ -2,6 +2,8 @@
 
 A collection of CDK constructs and utilities for making the development of AWS based applications easier and safer in a practical way.
 
+See [examples/](/examples/) folder for a showcase of the constructs in this lib
+
 
 ## Construct BaseNodeJsLambda
 

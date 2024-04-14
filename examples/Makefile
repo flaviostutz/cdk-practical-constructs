@@ -4,6 +4,9 @@ build: install prereqs
 	pnpm exec tsc --outDir dist
 	@set -x; STAGE=$${STAGE} pnpm exec cdk -o dist synth
 
+build-dev:
+	STAGE=dev make build
+
 lint:
 	pnpm exec eslint ./src --ext .ts
 
