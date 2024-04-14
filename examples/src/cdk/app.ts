@@ -2,8 +2,9 @@
 import { App } from 'aws-cdk-lib/core';
 import { resolveStageConfig } from 'cdk-practical-constructs';
 
-import { TestConfig, testStageConfigs } from './configs';
+import { testStageConfigs } from './configs';
 import { AppStack } from './stack';
+import { TestConfig } from './types/TestConfig';
 
 const app = new App();
 

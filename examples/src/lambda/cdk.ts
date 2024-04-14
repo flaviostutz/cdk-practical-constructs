@@ -23,6 +23,7 @@ export const addLambdaGetTest = (scope: Construct): void => {
     provisionedConcurrentExecutions: {
       minCapacity: 1,
     },
+    baseCodePath: 'src/lambda',
     logGroupRetention: RetentionDays.FIVE_DAYS,
   };
 
