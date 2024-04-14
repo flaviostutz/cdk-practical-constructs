@@ -1,9 +1,7 @@
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { LambdaConfig, StageConfig, StagesConfig } from 'cdk-practical-constructs';
+import { StagesConfig } from 'cdk-practical-constructs';
 
-export type TestConfig = StageConfig & {
-  lambda: LambdaConfig;
-};
+import { TestConfig } from './types/TestConfig';
 
 export const testStageConfigs: StagesConfig<TestConfig> = {
   default: {
