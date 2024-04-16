@@ -71,8 +71,11 @@ export class OpenApiGatewayLambda extends Construct {
 
     lintOpenapiDocument(openapiDoc30, true);
 
+    // The api gateway does not appends the stackname/stage into it by default
+    const apiGatewayId = `${id}-${props.stage}`;
+
     // SpecRestApi builds all of our lambda integrations based on openapi doc and extensions
-    const specRestApi = new SpecRestApi(this, 'SpecRestApi', {
+    const specRestApi = new SpecRestApi(this, apiGatewayId, {
       ...propsWithDefaults,
       description: openapiDoc30.info.title,
       apiDefinition: ApiDefinition.fromInline(openapiDoc30),
@@ -275,7 +278,6 @@ export const getPropsWithDefaults = (
 ): OpenApiGatewayLambdaProps & Pick<SpecRestApiProps, 'restApiName'> => {
   return {
     ...props,
-    restApiName: id,
 
     // opiniated default props
     minCompressionSize: props.minCompressionSize ?? Size.bytes(200000),

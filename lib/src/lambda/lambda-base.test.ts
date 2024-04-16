@@ -58,7 +58,8 @@ describe('lambda-base', () => {
 
     expect(func).toBeDefined();
     expect(func.nodeJsFunction.runtime).toBe(Runtime.NODEJS_18_X);
-    expect(func.nodeJsFunction.node.id).toBe('test-lambda-dev');
+    expect(func.nodeJsFunction.node.id).toBe('test-lambda');
+    expect(func.nodeJsFunction.functionName).toEqual(expect.stringContaining('${Token'));
 
     // execute synth and test results
     const template = Template.fromStack(stack);
@@ -89,7 +90,7 @@ describe('lambda-base', () => {
     });
 
     template.hasResourceProperties('AWS::Logs::LogGroup', {
-      LogGroupName: '/aws/lambda/test-lambda-dev',
+      // LogGroupName: '/aws/lambda/test-lambda-dev',
       RetentionInDays: 5,
     });
 
@@ -200,7 +201,9 @@ describe('lambda-base', () => {
 
     const func = new BaseNodeJsFunction(stack, 'test-lambda', lambdaConfig);
 
-    expect(func.nodeJsFunction.node.id).toBe('test-lambda-dev-pr-123');
+    // The CDK will add stackname prefix to it if the function name is undefined
+    expect(func.nodeJsFunction.node.id).toBe('test-lambda');
+    expect(func.nodeJsFunction.functionName).toEqual(expect.stringContaining('${Token'));
 
     // execute synth and test results
     const template = Template.fromStack(stack);

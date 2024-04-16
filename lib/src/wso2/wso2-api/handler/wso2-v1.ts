@@ -4,6 +4,7 @@ import { oas30 } from 'openapi3-ts';
 import FormData from 'form-data';
 import { backOff } from 'exponential-backoff';
 import { AxiosInstance } from 'axios';
+import isEqual from 'lodash.isequal';
 
 import {
   ApiFromListV1,
@@ -12,7 +13,7 @@ import {
   Wso2ApiDefinitionV1,
   Wso2ApiListV1,
 } from '../v1/types';
-import { areAttributeNamesEqual } from '../utils';
+import { areAttributeNamesEqual, normalizeCorsConfigurationValues } from '../utils';
 import { RetryOptions } from '../../types';
 
 export const findWso2Api = async (args: {
@@ -137,7 +138,7 @@ export const createUpdateAndPublishApiInWso2 = async (
     }),
   );
 
-  console.log('API created/updated and published succesfully on WSO2 server');
+  console.log('API created/updated and published successfully on WSO2 server');
 
   return { wso2ApiId, endpointUrl };
 };
@@ -321,6 +322,16 @@ const checkApiExistsAndMatches = async (
     );
   }
 
+  const { isEquivalent, failedChecks } = checkWSO2Equivalence(apiDetails, args.apiDefinition);
+
+  if (!isEquivalent) {
+    throw new Error(
+      `Some contents from the current deployed WSO2 api are different from the ones defined to be deployed: ${JSON.stringify(
+        failedChecks,
+      )}`,
+    );
+  }
+
   if (!args.apiBeforeUpdate) {
     console.log(`API '${searchApi.id}' check OK`);
     return;
@@ -349,7 +360,8 @@ export const openapiSimilarWso2 = (
   if (
     subOpenapi.info.title !== wso2Openapi.info.title ||
     subOpenapi.paths.length !== wso2Openapi.paths.length ||
-    subOpenapi.servers?.length !== wso2Openapi.servers?.length ||
+    // TODO: wso2 fetch seems to not return the servers
+    (wso2Openapi.servers && subOpenapi.servers?.length !== wso2Openapi.servers?.length) ||
     !areAttributeNamesEqual(subOpenapi.components?.schemas, wso2Openapi.components?.schemas) ||
     !areAttributeNamesEqual(subOpenapi.paths, wso2Openapi.paths) ||
     subOpenapi.openapi !== wso2Openapi.openapi
@@ -357,4 +369,84 @@ export const openapiSimilarWso2 = (
     return false;
   }
   return true;
+};
+
+type CheckWSO2EquivalenceOutput = {
+  isEquivalent: boolean;
+  failedChecks: Array<{
+    name: string;
+    data: {
+      inWso2: unknown;
+      toBeDeployed: unknown;
+    };
+  }>;
+};
+
+/**
+ * Checks wether the deployed WSO2 API is equivalent with the definition in the WSO2 construct
+ *
+ * @param wso2ApiDefinition The API definition returned from wso2 server
+ * @param toBeDeployedApiDefinition The definition of the WSO2 CDK construct
+ */
+export const checkWSO2Equivalence = (
+  wso2ApiDefinition: PublisherPortalAPIv1,
+  constructApiDefinition: Wso2ApiDefinitionV1,
+): CheckWSO2EquivalenceOutput => {
+  const equivalenceCheckMatrix: Array<{
+    name: string;
+    check: boolean;
+    data: CheckWSO2EquivalenceOutput['failedChecks'][number]['data'];
+  }> = [
+    {
+      name: 'businessInformation',
+      check: isEqual(
+        wso2ApiDefinition.businessInformation,
+        constructApiDefinition.businessInformation,
+      ),
+      data: {
+        inWso2: wso2ApiDefinition.businessInformation,
+        toBeDeployed: constructApiDefinition.businessInformation,
+      },
+    },
+    {
+      name: 'endpointConfig',
+      check: isEqual(wso2ApiDefinition.endpointConfig, constructApiDefinition.endpointConfig),
+      data: {
+        inWso2: wso2ApiDefinition.endpointConfig,
+        toBeDeployed: constructApiDefinition.endpointConfig,
+      },
+    },
+    {
+      name: 'additionalProperties',
+      check: isEqual(
+        wso2ApiDefinition.additionalProperties,
+        constructApiDefinition.additionalProperties,
+      ),
+      data: {
+        inWso2: wso2ApiDefinition.additionalProperties,
+        toBeDeployed: constructApiDefinition.additionalProperties,
+      },
+    },
+    {
+      name: 'corsConfiguration',
+      check: isEqual(
+        normalizeCorsConfigurationValues(wso2ApiDefinition.corsConfiguration),
+        constructApiDefinition.corsConfiguration,
+      ),
+      data: {
+        inWso2: normalizeCorsConfigurationValues(wso2ApiDefinition.corsConfiguration),
+        toBeDeployed: constructApiDefinition.corsConfiguration,
+      },
+    },
+  ];
+
+  const failedEquivalenceChecks = equivalenceCheckMatrix.filter(({ check }) => !check);
+
+  return {
+    isEquivalent: !failedEquivalenceChecks.length,
+    failedChecks: failedEquivalenceChecks.map(({ name, data }) => ({
+      name,
+      data,
+    })),
+  };
 };

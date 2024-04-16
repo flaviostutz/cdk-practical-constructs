@@ -1,5 +1,6 @@
 /* eslint-disable no-undefined */
-import { areAttributeNamesEqual } from './utils';
+import { areAttributeNamesEqual, normalizeCorsConfigurationValues } from './utils';
+import type { APICorsConfiguration } from './v1/types-swagger';
 
 describe('areAttributeNamesEqual', () => {
   it('should return true for objects with the same attribute names', () => {
@@ -44,5 +45,44 @@ describe('areAttributeNamesEqual', () => {
     const result = areAttributeNamesEqual(objA, objB);
 
     expect(result).toBe(false);
+  });
+});
+
+describe('normalizeCorsConfigurationValues', () => {
+  const corsConfiguration: APICorsConfiguration = {
+    accessControlAllowOrigins: ['*'],
+    accessControlAllowHeaders: [
+      'Authorization',
+      'Access-Control-Allow-Origin',
+      'Content-Type',
+      'x-amzn-trace-id',
+    ],
+    accessControlAllowMethods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
+    corsConfigurationEnabled: true,
+    accessControlAllowCredentials: false,
+  };
+
+  const normalizedCorsConfiguration = {
+    ...corsConfiguration,
+    corsConfigurationEnabled: 'true',
+    accessControlAllowCredentials: 'false',
+  };
+
+  it('should normalize the CORS values', () => {
+    const result = normalizeCorsConfigurationValues(corsConfiguration);
+    expect(result).toEqual(normalizedCorsConfiguration);
+  });
+
+  it('should not normalize the values if not present', () => {
+    const { corsConfigurationEnabled, accessControlAllowCredentials, ...restConfiguration } =
+      corsConfiguration;
+
+    const result = normalizeCorsConfigurationValues(restConfiguration);
+    expect(result).toEqual(restConfiguration);
+  });
+
+  it('should return undefined if configuration is undefined', () => {
+    const result = normalizeCorsConfigurationValues(undefined);
+    expect(result).toBeUndefined();
   });
 });

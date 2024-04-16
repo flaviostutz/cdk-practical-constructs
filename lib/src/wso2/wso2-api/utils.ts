@@ -1,3 +1,5 @@
+import type { APICorsConfiguration } from './v1/types-swagger';
+
 export const areAttributeNamesEqual = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj1: Record<string, any> | undefined,
@@ -31,4 +33,34 @@ export const areAttributeNamesEqual = (
     }
   }
   return true;
+};
+
+type NormalizedCorsConfiguration = Omit<
+  APICorsConfiguration,
+  'corsConfigurationEnabled' | 'accessControlAllowCredentials'
+> & {
+  corsConfigurationEnabled?: string;
+  accessControlAllowCredentials?: string;
+};
+
+/**
+ * This functions normalizes the CORS values by stringifying the values
+ */
+export const normalizeCorsConfigurationValues = (
+  corsConfiguration?: APICorsConfiguration,
+): undefined | NormalizedCorsConfiguration => {
+  if (!corsConfiguration) return corsConfiguration;
+
+  const { corsConfigurationEnabled, accessControlAllowCredentials, ...restCorsConfiguration } =
+    corsConfiguration;
+
+  return {
+    ...restCorsConfiguration,
+    ...(typeof corsConfiguration.corsConfigurationEnabled === 'boolean' && {
+      corsConfigurationEnabled: String(corsConfiguration.corsConfigurationEnabled),
+    }),
+    ...(typeof corsConfiguration.accessControlAllowCredentials === 'boolean' && {
+      accessControlAllowCredentials: String(corsConfiguration.accessControlAllowCredentials),
+    }),
+  };
 };
