@@ -44,6 +44,9 @@ dependencies:
   lodash.clonedeep:
     specifier: ^4.5.0
     version: 4.5.0
+  lodash.isequal:
+    specifier: ^4.5.0
+    version: 4.5.0
   npm-which:
     specifier: ^3.0.1
     version: 3.0.1
@@ -82,6 +85,9 @@ devDependencies:
   '@types/lodash.clonedeep':
     specifier: ^4.5.9
     version: 4.5.9
+  '@types/lodash.isequal':
+    specifier: ^4.5.8
+    version: 4.5.8
   '@types/node':
     specifier: 18.11.18
     version: 18.11.18
@@ -2492,6 +2498,12 @@ packages:
 
   /@types/lodash.clonedeep@4.5.9:
     resolution: {integrity: sha512-19429mWC+FyaAhOLzsS8kZUsI+/GmBAQ0HFiCPsKGU+7pBXOQWhyrY6xNNDwUSX8SMZMJvuFVMF9O5dQOlQK9Q==}
+    dependencies:
+      '@types/lodash': 4.14.202
+    dev: true
+
+  /@types/lodash.isequal@4.5.8:
+    resolution: {integrity: sha512-uput6pg4E/tj2LGxCZo9+y27JNyB2OZuuI/T5F+ylVDYuqICLG2/ktjxx0v6GvVntAf8TvEzeQLcV0ffRirXuA==}
     dependencies:
       '@types/lodash': 4.14.202
     dev: true
@@ -5611,6 +5623,10 @@ packages:
   /lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     dev: true
+
+  /lodash.isequal@4.5.0:
+    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+    dev: false
 
   /lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}

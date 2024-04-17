@@ -26,6 +26,7 @@ export const addTodoApi = (scope: Construct, props: StageStackProps): void => {
 
   // aws api gateway from openapi definitions
   const apigw = new OpenApiGatewayLambda(scope, 'todo-api', {
+    stage: 'test',
     openapiBasic: {
       openapi: '3.0.3',
       info: {

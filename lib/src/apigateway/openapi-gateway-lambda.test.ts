@@ -56,6 +56,7 @@ describe('openapi-gateway-lambda', () => {
 
     // create rest api
     const apigw = new OpenApiGatewayLambda(stack, 'myapi', {
+      stage: 'tst',
       openapiBasic: {
         openapi: '3.0.3',
         info: {
@@ -70,6 +71,8 @@ describe('openapi-gateway-lambda', () => {
     const template = Template.fromStack(stack);
     // console.log(JSON.stringify(template.toJSON(), null, 2));
 
+    expect(apigw.node.id).toBe('myapi');
+    expect(apigw.specRestApi.node.id).toBe('myapi-tst');
     expect(apigw.logGroupAccessLog).toBeUndefined();
 
     // apigw allowed to call lambda
@@ -133,6 +136,7 @@ describe('openapi-gateway-lambda', () => {
 
     // create rest api
     const apigw = new OpenApiGatewayLambda(stack, 'myapi', {
+      stage: 'tst',
       openapiBasic: {
         openapi: '3.0.3',
         info: {
@@ -212,6 +216,7 @@ describe('openapi-gateway-lambda', () => {
   });
   it('getPropsWithDefaults', async () => {
     const props = getPropsWithDefaults('test-api', {
+      stage: 'tst',
       openapiBasic: {
         openapi: 'aaaa',
         info: {
@@ -221,7 +226,7 @@ describe('openapi-gateway-lambda', () => {
       },
       openapiOperations: [],
     });
-    expect(props.restApiName).toBe('test-api');
+    expect(props.restApiName).toBeUndefined();
     expect(props.deploy).toBeTruthy();
   });
   it('addVPCEndpointConfig private endpoint', async () => {

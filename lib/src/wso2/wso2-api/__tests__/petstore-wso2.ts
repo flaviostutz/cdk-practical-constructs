@@ -1,4 +1,7 @@
+/* eslint-disable camelcase */
 import { OpenAPIObject } from 'openapi3-ts/oas30';
+
+import type { PublisherPortalAPIv1 } from '../v1/types';
 
 /**
  * Wso2 openapi doc returned by WSO2 when we submit the "petstore" version
@@ -251,5 +254,39 @@ export const petstoreOpenapiReturnedWso2v1: OpenAPIObject = {
   'x-wso2-response-cache': {
     enabled: false,
     cacheTimeoutInSeconds: 300,
+  },
+};
+
+/**
+ * Wso2 data returned by WSO2 when fetching the api by id
+ */
+export const petstoreFetchDataWso2Api: PublisherPortalAPIv1 = {
+  id: 'petstore-api-id',
+  name: 'petstore-sample',
+  context: '/petstore',
+  version: 'v1',
+  type: 'HTTP',
+  endpointConfig: {
+    production_endpoints: {
+      url: 'http://serverabc.com',
+    },
+    endpoint_type: 'http',
+  },
+  gatewayEnvironments: ['public'],
+  corsConfiguration: {
+    accessControlAllowOrigins: ['testwebsite.com'],
+    accessControlAllowHeaders: ['Authorization', 'Access-Control-Allow-Origin', 'Content-Type'],
+    accessControlAllowMethods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
+    corsConfigurationEnabled: true,
+    accessControlAllowCredentials: false,
+  },
+  businessInformation: {
+    businessOwner: 'petstore',
+    businessOwnerEmail: 'contact@petstore.com',
+    technicalOwner: 'petstore dev team',
+    technicalOwnerEmail: 'devteam@petstore.com',
+  },
+  additionalProperties: {
+    extraProperty: 'my extra property',
   },
 };

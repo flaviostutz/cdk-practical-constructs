@@ -1,4 +1,7 @@
+/* eslint-disable camelcase */
 import { OpenAPIObject } from 'openapi3-ts/oas30';
+
+import type { Wso2ApiDefinitionV1 } from '../v1/types';
 
 export const petstoreOpenapi: OpenAPIObject = {
   openapi: '3.0.0',
@@ -176,5 +179,41 @@ export const petstoreOpenapi: OpenAPIObject = {
         },
       },
     },
+  },
+};
+
+/**
+ * Wso2 construct api definition
+ */
+export const wso2ConstructApiDefinition: Wso2ApiDefinitionV1 = {
+  id: 'petstore-api-id',
+  name: 'petstore-sample',
+  context: '/petstore',
+  version: 'v1',
+  type: 'HTTP',
+  endpointConfig: {
+    production_endpoints: {
+      url: 'http://serverabc.com',
+    },
+    endpoint_type: 'http',
+  },
+  gatewayEnvironments: ['public'],
+  corsConfiguration: {
+    accessControlAllowOrigins: ['testwebsite.com'],
+    accessControlAllowHeaders: ['Authorization', 'Access-Control-Allow-Origin', 'Content-Type'],
+    accessControlAllowMethods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
+    // @ts-expect-error this property is stringified at some point
+    corsConfigurationEnabled: 'true',
+    // @ts-expect-error this property is stringified at some point
+    accessControlAllowCredentials: 'false',
+  },
+  businessInformation: {
+    businessOwner: 'petstore',
+    businessOwnerEmail: 'contact@petstore.com',
+    technicalOwner: 'petstore dev team',
+    technicalOwnerEmail: 'devteam@petstore.com',
+  },
+  additionalProperties: {
+    extraProperty: 'my extra property',
   },
 };

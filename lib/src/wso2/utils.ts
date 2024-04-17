@@ -35,13 +35,13 @@ export const addLambdaAndProviderForWso2Operations = (args: {
   // lambda function used for invoking WSO2 APIs during CFN operations
   const customResourceFunction = new BaseNodeJsFunction(args.scope, `${args.id}-custom-lambda`, {
     ...args.props.customResourceConfig,
-    stage: 'w',
-    timeout: Duration.seconds(120),
+    stage: 'wso2-custom-lambda',
+    timeout: Duration.minutes(5),
+    memorySize: 256,
     runtime: Runtime.NODEJS_18_X,
     eventType: EventType.CustomResource,
     createLiveAlias: false,
     createDefaultLogGroup: true,
-    logGroupRemovalPolicy: args.props.removalPolicy,
     entry: wso2LambdaEntry,
     initialPolicy: [
       PolicyStatement.fromJson({
@@ -54,6 +54,12 @@ export const addLambdaAndProviderForWso2Operations = (args: {
     // allow all outbound by default
     allowAllOutbound: typeof args.props.customResourceConfig?.network !== 'undefined',
   });
+
+  if (args.props.customResourceConfig?.logGroupRemovalPolicy) {
+    customResourceFunction.nodeJsFunction.applyRemovalPolicy(
+      args.props.customResourceConfig.logGroupRemovalPolicy,
+    );
+  }
 
   const customResourceProvider = new Provider(args.scope, `${args.id}-custom-provider`, {
     onEventHandler: customResourceFunction.nodeJsFunction,

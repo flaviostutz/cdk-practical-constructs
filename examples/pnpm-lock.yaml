@@ -7435,7 +7435,7 @@ packages:
     dev: false
 
   file:../lib/dist/cdk-practical-constructs-0.0.1.tgz:
-    resolution: {integrity: sha512-uNGS0jeGz5Vyl9U/7LKb1ynuw8DNbt0dE8YxN5D7lYNXrzD+Q6KcpL8ZbVFX682+WmZwCCsfGTtVnZa4FHVUTA==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
+    resolution: {integrity: sha512-gXjZwZHWGDW2reetEi45Y/bJSUatRs4s8wNDdvqgwyQ6fIlgEj+1L3brOpaAwJt4Z5vt6xk8tMekcdhoYWj2uw==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
     name: cdk-practical-constructs
     version: 0.0.1
     dependencies:

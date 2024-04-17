@@ -30,6 +30,7 @@ export type OpenApiGatewayLambdaProps = Omit<
   accessLogRetention?: RetentionDays;
   openapiBasic: OpenAPIConfig;
   openapiOperations: LambdaOperation[];
+  stage: string;
 };
 
 export type OpenAPIConfig = OpenAPIObjectConfigV31;

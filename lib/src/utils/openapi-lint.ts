@@ -52,7 +52,7 @@ rules:
     // this will fail if errors are found in linting
     execSync(`${spectralBinPath} lint -F error -D openapi-spec.json`, {
       cwd: lintDir.name,
-      timeout: 10000,
+      timeout: 30000,
     });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {

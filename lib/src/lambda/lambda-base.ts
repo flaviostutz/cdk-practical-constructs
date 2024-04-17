@@ -82,11 +82,7 @@ export class BaseNodeJsFunction extends Construct {
     // eslint-disable-next-line fp/no-delete
     // delete nodeJsProps.allowAllOutbound;
 
-    if (!nodeJsProps.functionName) {
-      throw new Error('functionName should be defined');
-    }
-
-    const nodeJsFunc = new NodejsFunction(this, nodeJsProps.functionName, nodeJsProps);
+    const nodeJsFunc = new NodejsFunction(this, id, nodeJsProps);
     this.nodeJsFunction = nodeJsFunc;
 
     // create log subscriber
@@ -176,7 +172,6 @@ export const getPropsWithDefaults = (
         afterBundling: (): string[] => [],
       },
     },
-    functionName: `${id}-${props.stage}`,
     vpcSubnets:
       props.vpcSubnets ??
       // eslint-disable-next-line no-undefined
@@ -297,7 +292,8 @@ const addDefaultLogGroup = (scope: Construct, props: BaseNodeJsProps): LogGroup 
   return new LogGroup(scope, 'default-log-group', {
     removalPolicy: props.logGroupRemovalPolicy ?? RemovalPolicy.DESTROY,
     retention: props.logGroupRetention ?? RetentionDays.ONE_YEAR,
-    logGroupName: `/aws/lambda/${props.functionName}`,
+    // TODO: create property to create custom log group name
+    // logGroupName: `/aws/lambda/${props.functionName}`,
   });
 };
 
@@ -355,7 +351,7 @@ const setupEnvironment = (props: BaseNodeJsProps): { environment: Record<string,
   // add node options if source map is enabled
   if (props.bundling?.sourceMap) {
     console.log(
-      '!!!ATENTION: source map is enabled in bundling options. This might have a big impact on Lambda performance. Read more at https://github.com/aws/aws-cdk/issues/19067',
+      '!!!ATTENTION: source map is enabled in bundling options. This might have a big impact on Lambda performance. Read more at https://github.com/aws/aws-cdk/issues/19067',
     );
     environment = {
       ...environment,
