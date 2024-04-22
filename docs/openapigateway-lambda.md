@@ -10,9 +10,8 @@ Partialy inspired on https://blog.serverlessadvocate.com/serverless-openapi-amaz
 
 AWS labs has a similar construct, but it relies on openapi specs written in yml and deployed to S3 buckets and CustomResources. We want to avoid S3 buckets and CustomResources to keep things faster/simpler and want to write our openapi specs in pure TS for better typing.
 
-Check https://github.com/awslabs/aws-solutions-constructs/blob/main/source/patterns/%40aws-solutions-constructs/aws-openapigateway-lambda/lib/index.ts
-
 ### Usage
 
-TODO
+[Check here for a complete example](/examples/src/apigateway/cdk.ts)
+
 
