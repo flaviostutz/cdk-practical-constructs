@@ -74,3 +74,5 @@ Based on [AWS Construct NodeJsFunction](https://docs.aws.amazon.com/cdk/api/v2/d
     );
 
 ```
+
+[Check here for a complete example](/examples/src/lambda/cdk.ts)
