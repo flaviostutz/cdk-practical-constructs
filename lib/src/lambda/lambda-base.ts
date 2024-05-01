@@ -112,7 +112,7 @@ export const getPropsWithDefaults = (
   props: BaseNodeJsProps,
   scope: Construct,
 ): BaseNodeJsProps => {
-  let vpc: IVpc | undefined;
+  let vpc: IVpc | undefined = props.vpc;
   if (props.network) {
     if (props.vpc) {
       throw new Error(`'vpc' is not supported when defining 'network'`);
