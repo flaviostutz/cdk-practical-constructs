@@ -91,16 +91,33 @@ export type LambdaConfig = Omit<
    */
   logGroupRemovalPolicy?: RemovalPolicy;
   /**
-   * Register this lambda Arn as a subscriber of the default log group.
+   * Register this lambda as a subscriber of the default log group.
    * @default none
    */
-  logGroupSubscriberLambdaArn?: string;
+  logGroupSubscriber?: LogGroupSubscriber;
   /**
    * Create an alias named "live" that points to the latest version of this function
    * @defaults true
    */
   createLiveAlias?: boolean;
 };
+
+/**
+ * Log group subscriber configuration
+ * It will create a `AWS::Logs::SubscriptionFilter` resource
+ * This resource will trigger the configured function with all the logs generated in the deploying function
+ */
+export type LogGroupSubscriber = {
+  type: LogGroupSubscriberType;
+  value: string;
+};
+
+export enum LogGroupSubscriberType {
+  /** The lambda arn to be subscribed */
+  Arn = 'arn',
+  /** The SSM string parameter store key containing the lambda arn to be subscribed */
+  Ssm = 'ssm',
+}
 
 export enum EventType {
   Cloudwatch = 'cloudwatch',

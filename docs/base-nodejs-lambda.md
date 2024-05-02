@@ -8,7 +8,7 @@ Based on [AWS Construct NodeJsFunction](https://docs.aws.amazon.com/cdk/api/v2/d
   - explicit private VPC configuration (see props.network)
   - source code path standardization to "[basePath]/[lambdaEventType]/[lambdaName]/index.ts" (can be overwritten by explicit props.entry)
   - custom CA support for HTTP calls (NodeJS NODE_EXTRA_CA_CERTS). See props.extraCaPubCert
-  - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriberLambdaArn
+  - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriber
   - adds environment STAGE to Lambda. See props.stage
 
 ### Usage
@@ -60,8 +60,16 @@ Based on [AWS Construct NodeJsFunction](https://docs.aws.amazon.com/cdk/api/v2/d
 
     // register an external Lambda to receive all Cloudwatch log events 
     // created by this Lambda (used to forward logs to Datadog, Splunk etc)
-    lambdaConfig.logGroupSubscriberLambdaArn =
-      'arn:aws:lambda:eu-west-1:012345678:function:datadogForwarder';
+    lambdaConfig.logGroupSubscriber = {
+        type: logGroupSubscriberType.Arn,
+        value: 'arn:aws:lambda:eu-west-1:012345678:function:datadogForwarder',
+    };
+
+    // You can also provide a key of an system manager's parameter store with type string
+    lambdaConfig.logGroupSubscriber = {
+        type: logGroupSubscriberType.Ssm,
+        value: 'datadog-forwarder-lambda-arn',
+    };
 
     // instantiate Lambda construct
     const func = new BaseNodeJsFunction(stack, 'test-lambda', lambdaConfig);

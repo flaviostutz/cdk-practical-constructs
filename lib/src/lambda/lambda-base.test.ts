@@ -4,10 +4,11 @@ import { Template } from 'aws-cdk-lib/assertions';
 import { Peer, Port, SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { Schedule } from 'aws-cdk-lib/aws-applicationautoscaling';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 import { vpcFromConfig } from '../utils';
 
-import { BaseNodeJsProps, EventType } from './types';
+import { BaseNodeJsProps, EventType, LogGroupSubscriberType } from './types';
 import { BaseNodeJsFunction } from './lambda-base';
 
 describe('lambda-base', () => {
@@ -45,8 +46,10 @@ describe('lambda-base', () => {
     customSG.addIngressRule(Peer.ipv4('9.9.9.9/32'), Port.allTraffic(), 'allow ingress');
     customSG.addEgressRule(Peer.ipv4('8.8.8.8/32'), Port.allTraffic(), 'allow egress');
     lambdaConfig.securityGroups = [customSG];
-    lambdaConfig.logGroupSubscriberLambdaArn =
-      'arn:aws:lambda:eu-west-1:012345678:function:tstLogging';
+    lambdaConfig.logGroupSubscriber = {
+      type: LogGroupSubscriberType.Arn,
+      value: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
+    };
 
     const func = new BaseNodeJsFunction(stack, 'test-lambda', lambdaConfig);
     if (!func.defaultSecurityGroup) throw new Error('defaultSecurityGroup should be defined');
@@ -110,12 +113,54 @@ describe('lambda-base', () => {
       LogGroupName: {
         Ref: 'testlambdadefaultloggroup43FBE067',
       },
+      FilterName: 'all',
+      FilterPattern: '',
     });
 
     template.hasResourceProperties('AWS::Lambda::Permission', {
       FunctionName: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
       Action: 'lambda:InvokeFunction',
       Principal: 'logs.eu-west-1.amazonaws.com',
+    });
+  });
+
+  it('should allow ssm log group subscriptions', async () => {
+    const app = new App();
+    const stack = new Stack(app);
+
+    const lambdaConfig: BaseNodeJsProps = {
+      stage: 'dev',
+      eventType: EventType.Http,
+      baseCodePath: 'src/apigateway/__tests__',
+      logGroupSubscriber: {
+        type: LogGroupSubscriberType.Ssm,
+        value: 'log-forwarder-lambda-arn',
+      },
+    };
+
+    // eslint-disable-next-line no-new
+    new StringParameter(stack, 'log-forwarder-lambda', {
+      parameterName: 'log-forwarder-lambda-arn',
+      description: 'Cloudwatch log forwarder Lambda ARN',
+      stringValue: 'arn:aws:lambda:eu-west-1:012345678:function:tstLoggerForwarder',
+    });
+
+    const func = new BaseNodeJsFunction(stack, 'test-lambda', lambdaConfig);
+    expect(func).toBeDefined();
+
+    // execute synth and test results
+    const template = Template.fromStack(stack);
+    // console.log(JSON.stringify(template.toJSON(), null, 2));
+
+    template.hasResourceProperties('AWS::Logs::SubscriptionFilter', {
+      DestinationArn: {
+        Ref: 'SsmParameterValuelogforwarderlambdaarnC96584B6F00A464EAD1953AFF4B05118Parameter',
+      },
+      LogGroupName: {
+        Ref: 'testlambdadefaultloggroup43FBE067',
+      },
+      FilterName: 'all',
+      FilterPattern: '',
     });
   });
 
