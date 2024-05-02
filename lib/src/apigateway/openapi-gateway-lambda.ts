@@ -11,6 +11,7 @@ import {
   SpecRestApi,
   SpecRestApiProps,
   StageOptions,
+  CfnRestApi,
 } from 'aws-cdk-lib/aws-apigateway';
 import type { oas30, oas31 } from 'openapi3-ts';
 import { Construct } from 'constructs';
@@ -82,6 +83,17 @@ export class OpenApiGatewayLambda extends Construct {
       deployOptions,
     });
 
+    // Workaround to link the vpc endpoint ids top the api gateway > api settings
+    // This should be removed when this issue is fixed
+    // https://github.com/aws/aws-cdk/issues/9684
+    const hasPrivate = props.endpointTypes?.some((value) => value === EndpointType.PRIVATE);
+    if (hasPrivate) {
+      (specRestApi.node.defaultChild as CfnRestApi).endpointConfiguration = {
+        types: propsWithDefaults.endpointTypes ?? [EndpointType.PRIVATE],
+        vpcEndpointIds: propsWithDefaults.vpcEndpointIds,
+      };
+    }
+
     this.specRestApi = specRestApi;
     this.openapiDocument = openapiDoc30;
     this.logGroupAccessLog = logGroupAccessLog;
@@ -143,10 +155,7 @@ export const addVPCEndpointConfig = (
   props: OpenApiGatewayLambdaProps,
   openapiDoc31: oas31.OpenAPIObject,
 ): { openapiDoc31WithVPCE: oas31.OpenAPIObject } => {
-  const hasPrivate = props.endpointTypes?.reduce(
-    (cur, value) => cur || value === EndpointType.PRIVATE,
-    false,
-  );
+  const hasPrivate = props.endpointTypes?.some((value) => value === EndpointType.PRIVATE);
   if (!hasPrivate) {
     return { openapiDoc31WithVPCE: openapiDoc31 };
   }
@@ -175,7 +184,7 @@ export const addVPCEndpointConfig = (
         Resource: ['execute-api:/*'],
         Condition: {
           StringEquals: {
-            'aws:SourceVpce': props.vpcEndpointIds,
+            'aws:sourceVpce': props.vpcEndpointIds,
           },
         },
       },
@@ -279,7 +288,7 @@ export const getPropsWithDefaults = (
   return {
     ...props,
 
-    // opiniated default props
+    // opinionated default props
     minCompressionSize: props.minCompressionSize ?? Size.bytes(200000),
     accessLogRetention: props.accessLogRetention ?? RetentionDays.SIX_MONTHS,
     deploy: props.deploy ?? true,
