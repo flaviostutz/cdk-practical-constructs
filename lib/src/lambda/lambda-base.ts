@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-import { ISecurityGroup, IVpc, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { ISecurityGroup, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { LambdaDestination } from 'aws-cdk-lib/aws-logs-destinations';
 import { Runtime, Function, Alias, IAlias } from 'aws-cdk-lib/aws-lambda';
 import { FilterPattern, LogGroup, RetentionDays, SubscriptionFilter } from 'aws-cdk-lib/aws-logs';
@@ -112,7 +112,7 @@ export const getPropsWithDefaults = (
   props: BaseNodeJsProps,
   scope: Construct,
 ): BaseNodeJsProps => {
-  let vpc: IVpc | undefined = props.vpc;
+  let { vpc } = props;
   if (props.network) {
     if (props.vpc) {
       throw new Error(`'vpc' is not supported when defining 'network'`);
