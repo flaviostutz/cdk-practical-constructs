@@ -91,7 +91,7 @@ export type LambdaConfig = Omit<
    */
   logGroupRemovalPolicy?: RemovalPolicy;
   /**
-   * Register this lambda as a subscriber of the default log group.
+   * Register a Lambda as a subscriber of the default log group
    * @default none
    */
   logGroupSubscriber?: LogGroupSubscriber;
@@ -105,7 +105,7 @@ export type LambdaConfig = Omit<
 /**
  * Log group subscriber configuration
  * It will create a `AWS::Logs::SubscriptionFilter` resource
- * This resource will trigger the configured function with all the logs generated in the deploying function
+ * This resource will trigger the configured function with all the logs generated in the deployed function
  */
 export type LogGroupSubscriber = {
   type: LogGroupSubscriberType;
@@ -113,9 +113,9 @@ export type LogGroupSubscriber = {
 };
 
 export enum LogGroupSubscriberType {
-  /** The lambda arn to be subscribed */
+  /** The Arn of the Lambda function that will subscribe to the log group */
   Arn = 'arn',
-  /** The SSM string parameter store key containing the lambda arn to be subscribed */
+  /** The AWS Systems Manager Parameter Store name that points to the Arn of the Lambda function that will subscribe to the log group */
   Ssm = 'ssm',
 }
 
