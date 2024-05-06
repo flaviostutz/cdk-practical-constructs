@@ -8,7 +8,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 import { vpcFromConfig } from '../utils';
 
-import { BaseNodeJsProps, EventType, LogGroupSubscriberType } from './types';
+import { BaseNodeJsProps, EventType, LogGroupSubscriberArnType } from './types';
 import { BaseNodeJsFunction } from './lambda-base';
 
 describe('lambda-base', () => {
@@ -46,8 +46,8 @@ describe('lambda-base', () => {
     customSG.addIngressRule(Peer.ipv4('9.9.9.9/32'), Port.allTraffic(), 'allow ingress');
     customSG.addEgressRule(Peer.ipv4('8.8.8.8/32'), Port.allTraffic(), 'allow egress');
     lambdaConfig.securityGroups = [customSG];
-    lambdaConfig.logGroupSubscriber = {
-      type: LogGroupSubscriberType.Arn,
+    lambdaConfig.logGroupSubscriberArn = {
+      type: LogGroupSubscriberArnType.Arn,
       value: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
     };
 
@@ -132,8 +132,8 @@ describe('lambda-base', () => {
       stage: 'dev',
       eventType: EventType.Http,
       baseCodePath: 'src/apigateway/__tests__',
-      logGroupSubscriber: {
-        type: LogGroupSubscriberType.Ssm,
+      logGroupSubscriberArn: {
+        type: LogGroupSubscriberArnType.Ssm,
         value: 'log-forwarder-lambda-arn',
       },
     };

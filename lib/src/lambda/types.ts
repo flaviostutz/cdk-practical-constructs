@@ -94,7 +94,7 @@ export type LambdaConfig = Omit<
    * Register a Lambda as a subscriber of the default log group
    * @default none
    */
-  logGroupSubscriber?: LogGroupSubscriber;
+  logGroupSubscriberArn?: LogGroupSubscriberArn;
   /**
    * Create an alias named "live" that points to the latest version of this function
    * @defaults true
@@ -107,12 +107,12 @@ export type LambdaConfig = Omit<
  * It will create a `AWS::Logs::SubscriptionFilter` resource
  * This resource will trigger the configured function with all the logs generated in the deployed function
  */
-export type LogGroupSubscriber = {
-  type: LogGroupSubscriberType;
+export type LogGroupSubscriberArn = {
+  type: LogGroupSubscriberArnType;
   value: string;
 };
 
-export enum LogGroupSubscriberType {
+export enum LogGroupSubscriberArnType {
   /** The Arn of the Lambda function that will subscribe to the log group */
   Arn = 'arn',
   /** The AWS Systems Manager Parameter Store name that points to the Arn of the Lambda function that will subscribe to the log group */
