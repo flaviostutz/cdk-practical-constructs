@@ -34,7 +34,7 @@ It is a composition of the following CDK constructs:
                 // Select all the files from dist folder that doesn't have the HTML extension
                 sources: [Source.asset('./dist', { exclude: ['*.html'] })],
                 // Set the cache-control to the files, so it will add those as response headers when requesting them
-                // In this case, we want to cache all the scripts/assets files
+                // In this case, we want to cache all the scripts/style files
                 cacheControl: [CacheControl.fromString('public,max-age=31536000,immutable')],
             },
             {
