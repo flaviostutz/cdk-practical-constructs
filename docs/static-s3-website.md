@@ -1,14 +1,9 @@
 ## Construct StaticS3Website
 
-This construct creates an S3 bucket and upload any content into it.
+This construct creates an S3 bucket and uploads the contents of a local folder to it.
 It is a composition of the following CDK constructs:
     - [AWS S3 Bucket lib](https://github.com/aws/aws-cdk/tree/main/packages/aws-cdk-lib/aws-s3)
     - [AWS S3 Bucket deployment lib](https://github.com/aws/aws-cdk/tree/main/packages/aws-cdk-lib/aws-s3-deployment)
-
-Why to use it over the CDK constructs?
-    - It has good defaults. e.g., enforcing ssl; restricted access; auto deleting bucket on deleting the stack.
-    - easier interfaces. i.e. less configuration
-    - Unified construct
 
 ### Usage
 
@@ -36,16 +31,22 @@ Why to use it over the CDK constructs?
         }),
         deployments: [
             {
+                // Select all the files from dist folder that doesn't have the HTML extension
                 sources: [Source.asset('./dist', { exclude: ['*.html'] })],
+                // Set the cache-control to the files, so it will add those as response headers when requesting them
+                // In this case, we want to cache all the scripts/assets files
                 cacheControl: [CacheControl.fromString('public,max-age=31536000,immutable')],
             },
             {
                 sources: [
+                // Select all the files from dist folder that does have the HTML extension
                     Source.asset('./dist', {
                         exclude: ['*', '!*.html'],
                         ignoreMode: IgnoreMode.GLOB,
                     }),
                 ],
+                // Set the cache-control to the files, so it will add those as response headers when requesting them
+                // In this case, we don't want to cache html files, so we make sure that every new version it will take the updated version of the website
                 cacheControl: [CacheControl.fromString('public,max-age=0,must-revalidate')],
             },
             {
@@ -58,7 +59,7 @@ Why to use it over the CDK constructs?
 
     const ALLOWED_IP_RANGE = ['10.0.0.0', '172.16.0.0'];
 
-    // creates the bucket and deploy the code
+    // Creates the bucket and deploy the code
     const staticWebsite = new StaticS3Website(stack, 'my-complex-website', staticWebsiteConfig);
 
     // Creates an IAM policy
