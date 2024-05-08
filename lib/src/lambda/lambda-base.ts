@@ -14,10 +14,11 @@ import {
 } from 'aws-cdk-lib/aws-applicationautoscaling';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { RemovalPolicy } from 'aws-cdk-lib';
+import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 import { vpcFromConfig } from '../utils';
 
-import { BaseNodeJsProps, LambdaConfig } from './types';
+import { BaseNodeJsProps, LambdaConfig, LogGroupSubscriberArnType } from './types';
 
 // CDK L2 constructs
 // Docs: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.NodejsFunction.html#entry
@@ -33,7 +34,7 @@ import { BaseNodeJsProps, LambdaConfig } from './types';
  *   - allowAllOutbound is false by default. Use allowOutboundTo to specify hosts
  *   - source code path standardization to "[basePath]/[lambdaEventType]/[lambdaName]/index.ts" (can be overwritten by explicit props.entry)
  *   - custom CA support for HTTP calls (NodeJS NODE_EXTRA_CA_CERTS). See props.extraCaPubCert
- *   - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriberLambdaArn
+ *   - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriberArn
  *   - adds environment STAGE to Lambda. See props.stage
  */
 export class BaseNodeJsFunction extends Construct {
@@ -136,10 +137,8 @@ export const getPropsWithDefaults = (
     // eslint-disable-next-line prefer-destructuring
     createDefaultLogGroup = props.createDefaultLogGroup;
   }
-  if (!createDefaultLogGroup && props.logGroupSubscriberLambdaArn) {
-    throw new Error(
-      `'logGroupSubscriberLambdaArn' cannot be used if 'createDefaultLogGroup' is false`,
-    );
+  if (!createDefaultLogGroup && props.logGroupSubscriberArn) {
+    throw new Error(`'logGroupSubscriberArn' cannot be used if 'createDefaultLogGroup' is false`);
   }
 
   let { entry } = props;
@@ -255,14 +254,20 @@ const addLogSubscriber = (
   nodeJsFunction: NodejsFunction,
   props: LambdaConfig,
 ): void => {
-  if (!props.logGroupSubscriberLambdaArn) {
+  if (!props.logGroupSubscriberArn) {
     return;
   }
+
+  const functionArn =
+    props.logGroupSubscriberArn.type === LogGroupSubscriberArnType.Arn
+      ? props.logGroupSubscriberArn.value
+      : StringParameter.valueForStringParameter(scope, props.logGroupSubscriberArn.value);
+
   const logGroupFuncSubscriber = Function.fromFunctionAttributes(
     nodeJsFunction,
     'logGroupFuncSubscriber',
     {
-      functionArn: props.logGroupSubscriberLambdaArn,
+      functionArn,
       // https://aleksdaranutsa.medium.com/aws-cdk-cloudwatch-logs-subscription-f4de1f9a52bf
       sameEnvironment: true,
     },
