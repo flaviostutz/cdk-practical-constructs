@@ -189,7 +189,7 @@ describe('openapi-gateway-lambda', () => {
             ],
             "Condition": {
               "StringEquals": {
-                "aws:SourceVpce": [
+                "aws:sourceVpce": [
                   "vpce-123123"
                 ]
               }
@@ -198,6 +198,14 @@ describe('openapi-gateway-lambda', () => {
         ]
       }`,
     );
+
+    // Make sure that the workaround adds the endpoint configuration to the rest api construct
+    template.hasResourceProperties('AWS::ApiGateway::RestApi', {
+      EndpointConfiguration: {
+        Types: ['PRIVATE'],
+        VpcEndpointIds: ['vpce-123123'],
+      },
+    });
 
     template.hasResourceProperties('AWS::Logs::LogGroup', {
       LogGroupName: 'apigateway-accesslogs-myapi',
@@ -238,7 +246,7 @@ describe('openapi-gateway-lambda', () => {
     });
     expect(
       openapiDoc31WithVPCE['x-amazon-apigateway-policy'].Statement[0].Condition.StringEquals[
-        'aws:SourceVpce'
+        'aws:sourceVpce'
       ],
     ).toStrictEqual(originProps.vpcEndpointIds);
     // output includes fields from input
