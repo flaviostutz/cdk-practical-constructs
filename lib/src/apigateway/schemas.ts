@@ -16,4 +16,6 @@ const openapiOpearationSchema = z.object({
   }),
 });
 
-export const openapiOperationsSchema = z.array(openapiOpearationSchema);
+export const openapiOperationsSchema = z
+  .array(openapiOpearationSchema)
+  .min(1, { message: 'At least one operation is required' });

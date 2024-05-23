@@ -321,6 +321,34 @@ describe('openapi-gateway-lambda', () => {
     expect(f).toThrow();
   });
 
+  it('should throw error if no openapi operation is provided', async () => {
+    const app = new App();
+    const stack = new Stack(app);
+
+    const createRestApi = (): void => {
+      // eslint-disable-next-line no-new
+      new OpenApiGatewayLambda(stack, 'myapi', {
+        stage: 'tst',
+        openapiBasic: {
+          openapi: '3.0.3',
+          info: {
+            title: 'test api',
+            version: 'v1',
+          },
+        },
+        openapiOperations: [],
+      });
+    };
+
+    const expectedErrorMessage = `props.openapiOperations validation errors: {
+  "_errors": [
+    "At least one operation is required"
+  ]
+}`;
+
+    expect(createRestApi).toThrow(new Error(expectedErrorMessage));
+  });
+
   it('should throw error with invalid operations', async () => {
     const app = new App();
     const stack = new Stack(app);
