@@ -222,6 +222,7 @@ describe('openapi-gateway-lambda', () => {
     });
     expect(rs).toMatch(/^abc123yza748rt-aaab-get.*/);
   });
+
   it('getPropsWithDefaults', async () => {
     const props = getPropsWithDefaults('test-api', {
       stage: 'tst',
@@ -237,6 +238,7 @@ describe('openapi-gateway-lambda', () => {
     expect(props.restApiName).toBeUndefined();
     expect(props.deploy).toBeTruthy();
   });
+
   it('addVPCEndpointConfig private endpoint', async () => {
     const originProps = testGatewayProps();
     const originDoc31 = testOpenpidoc31();
@@ -317,6 +319,77 @@ describe('openapi-gateway-lambda', () => {
       lintOpenapiDocument(odoc, true);
     };
     expect(f).toThrow();
+  });
+
+  it('should throw error with invalid operations', async () => {
+    const app = new App();
+    const stack = new Stack(app);
+
+    const lambdaFunction = new BaseNodeJsFunction(stack, 'user-get-lambda', {
+      ...defaultLambdaConfig,
+
+      // ? The lambda must have the alias
+      createLiveAlias: false,
+    });
+
+    const openapiOperations = [
+      {
+        lambdaAlias: lambdaFunction.liveAlias,
+        routeConfig: {
+          method: 'GET',
+          responses: testUserGetRouteConfig.responses,
+          deprecated: 1,
+        },
+      },
+    ];
+
+    const createRestApi = (): void => {
+      // eslint-disable-next-line no-new
+      new OpenApiGatewayLambda(stack, 'myapi', {
+        stage: 'tst',
+        openapiBasic: {
+          openapi: '3.0.3',
+          info: {
+            title: 'test api',
+            version: 'v1',
+          },
+        },
+        // @ts-expect-error invalid operations
+        openapiOperations,
+      });
+    };
+
+    const expectedErrorMessage = `props.openapiOperations validation errors: {
+  "0": {
+    "_errors": [],
+    "lambdaAlias": {
+      "_errors": [
+        "Required"
+      ]
+    },
+    "routeConfig": {
+      "_errors": [],
+      "path": {
+        "_errors": [
+          "Required"
+        ]
+      },
+      "method": {
+        "_errors": [
+          "Invalid enum value. Expected 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace', received 'GET'"
+        ]
+      },
+      "deprecated": {
+        "_errors": [
+          "Expected boolean, received number"
+        ]
+      }
+    }
+  },
+  "_errors": []
+}`;
+
+    expect(createRestApi).toThrow(new Error(expectedErrorMessage));
   });
 });
 
