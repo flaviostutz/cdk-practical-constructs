@@ -24,6 +24,7 @@ import { Converter } from '@apiture/openapi-down-convert';
 import { lintOpenapiDocument } from '../utils/openapi-lint';
 import { randomId } from '../utils/misc';
 
+import { openapiOperationsSchema } from './schemas';
 import { LambdaOperation, OpenApiGatewayLambdaProps } from './types';
 
 /**
@@ -42,6 +43,8 @@ export class OpenApiGatewayLambda extends Construct {
 
   constructor(scope: Construct, id: string, props: OpenApiGatewayLambdaProps) {
     super(scope, id);
+
+    validateOpenapiOperations(props.openapiOperations);
 
     const { region: awsRegion } = new ScopedAws(scope);
 
@@ -99,6 +102,15 @@ export class OpenApiGatewayLambda extends Construct {
     this.logGroupAccessLog = logGroupAccessLog;
   }
 }
+
+const validateOpenapiOperations = (operations: LambdaOperation[]): void => {
+  const result = openapiOperationsSchema.safeParse(operations);
+
+  if (!result.success) {
+    const errorMessage = JSON.stringify(result.error.format(), null, 2);
+    throw new Error(`props.openapiOperations validation errors: ${errorMessage}`);
+  }
+};
 
 const addGatewayToLambdaPermissions = (
   scope: Construct,
