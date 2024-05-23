@@ -44,7 +44,7 @@ export class OpenApiGatewayLambda extends Construct {
   constructor(scope: Construct, id: string, props: OpenApiGatewayLambdaProps) {
     super(scope, id);
 
-    validateOperations(props.openapiOperations);
+    validateOpenapiOperations(props.openapiOperations);
 
     const { region: awsRegion } = new ScopedAws(scope);
 
@@ -103,7 +103,7 @@ export class OpenApiGatewayLambda extends Construct {
   }
 }
 
-const validateOperations = (operations: LambdaOperation[]): void => {
+const validateOpenapiOperations = (operations: LambdaOperation[]): void => {
   const result = openapiOperationsSchema.safeParse(operations);
 
   if (!result.success) {
