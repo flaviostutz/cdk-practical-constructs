@@ -340,11 +340,13 @@ describe('openapi-gateway-lambda', () => {
       });
     };
 
-    const expectedErrorMessage = `props.openapiOperations validation errors: {
-  "_errors": [
-    "At least one operation is required"
-  ]
-}`;
+    const expectedErrorMessage = `props.openapiOperations validation errors: ${JSON.stringify(
+      {
+        _errors: ['At least one operation is required'],
+      },
+      null,
+      2,
+    )}`;
 
     expect(createRestApi).toThrow(new Error(expectedErrorMessage));
   });
@@ -387,35 +389,33 @@ describe('openapi-gateway-lambda', () => {
       });
     };
 
-    const expectedErrorMessage = `props.openapiOperations validation errors: {
-  "0": {
-    "_errors": [],
-    "lambdaAlias": {
-      "_errors": [
-        "Required"
-      ]
-    },
-    "routeConfig": {
-      "_errors": [],
-      "path": {
-        "_errors": [
-          "Required"
-        ]
+    const expectedErrorMessage = `props.openapiOperations validation errors: ${JSON.stringify(
+      {
+        '0': {
+          _errors: [],
+          lambdaAlias: {
+            _errors: ['Required'],
+          },
+          routeConfig: {
+            _errors: [],
+            path: {
+              _errors: ['Required'],
+            },
+            method: {
+              _errors: [
+                "Invalid enum value. Expected 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace', received 'GET'",
+              ],
+            },
+            deprecated: {
+              _errors: ['Expected boolean, received number'],
+            },
+          },
+        },
+        _errors: [],
       },
-      "method": {
-        "_errors": [
-          "Invalid enum value. Expected 'get' | 'post' | 'put' | 'delete' | 'patch' | 'head' | 'options' | 'trace', received 'GET'"
-        ]
-      },
-      "deprecated": {
-        "_errors": [
-          "Expected boolean, received number"
-        ]
-      }
-    }
-  },
-  "_errors": []
-}`;
+      null,
+      2,
+    )}`;
 
     expect(createRestApi).toThrow(new Error(expectedErrorMessage));
   });
