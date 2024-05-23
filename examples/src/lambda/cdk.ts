@@ -6,7 +6,7 @@ import {
   BaseNodeJsProps,
   EventType,
   vpcFromConfig,
-  LogGroupSubscriberArnType,
+  LogGroupSubscriberLambdaArnType,
 } from 'cdk-practical-constructs';
 import { Construct } from 'constructs';
 
@@ -39,8 +39,8 @@ export const addLambdaGetTest = (scope: Construct): void => {
   customSG.addIngressRule(Peer.ipv4('9.9.9.9/32'), Port.allTraffic(), 'allow ingress');
   customSG.addEgressRule(Peer.ipv4('8.8.8.8/32'), Port.allTraffic(), 'allow egress');
   lambdaConfig.securityGroups = [customSG];
-  lambdaConfig.logGroupSubscriberArn = {
-    type: LogGroupSubscriberArnType.Arn,
+  lambdaConfig.logGroupSubscriberLambdaArn = {
+    type: LogGroupSubscriberLambdaArnType.Arn,
     value: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
   };
 
