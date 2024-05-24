@@ -18,7 +18,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 import { vpcFromConfig } from '../utils';
 
-import { BaseNodeJsProps, LambdaConfig, LogGroupSubscriberArnType } from './types';
+import { BaseNodeJsProps, LambdaConfig, LogGroupSubscriberLambdaArnType } from './types';
 
 // CDK L2 constructs
 // Docs: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_lambda_nodejs.NodejsFunction.html#entry
@@ -34,7 +34,7 @@ import { BaseNodeJsProps, LambdaConfig, LogGroupSubscriberArnType } from './type
  *   - allowAllOutbound is false by default. Use allowOutboundTo to specify hosts
  *   - source code path standardization to "[basePath]/[lambdaEventType]/[lambdaName]/index.ts" (can be overwritten by explicit props.entry)
  *   - custom CA support for HTTP calls (NodeJS NODE_EXTRA_CA_CERTS). See props.extraCaPubCert
- *   - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriberArn
+ *   - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriberLambdaArn
  *   - adds environment STAGE to Lambda. See props.stage
  */
 export class BaseNodeJsFunction extends Construct {
@@ -137,8 +137,10 @@ export const getPropsWithDefaults = (
     // eslint-disable-next-line prefer-destructuring
     createDefaultLogGroup = props.createDefaultLogGroup;
   }
-  if (!createDefaultLogGroup && props.logGroupSubscriberArn) {
-    throw new Error(`'logGroupSubscriberArn' cannot be used if 'createDefaultLogGroup' is false`);
+  if (!createDefaultLogGroup && props.logGroupSubscriberLambdaArn) {
+    throw new Error(
+      `'logGroupSubscriberLambdaArn' cannot be used if 'createDefaultLogGroup' is false`,
+    );
   }
 
   let { entry } = props;
@@ -254,14 +256,14 @@ const addLogSubscriber = (
   nodeJsFunction: NodejsFunction,
   props: LambdaConfig,
 ): void => {
-  if (!props.logGroupSubscriberArn) {
+  if (!props.logGroupSubscriberLambdaArn) {
     return;
   }
 
   const functionArn =
-    props.logGroupSubscriberArn.type === LogGroupSubscriberArnType.Arn
-      ? props.logGroupSubscriberArn.value
-      : StringParameter.valueForStringParameter(scope, props.logGroupSubscriberArn.value);
+    props.logGroupSubscriberLambdaArn.type === LogGroupSubscriberLambdaArnType.Arn
+      ? props.logGroupSubscriberLambdaArn.value
+      : StringParameter.valueForStringParameter(scope, props.logGroupSubscriberLambdaArn.value);
 
   const logGroupFuncSubscriber = Function.fromFunctionAttributes(
     nodeJsFunction,
