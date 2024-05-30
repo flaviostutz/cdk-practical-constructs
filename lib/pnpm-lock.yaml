@@ -9,8 +9,8 @@ dependencies:
     specifier: ^0.9.0
     version: 0.9.0
   '@asteasolutions/zod-to-openapi':
-    specifier: ^6.3.1
-    version: 6.3.1(zod@3.22.4)
+    specifier: ^7.0.0
+    version: 7.0.0(zod@3.23.8)
   '@aws-sdk/client-secrets-manager':
     specifier: ^3.495.0
     version: 3.496.0
@@ -63,8 +63,8 @@ dependencies:
     specifier: ^0.2.1
     version: 0.2.1
   zod:
-    specifier: ^3.22.4
-    version: 3.22.4
+    specifier: ^3.23.8
+    version: 3.23.8
 
 devDependencies:
   '@babel/preset-typescript':
@@ -143,13 +143,13 @@ packages:
       typescript: 4.9.5
     dev: false
 
-  /@asteasolutions/zod-to-openapi@6.3.1(zod@3.22.4):
-    resolution: {integrity: sha512-1CRWBqslgdBpZeJnxxksGirAQ39Iztxk+LzTkYwoP0mNzuaULa604s8Xc5V9yzmYccwJ89O9fPQgxCkbNN398g==}
+  /@asteasolutions/zod-to-openapi@7.0.0(zod@3.23.8):
+    resolution: {integrity: sha512-rJRKHD2m6nUb/9ZheeN8nqOURX24WTzY8Sex1ZKT0Kpx+xfpRcD0fTD6vEeXNHGaDGxzu65Jj/jb2x6nLTjcMw==}
     peerDependencies:
       zod: ^3.20.2
     dependencies:
       openapi3-ts: 4.2.1
-      zod: 3.22.4
+      zod: 3.23.8
     dev: false
 
   /@asyncapi/specs@4.3.1:
@@ -7128,6 +7128,6 @@ packages:
     engines: {node: '>=10'}
     dev: true
 
-  /zod@3.22.4:
-    resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+  /zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
     dev: false

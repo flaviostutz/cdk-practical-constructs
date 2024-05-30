@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@apiture/openapi-down-convert": "^0.9.0",
-    "@asteasolutions/zod-to-openapi": "^6.3.1",
+    "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@aws-sdk/client-secrets-manager": "^3.495.0",
     "@stoplight/spectral-cli": "^6.11.0",
     "aws-cdk-lib": "2.117.0",
@@ -60,7 +60,11 @@
     "qs": "^6.11.2",
     "scoperjs": "^1.0.1",
     "tmp": "^0.2.1",
-    "zod": "^3.22.4"
+    "zod": "^3.23.8"
+  },
+  "peerDependencies": {
+    "zod": "3.x",
+    "@asteasolutions/zod-to-openapi": "7.x"
   },
   "publishConfig": {
     "access": "public",
