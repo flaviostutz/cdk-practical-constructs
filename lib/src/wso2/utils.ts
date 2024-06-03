@@ -36,7 +36,7 @@ export const addLambdaAndProviderForWso2Operations = (args: {
   const customResourceFunction = new BaseNodeJsFunction(args.scope, `${args.id}-custom-lambda`, {
     ...args.props.customResourceConfig,
     stage: 'wso2-custom-lambda',
-    timeout: Duration.minutes(5),
+    timeout: Duration.minutes(10),
     memorySize: 256,
     runtime: Runtime.NODEJS_18_X,
     eventType: EventType.CustomResource,
