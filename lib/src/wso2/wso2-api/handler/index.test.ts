@@ -99,7 +99,7 @@ describe('wso2 custom resource lambda', () => {
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
-      .times(1) // check create or update
+      .times(2) // check overlap, check create or update
       .reply(200, toResultList({ ...testDefs, lastUpdatedTime: '2020-10-10' }));
 
     nock(baseWso2Url)
@@ -116,7 +116,7 @@ describe('wso2 custom resource lambda', () => {
     // api get mock
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis\/.*$/)
-      .times(1) // check if content matches
+      .times(2) // check overlap, check if content matches
       .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
 
     nock(baseWso2Url)
@@ -146,13 +146,13 @@ describe('wso2 custom resource lambda', () => {
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
-      .times(3) // check create or update, check if updated, check if published
+      .times(4) // check overlap, check create or update, check if updated, check if published
       .reply(200, toResultList(testDefs));
 
     // api get mock
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis\/.*$/)
-      .times(1) // check if content matches
+      .times(2) // check overlap, check if content matches
       .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
 
     nock(baseWso2Url)
@@ -191,8 +191,14 @@ describe('wso2 custom resource lambda', () => {
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis$/)
       .query(true)
-      .times(1) // check create or update
+      .times(2) // check overlap, create or update
       .reply(200, toResultList(testDefs));
+
+    // api get mock (check overlap fields)
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
 
     // api update mock
     nock(baseWso2Url)
