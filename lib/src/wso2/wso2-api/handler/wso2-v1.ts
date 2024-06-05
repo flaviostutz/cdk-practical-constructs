@@ -103,7 +103,7 @@ export const removeApiInWso2 = async (args: {
 export const createUpdateAndPublishApiInWso2 = async (
   args: UpsertWso2Args,
 ): Promise<{ wso2ApiId: string; endpointUrl?: string }> => {
-  // TODO add retry witth backoff for all these operations
+  const needWaitBeforeUpdateOpenapiDocument = await checkApiDefAndOpenapiOverlap(args);
 
   console.log('');
   console.log(`>>> Create or update api in WSO2...`);
@@ -112,6 +112,15 @@ export const createUpdateAndPublishApiInWso2 = async (
     async () => createUpdateApiInWso2AndCheck(args),
     args.retryOptions.mutationRetries,
   );
+
+  if (needWaitBeforeUpdateOpenapiDocument) {
+    console.log('');
+    console.log(
+      '>>> Wait for 2 minutes for the WSO2 api changes propagate before updating Openapi document...',
+    );
+    // eslint-disable-next-line no-promise-executor-return, promise/param-names
+    await new Promise((resolveP) => setTimeout(resolveP, 120000));
+  }
 
   console.log('');
   console.log(`>>> Update Openapi definitions in WSO2 (Swagger)...`);
@@ -449,4 +458,34 @@ export const checkWSO2Equivalence = (
       data,
     })),
   };
+};
+
+/**
+ * Checks wether the deployment has overlaps between the API definition and the OpenAPI document
+ */
+const checkApiDefAndOpenapiOverlap = async (args: UpsertWso2Args): Promise<boolean> => {
+  if (!args.apiBeforeUpdate) {
+    // ? API is being created
+    return false;
+  }
+
+  return backOff(async () => {
+    const searchApi = await findWso2Api({
+      apiDefinition: args.apiDefinition,
+      wso2Axios: args.wso2Axios,
+      wso2Tenant: args.wso2Tenant,
+    });
+
+    if (!searchApi) {
+      throw new Error('WSO2 API not found');
+    }
+
+    const apir = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${searchApi.id}`);
+    const apiDetails = apir.data as PublisherPortalAPIv1;
+
+    const { isEquivalent } = checkWSO2Equivalence(apiDetails, args.apiDefinition);
+
+    // ? if the wso2 configuration is not equivalent, it will also overlap the openapi document information
+    return !isEquivalent;
+  }, args.retryOptions.checkRetries);
 };

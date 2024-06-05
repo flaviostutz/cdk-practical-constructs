@@ -2451,7 +2451,7 @@ packages:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/type-utils': 5.62.0(eslint@8.57.0)(typescript@5.3.3)
       '@typescript-eslint/utils': 5.62.0(eslint@8.57.0)(typescript@5.3.3)
-      debug: 4.3.4
+      debug: 4.3.5
       eslint: 8.57.0
       graphemer: 1.4.0
       ignore: 5.3.1
@@ -2476,7 +2476,7 @@ packages:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.3.3)
-      debug: 4.3.4
+      debug: 4.3.5
       eslint: 8.57.0
       typescript: 5.3.3
     transitivePeerDependencies:
@@ -2503,7 +2503,7 @@ packages:
     dependencies:
       '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.3.3)
       '@typescript-eslint/utils': 5.62.0(eslint@8.57.0)(typescript@5.3.3)
-      debug: 4.3.4
+      debug: 4.3.5
       eslint: 8.57.0
       tsutils: 3.21.0(typescript@5.3.3)
       typescript: 5.3.3
@@ -2527,7 +2527,7 @@ packages:
     dependencies:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
-      debug: 4.3.4
+      debug: 4.3.5
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.6.2
@@ -3449,6 +3449,18 @@ packages:
       ms: 2.1.2
     dev: true
 
+  /debug@4.3.5:
+    resolution: {integrity: sha512-pt0bNEmneDIvdL1Xsd9oDQ/wrQRkXDT4AUWlNZNPKvW5x/jyO9VFXkJUP07vQ2upmw5PlaITaPKc31jK13V+jg==}
+    engines: {node: '>=6.0'}
+    peerDependencies:
+      supports-color: '*'
+    peerDependenciesMeta:
+      supports-color:
+        optional: true
+    dependencies:
+      ms: 2.1.2
+    dev: true
+
   /decode-uri-component@0.2.2:
     resolution: {integrity: sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==}
     engines: {node: '>=0.10'}
@@ -3888,7 +3900,7 @@ packages:
       eslint: '*'
       eslint-plugin-import: '*'
     dependencies:
-      debug: 4.3.4
+      debug: 4.3.5
       enhanced-resolve: 5.16.1
       eslint: 8.57.0
       eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
@@ -7463,7 +7475,7 @@ packages:
     dev: false
 
   file:../lib/dist/cdk-practical-constructs-0.0.1.tgz(@asteasolutions/zod-to-openapi@7.0.0)(zod@3.23.8):
-    resolution: {integrity: sha512-P+5A+hkFbHgkMNE0Qp96y+E6yKFgRfjrJOkXSSu/h30NsmlyDZ5WYEmb5ukM8u8/pt5HNK+1AFJdnoE3LuZI7A==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
+    resolution: {integrity: sha512-/BtEajTED991xxpmSfNoHjQ/qpli8B644trzBJsOubMReF6luwfL9b79biGDvY8otoNb9ZWFmiUBUNSvA5zsSA==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
     id: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
     name: cdk-practical-constructs
     version: 0.0.1
