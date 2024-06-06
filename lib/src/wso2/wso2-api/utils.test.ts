@@ -85,4 +85,10 @@ describe('normalizeCorsConfigurationValues', () => {
     const result = normalizeCorsConfigurationValues(undefined);
     expect(result).toBeUndefined();
   });
+
+  it('should return undefined if configuration is empty', () => {
+    // @ts-expect-error - Testing for undefined
+    const result = normalizeCorsConfigurationValues({});
+    expect(result).toBeUndefined();
+  });
 });

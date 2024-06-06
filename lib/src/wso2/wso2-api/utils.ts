@@ -49,18 +49,33 @@ type NormalizedCorsConfiguration = Omit<
 export const normalizeCorsConfigurationValues = (
   corsConfiguration?: APICorsConfiguration,
 ): undefined | NormalizedCorsConfiguration => {
-  if (!corsConfiguration) return corsConfiguration;
+  const corsConfigurationObject = objectWithContentOrUndefined(corsConfiguration);
+  if (!corsConfigurationObject) {
+    // eslint-disable-next-line no-undefined
+    return undefined;
+  }
 
   const { corsConfigurationEnabled, accessControlAllowCredentials, ...restCorsConfiguration } =
-    corsConfiguration;
+    corsConfigurationObject;
 
   return {
     ...restCorsConfiguration,
-    ...(typeof corsConfiguration.corsConfigurationEnabled === 'boolean' && {
-      corsConfigurationEnabled: String(corsConfiguration.corsConfigurationEnabled),
+    ...(typeof corsConfigurationEnabled === 'boolean' && {
+      corsConfigurationEnabled: String(corsConfigurationEnabled),
     }),
-    ...(typeof corsConfiguration.accessControlAllowCredentials === 'boolean' && {
-      accessControlAllowCredentials: String(corsConfiguration.accessControlAllowCredentials),
+    ...(typeof accessControlAllowCredentials === 'boolean' && {
+      accessControlAllowCredentials: String(accessControlAllowCredentials),
     }),
   };
+};
+
+/**
+ * This function checks if the object has content or nor and only returns the object if it has content
+ */
+export const objectWithContentOrUndefined = <T>(obj: T): T | undefined => {
+  if (!obj || typeof obj !== 'object' || !Object.keys(obj).length) {
+    // eslint-disable-next-line no-undefined
+    return undefined;
+  }
+  return obj;
 };
