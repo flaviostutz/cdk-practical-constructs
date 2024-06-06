@@ -13,7 +13,11 @@ import {
   Wso2ApiDefinitionV1,
   Wso2ApiListV1,
 } from '../v1/types';
-import { areAttributeNamesEqual, normalizeCorsConfigurationValues } from '../utils';
+import {
+  areAttributeNamesEqual,
+  normalizeCorsConfigurationValues,
+  objectWithContentOrUndefined,
+} from '../utils';
 import { RetryOptions } from '../../types';
 
 export const findWso2Api = async (args: {
@@ -409,8 +413,8 @@ export const checkWSO2Equivalence = (
     {
       name: 'businessInformation',
       check: isEqual(
-        wso2ApiDefinition.businessInformation,
-        constructApiDefinition.businessInformation,
+        objectWithContentOrUndefined(wso2ApiDefinition.businessInformation),
+        objectWithContentOrUndefined(constructApiDefinition.businessInformation),
       ),
       data: {
         inWso2: wso2ApiDefinition.businessInformation,
@@ -419,7 +423,10 @@ export const checkWSO2Equivalence = (
     },
     {
       name: 'endpointConfig',
-      check: isEqual(wso2ApiDefinition.endpointConfig, constructApiDefinition.endpointConfig),
+      check: isEqual(
+        objectWithContentOrUndefined(wso2ApiDefinition.endpointConfig),
+        objectWithContentOrUndefined(constructApiDefinition.endpointConfig),
+      ),
       data: {
         inWso2: wso2ApiDefinition.endpointConfig,
         toBeDeployed: constructApiDefinition.endpointConfig,
@@ -428,8 +435,8 @@ export const checkWSO2Equivalence = (
     {
       name: 'additionalProperties',
       check: isEqual(
-        wso2ApiDefinition.additionalProperties,
-        constructApiDefinition.additionalProperties,
+        objectWithContentOrUndefined(wso2ApiDefinition.additionalProperties),
+        objectWithContentOrUndefined(constructApiDefinition.additionalProperties),
       ),
       data: {
         inWso2: wso2ApiDefinition.additionalProperties,
@@ -440,7 +447,7 @@ export const checkWSO2Equivalence = (
       name: 'corsConfiguration',
       check: isEqual(
         normalizeCorsConfigurationValues(wso2ApiDefinition.corsConfiguration),
-        constructApiDefinition.corsConfiguration,
+        objectWithContentOrUndefined(constructApiDefinition.corsConfiguration),
       ),
       data: {
         inWso2: normalizeCorsConfigurationValues(wso2ApiDefinition.corsConfiguration),

@@ -130,5 +130,27 @@ describe('wso2 v1', () => {
         },
       ]);
     });
+
+    it('should handle empty objects when checking equivalence', () => {
+      const wso2apiData = {
+        ...petstoreFetchDataWso2Api,
+        businessInformation: {},
+        endpointConfig: {},
+        additionalProperties: {},
+        corsConfiguration: {},
+      };
+
+      const constructApiDefinition = {
+        ...petstoreFetchDataWso2Api,
+        businessInformation: {},
+        endpointConfig: {},
+        additionalProperties: {},
+        corsConfiguration: {},
+      };
+
+      // @ts-expect-error - Testing with empty objects
+      const result = checkWSO2Equivalence(wso2apiData, constructApiDefinition);
+      expect(result.isEquivalent).toBeTruthy();
+    });
   });
 });
