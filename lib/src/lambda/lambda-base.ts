@@ -13,7 +13,7 @@ import {
   ServiceNamespace,
 } from 'aws-cdk-lib/aws-applicationautoscaling';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { RemovalPolicy } from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib/core';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 import { vpcFromConfig } from '../utils';

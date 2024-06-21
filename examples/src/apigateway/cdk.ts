@@ -2,8 +2,8 @@
 import { Construct } from 'constructs';
 import { LambdaOperation, OpenApiGatewayLambda } from 'cdk-practical-constructs';
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
+import { RemovalPolicy } from 'aws-cdk-lib/core';
 import { z } from 'zod';
-import { RemovalPolicy } from 'aws-cdk-lib';
 
 import { StageStackProps } from '../cdk/types/StageStackProps';
 

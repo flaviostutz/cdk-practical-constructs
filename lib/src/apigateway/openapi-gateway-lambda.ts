@@ -15,7 +15,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import type { oas30, oas31 } from 'openapi3-ts';
 import { Construct } from 'constructs';
-import { ScopedAws, Size } from 'aws-cdk-lib';
+import { ScopedAws, Size } from 'aws-cdk-lib/core';
 import { ILogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { OpenAPIRegistry, OpenApiGeneratorV31, RouteConfig } from '@asteasolutions/zod-to-openapi';

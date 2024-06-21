@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { existsSync } from 'fs';
 
-import { Duration, ScopedAws } from 'aws-cdk-lib';
+import { Duration, ScopedAws } from 'aws-cdk-lib/core';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Runtime } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
