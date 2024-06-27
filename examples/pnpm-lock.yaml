@@ -3698,7 +3698,7 @@ packages:
       is-string: 1.0.7
       is-typed-array: 1.1.13
       is-weakref: 1.0.2
-      object-inspect: 1.13.1
+      object-inspect: 1.13.2
       object-keys: 1.1.1
       object.assign: 4.1.5
       regexp.prototype.flags: 1.5.2
@@ -6095,6 +6095,11 @@ packages:
   /object-inspect@1.13.1:
     resolution: {integrity: sha512-5qoj1RUiKOMsCCNLV1CBiPYE10sziTsnmNxkAI/rZhiD63CF7IqdFGC/XzjWjpSgLf0LxXX3bDFIh0E18f6UhQ==}
 
+  /object-inspect@1.13.2:
+    resolution: {integrity: sha512-IRZSRuzJiynemAXPYtPe5BoI/RESNYR7TYm50MC5Mqbd3Jmw5y790sErYw3V6SryFJD64b74qQQs9wn5Bg/k3g==}
+    engines: {node: '>= 0.4'}
+    dev: true
+
   /object-keys@1.1.1:
     resolution: {integrity: sha512-NuAESUOUMrlIXOfHKzD6bpPu3tYt3xvjNdRIQ+FeT0lNb4K8WR70CaDxhuNguS2XG+GjkyMwOzsN5ZktImfhLA==}
     engines: {node: '>= 0.4'}
@@ -6716,7 +6721,7 @@ packages:
       call-bind: 1.0.7
       es-errors: 1.3.0
       get-intrinsic: 1.2.4
-      object-inspect: 1.13.1
+      object-inspect: 1.13.2
     dev: true
 
   /signal-exit@3.0.7:
@@ -7487,7 +7492,7 @@ packages:
     dev: false
 
   file:../lib/dist/cdk-practical-constructs-0.0.1.tgz(@asteasolutions/zod-to-openapi@7.0.0)(zod@3.23.8):
-    resolution: {integrity: sha512-dc8PJsfSfZ0oIPBFx3UkCLmZZ+5EIyV2rLpv6bVKL4OnyXoVQZ21S9fePjhJBgfC/EYJlHsy5tDc1h2O7J5DBg==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
+    resolution: {integrity: sha512-A/YR94GzzHeONeig4tXrcv3TSCT9OT+gdLXzPUGwZdVYiJegl0Ny5VVLpfWNoFzufVd04DsALJvpiIdCky1U5g==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
     id: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
     name: cdk-practical-constructs
     version: 0.0.1
