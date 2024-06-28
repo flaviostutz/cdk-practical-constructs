@@ -63,11 +63,16 @@
     "zod": "^3.23.8"
   },
   "peerDependencies": {
-    "zod": "3.x",
-    "@asteasolutions/zod-to-openapi": "7.x"
+    "@asteasolutions/zod-to-openapi": "7.x",
+    "zod": "3.x"
   },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
+  },
+  "pnpm": {
+    "overrides": {
+      "braces@<3.0.3": ">=3.0.3"
+    }
   }
 }
