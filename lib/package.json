@@ -23,7 +23,7 @@
   "homepage": "https://github.com/flaviostutz/cdk-practical-constructs#readme",
   "devDependencies": {
     "@babel/preset-typescript": "^7.21.0",
-    "@stutzlab/eslint-config": "^3.0.4",
+    "@stutzlab/eslint-config": "^3.1.1",
     "@tsconfig/node16": "16.1.1",
     "@types/aws-lambda": "^8.10.131",
     "@types/jest": "^29.4.0",

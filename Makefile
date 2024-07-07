@@ -15,3 +15,6 @@ SHELL := /bin/bash
 
 publish:
 	cd lib; make publish
+
+prepare:
+	@echo "Run 'nvm use; corepack enable'"
