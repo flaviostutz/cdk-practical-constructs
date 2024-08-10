@@ -43,7 +43,7 @@
   "dependencies": {
     "@apiture/openapi-down-convert": "^0.9.0",
     "@asteasolutions/zod-to-openapi": "^7.0.0",
-    "@aws-sdk/client-secrets-manager": "^3.495.0",
+    "@aws-sdk/client-secrets-manager": "^3.624.0",
     "@stoplight/spectral-cli": "^6.11.0",
     "aws-cdk-lib": "2.117.0",
     "aws-lambda": "^1.0.7",
