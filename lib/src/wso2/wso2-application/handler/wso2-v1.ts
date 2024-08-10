@@ -2,8 +2,8 @@
 import { backOff } from 'exponential-backoff';
 import { AxiosInstance } from 'axios';
 
-import { Wso2ApplicationDefinition, Wso2ApplicationInfo } from '../v1/types';
-import { RetryOptions } from '../../types';
+import type { Wso2ApplicationDefinition, Wso2ApplicationInfo } from '../v1/types';
+import type { RetryOptions } from '../../types';
 
 export type UpsertWso2Args = {
   wso2Axios: AxiosInstance;
