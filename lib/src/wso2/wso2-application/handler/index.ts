@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 
-import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
-import { AxiosInstance } from 'axios';
+import type { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
+import type { AxiosInstance } from 'axios';
 
-import { Wso2ApplicationCustomResourceProperties } from '../types';
 import { prepareAxiosForWso2Calls } from '../../wso2-utils';
-import { Wso2ApplicationInfo } from '../v1/types';
 import { applyRetryDefaults, truncateStr } from '../../utils';
+import type { Wso2ApplicationInfo } from '../v1/types';
+import type { Wso2ApplicationCustomResourceProperties } from '../types';
 
 import { createUpdateApplicationInWso2, removeApplicationInWso2 } from './wso2-v1';
 

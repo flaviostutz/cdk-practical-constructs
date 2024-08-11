@@ -2,7 +2,7 @@ import { Construct } from 'constructs';
 import { CustomResource, RemovalPolicy } from 'aws-cdk-lib/core';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
 
-import { addLambdaAndProviderForWso2Operations } from '../utils';
+import { addLambdaAndProviderForWso2Operations } from '../utils-cdk';
 
 import { Wso2ApplicationCustomResourceProperties, Wso2ApplicationProps } from './types';
 

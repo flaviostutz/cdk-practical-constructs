@@ -4,7 +4,7 @@ import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { OpenAPIObject } from 'openapi3-ts/oas30';
 
 import { lintOpenapiDocument } from '../../utils/openapi-lint';
-import { addLambdaAndProviderForWso2Operations } from '../utils';
+import { addLambdaAndProviderForWso2Operations } from '../utils-cdk';
 
 import { Wso2ApiCustomResourceProperties, Wso2ApiProps } from './types';
 import { applyDefaultsWso2ApiDefinition, validateWso2ApiDefs } from './api-defs';
