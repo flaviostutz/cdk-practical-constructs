@@ -239,17 +239,15 @@ export const generateOpenapiDocWithExtensions = (
   for (let i = 0; i < props.openapiOperations.length; i += 1) {
     const lambdaOperation = props.openapiOperations[i];
 
-    registry.registerPath(lambdaOperation.routeConfig);
-    let { operationId } = lambdaOperation.routeConfig;
-    if (!operationId) {
-      operationId = generateOperationId(lambdaOperation.routeConfig);
-      lambdaOperation.routeConfig.operationId = operationId;
-    }
-    if (operationId) {
+    const operationId =
+      lambdaOperation.routeConfig.operationId ?? generateOperationId(lambdaOperation.routeConfig);
+
+    registry.registerPath({
+      ...lambdaOperation.routeConfig,
+      operationId,
+    });
+
     lambdaOperationsMap[operationId] = lambdaOperation;
-    } else {
-      throw new Error("'operationId' should be defined");
-    }
   }
 
   const generator = new OpenApiGeneratorV31(registry.definitions);
