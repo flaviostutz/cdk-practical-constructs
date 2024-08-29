@@ -14,7 +14,7 @@ build: install
 
 lint:
 	pnpm exec eslint ./src --ext .ts
-	pnpm audit
+	pnpm audit --audit-level high
 
 lint-fix:
 	pnpm exec eslint . --ext .ts --fix

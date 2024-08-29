@@ -18,8 +18,8 @@ dependencies:
     specifier: ^3.624.0
     version: 3.624.0
   '@stoplight/spectral-cli':
-    specifier: ^6.11.0
-    version: 6.11.0
+    specifier: ^6.11.1
+    version: 6.11.1
   aws-cdk-lib:
     specifier: 2.117.0
     version: 2.117.0(constructs@10.3.0)
@@ -27,8 +27,8 @@ dependencies:
     specifier: ^1.0.7
     version: 1.0.7
   axios:
-    specifier: ^1.6.8
-    version: 1.6.8
+    specifier: ^1.7.5
+    version: 1.7.5
   constructs:
     specifier: ^10.3.0
     version: 10.3.0
@@ -2167,8 +2167,8 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /@stoplight/spectral-cli@6.11.0:
-    resolution: {integrity: sha512-IURDN47BPIf3q4ZyUPujGpBzuHWFE5yT34w9rTJ1GKA4SgdscEdQO9KoTjOPT4G4cvDlEV3bNxwQ3uRm7+wRlA==}
+  /@stoplight/spectral-cli@6.11.1:
+    resolution: {integrity: sha512-1zqsQ0TOuVSnxxZ9mHBfC0IygV6ex7nAY6Mp59mLmw5fW103U9yPVK5ZcX9ZngCmr3PdteAnMDUIIaoDGso6nA==}
     engines: {node: ^12.20 || >= 14.13}
     hasBin: true
     dependencies:
@@ -2190,7 +2190,7 @@ packages:
       pony-cause: 1.1.1
       stacktracey: 2.1.8
       tslib: 2.6.2
-      yargs: 17.3.1
+      yargs: 17.7.2
     transitivePeerDependencies:
       - encoding
     dev: false
@@ -3037,8 +3037,8 @@ packages:
       xml2js: 0.5.0
     dev: false
 
-  /axios@1.6.8:
-    resolution: {integrity: sha512-v/ZHtJDU39mDpyBoFVkETcd/uNdxrWRrg3bKpOKzXFA6Bvqopts6ALSMU3y6ijYxbw2B+wPrIv46egTzJXCLGQ==}
+  /axios@1.7.5:
+    resolution: {integrity: sha512-fZu86yCo+svH3uqJ/yTdQ0QHpQu5oL+/QE+QPSv6BZSkDAoky9vytxp7u5qk83OJFS3kEBcesWni9WTZAv3tSw==}
     dependencies:
       follow-redirects: 1.15.6
       form-data: 4.0.0
@@ -3341,7 +3341,6 @@ packages:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
-    dev: true
 
   /co@4.6.0:
     resolution: {integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ==}
@@ -7084,19 +7083,6 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
-  /yargs@17.3.1:
-    resolution: {integrity: sha512-WUANQeVgjLbNsEmGk20f+nlHgOqzRFpiGWVaBrYGYIGANIIu3lWjoyi0fNlFmJkvfhCZ6BXINe7/W2O2bV4iaA==}
-    engines: {node: '>=12'}
-    dependencies:
-      cliui: 7.0.4
-      escalade: 3.1.1
-      get-caller-file: 2.0.5
-      require-directory: 2.1.1
-      string-width: 4.2.3
-      y18n: 5.0.8
-      yargs-parser: 21.1.1
-    dev: false
-
   /yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
@@ -7108,7 +7094,6 @@ packages:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-    dev: true
 
   /yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
