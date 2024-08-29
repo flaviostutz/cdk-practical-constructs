@@ -419,6 +419,62 @@ describe('openapi-gateway-lambda', () => {
 
     expect(createRestApi).toThrow(new Error(expectedErrorMessage));
   });
+
+  it('should be able to have 2 endpoints calling the same lambda', async () => {
+    const app = new App();
+    const stack = new Stack(app);
+
+    // user get test operation
+    const lambdaFunction = new BaseNodeJsFunction(stack, 'user-get-lambda-fn', defaultLambdaConfig);
+
+    const userGetOperation: LambdaOperation = {
+      lambdaAlias: lambdaFunction.liveAlias!,
+      routeConfig: {
+        ...testUserGetRouteConfig,
+        path: '/users1/{id}',
+      },
+    };
+
+    const userGetOperation2: LambdaOperation = {
+      lambdaAlias: lambdaFunction.liveAlias!,
+      routeConfig: {
+        ...testUserGetRouteConfig,
+        path: '/users2/{id}',
+      },
+    };
+
+    const openapiOperations: LambdaOperation[] = [userGetOperation, userGetOperation2];
+
+    // create rest api
+    // eslint-disable-next-line no-new
+    new OpenApiGatewayLambda(stack, 'myapi', {
+      stage: 'tst',
+      openapiBasic: {
+        openapi: '3.0.3',
+        info: {
+          title: 'test api',
+          version: 'v1',
+        },
+      },
+      openapiOperations,
+    });
+
+    // execute synth and test results
+    const template = Template.fromStack(stack);
+
+    expect(template).toBeDefined();
+
+    template.resourceCountIs('AWS::Lambda::Permission', 1);
+
+    // apigw allowed to call lambda
+    template.hasResourceProperties('AWS::Lambda::Permission', {
+      Action: 'lambda:InvokeFunction',
+      FunctionName: {
+        Ref: stack.getLogicalId(userGetOperation.lambdaAlias.node.defaultChild as CfnFunction),
+      },
+      Principal: 'apigateway.amazonaws.com',
+    });
+  });
 });
 
 const testUserGetOperation = (scope: Construct, lambdaConfig: BaseNodeJsProps): LambdaOperation => {

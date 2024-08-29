@@ -51,8 +51,6 @@ export class OpenApiGatewayLambda extends Construct {
     const propsWithDefaults = getPropsWithDefaults(id, props);
     const { deployOptions, logGroupAccessLog } = addLogGroupForTracing(this, propsWithDefaults);
 
-    addGatewayToLambdaPermissions(this, propsWithDefaults.openapiOperations);
-
     // zod-to-openapi only supports openapi 3.1
     let openapiDoc31 = generateOpenapiDocWithExtensions(propsWithDefaults, awsRegion);
 
@@ -86,6 +84,8 @@ export class OpenApiGatewayLambda extends Construct {
       deployOptions,
     });
 
+    addGatewayToLambdaPermissions(this, propsWithDefaults.openapiOperations, specRestApi);
+
     // Workaround to link the vpc endpoint ids top the api gateway > api settings
     // This should be removed when this issue is fixed
     // https://github.com/aws/aws-cdk/issues/9684
@@ -115,14 +115,34 @@ const validateOpenapiOperations = (operations: LambdaOperation[]): void => {
 const addGatewayToLambdaPermissions = (
   scope: Construct,
   lambdaOperations: LambdaOperation[],
+  specRestApi: SpecRestApi,
 ): void => {
-  if (!lambdaOperations || lambdaOperations.length === 0) {
-    throw new Error('lambdaOperations prop is required and should be non-empty');
-  }
+  const addedPermissionLambdaSet = new Set();
+
   lambdaOperations.forEach((lambdaOperation: LambdaOperation) => {
-    lambdaOperation.lambdaAlias.addPermission('allow-apigw-to-lambda', {
-      principal: new ServicePrincipal('apigateway.amazonaws.com'),
-    });
+    // ? this `functionArn` is the alias arn
+    // ? The alias arn structure is `arn:aws:lambda:region:account-id:function:function-name:alias-name`
+    const aliasArn = lambdaOperation.lambdaAlias.functionArn;
+
+    if (addedPermissionLambdaSet.has(aliasArn)) {
+      return;
+    }
+
+    addedPermissionLambdaSet.add(aliasArn);
+
+    lambdaOperation.lambdaAlias.addPermission(
+      `allow-apigw-${specRestApi.restApiName}`.slice(0, 64),
+      {
+        principal: new ServicePrincipal('apigateway.amazonaws.com', {
+          conditions: {
+            ArnLike: {
+              'aws:SourceArn': specRestApi.arnForExecuteApi(),
+            },
+          },
+        }),
+        action: 'lambda:InvokeFunction',
+      },
+    );
   });
 };
 
@@ -219,17 +239,15 @@ export const generateOpenapiDocWithExtensions = (
   for (let i = 0; i < props.openapiOperations.length; i += 1) {
     const lambdaOperation = props.openapiOperations[i];
 
-    registry.registerPath(lambdaOperation.routeConfig);
-    let { operationId } = lambdaOperation.routeConfig;
-    if (!operationId) {
-      operationId = generateOperationId(lambdaOperation.routeConfig);
-      lambdaOperation.routeConfig.operationId = operationId;
-    }
-    if (operationId) {
-      lambdaOperationsMap[operationId] = lambdaOperation;
-    } else {
-      throw new Error("'operationId' should be defined");
-    }
+    const operationId =
+      lambdaOperation.routeConfig.operationId ?? generateOperationId(lambdaOperation.routeConfig);
+
+    registry.registerPath({
+      ...lambdaOperation.routeConfig,
+      operationId,
+    });
+
+    lambdaOperationsMap[operationId] = lambdaOperation;
   }
 
   const generator = new OpenApiGeneratorV31(registry.definitions);
