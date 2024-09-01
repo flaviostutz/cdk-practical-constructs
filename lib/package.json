@@ -42,10 +42,8 @@
   },
   "dependencies": {
     "@apiture/openapi-down-convert": "^0.9.0",
-    "@asteasolutions/zod-to-openapi": "^7.0.0",
     "@aws-sdk/client-secrets-manager": "^3.624.0",
     "@stoplight/spectral-cli": "^6.11.1",
-    "aws-cdk-lib": "2.117.0",
     "aws-lambda": "^1.0.7",
     "axios": "^1.7.5",
     "constructs": "^10.3.0",
@@ -59,11 +57,11 @@
     "openapi3-ts": "^4.2.1",
     "qs": "^6.11.2",
     "scoperjs": "^1.0.1",
-    "tmp": "^0.2.1",
-    "zod": "^3.23.8"
+    "tmp": "^0.2.1"
   },
   "peerDependencies": {
     "@asteasolutions/zod-to-openapi": "7.x",
+    "aws-cdk-lib": "2.x",
     "zod": "3.x"
   },
   "publishConfig": {
