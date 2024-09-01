@@ -30,7 +30,7 @@ Based on [AWS Construct NodeJsFunction](https://docs.aws.amazon.com/cdk/api/v2/d
     // this can be reused in various lambda definitions
     const globalLambdaConfig = {
         eventType: EventType.Http,
-        runtime: Runtime.NODEJS_18_X,
+        runtime: Runtime.NODEJS_20_X,
         extraCaPubCert: 'ABCXxxxyz123123123' // add private CA pub certificate to NodeJS
     }
 
