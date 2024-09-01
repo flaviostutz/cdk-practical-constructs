@@ -37,7 +37,7 @@ export const addLambdaAndProviderForWso2Operations = (args: {
     stage: 'wso2-custom-lambda',
     timeout: Duration.minutes(10),
     memorySize: 256,
-    runtime: Runtime.NODEJS_18_X,
+    runtime: Runtime.NODEJS_20_X,
     eventType: EventType.CustomResource,
     createLiveAlias: false,
     createDefaultLogGroup: true,

@@ -157,7 +157,7 @@ export const getPropsWithDefaults = (
     createDefaultLogGroup,
     createLiveAlias,
     vpc,
-    runtime: props.runtime ?? Runtime.NODEJS_18_X,
+    runtime: props.runtime ?? Runtime.NODEJS_20_X,
     entry,
     bundling: {
       ...props.bundling,

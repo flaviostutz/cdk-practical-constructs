@@ -60,7 +60,7 @@ describe('lambda-base', () => {
     );
 
     expect(func).toBeDefined();
-    expect(func.nodeJsFunction.runtime).toBe(Runtime.NODEJS_18_X);
+    expect(func.nodeJsFunction.runtime).toBe(Runtime.NODEJS_20_X);
     expect(func.nodeJsFunction.node.id).toBe('test-lambda');
     expect(func.nodeJsFunction.functionName).toEqual(expect.stringContaining('${Token'));
 
@@ -82,7 +82,7 @@ describe('lambda-base', () => {
         },
       },
       Handler: 'index.handler',
-      Runtime: 'nodejs18.x',
+      Runtime: `${Runtime.NODEJS_20_X}`,
     });
 
     template.hasResourceProperties('AWS::Lambda::Alias', {
