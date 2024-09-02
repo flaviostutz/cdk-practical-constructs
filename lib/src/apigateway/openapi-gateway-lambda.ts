@@ -15,7 +15,7 @@ import {
 } from 'aws-cdk-lib/aws-apigateway';
 import type { oas30, oas31 } from 'openapi3-ts';
 import { Construct } from 'constructs';
-import { ScopedAws, Size } from 'aws-cdk-lib/core';
+import { ArnFormat, ScopedAws, Size, Stack } from 'aws-cdk-lib/core';
 import { ILogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { OpenAPIRegistry, OpenApiGeneratorV31, RouteConfig } from '@asteasolutions/zod-to-openapi';
@@ -118,9 +118,10 @@ const addGatewayToLambdaPermissions = (
   specRestApi: SpecRestApi,
 ): void => {
   const addedPermissionLambdaSet = new Set();
+  const restApiArn = getRestApiExecutionArn(scope, specRestApi);
 
   lambdaOperations.forEach((lambdaOperation: LambdaOperation) => {
-    // ? this `functionArn` is the alias arn
+    // ? The `functionArn` refers to the ARN of the Lambda function's alias, not the ARN of the Lambda function itself.
     // ? The alias arn structure is `arn:aws:lambda:region:account-id:function:function-name:alias-name`
     const aliasArn = lambdaOperation.lambdaAlias.functionArn;
 
@@ -130,20 +131,36 @@ const addGatewayToLambdaPermissions = (
 
     addedPermissionLambdaSet.add(aliasArn);
 
-    lambdaOperation.lambdaAlias.addPermission(
-      `allow-apigw-${specRestApi.restApiName}`.slice(0, 64),
-      {
-        principal: new ServicePrincipal('apigateway.amazonaws.com', {
-          conditions: {
-            ArnLike: {
-              'aws:SourceArn': specRestApi.arnForExecuteApi(),
-            },
+    lambdaOperation.lambdaAlias.addPermission(`allow-apigw-${specRestApi.restApiName}`, {
+      principal: new ServicePrincipal('apigateway.amazonaws.com', {
+        conditions: {
+          ArnLike: {
+            'aws:SourceArn': restApiArn,
           },
-        }),
-        action: 'lambda:InvokeFunction',
-      },
-    );
+        },
+      }),
+      action: 'lambda:InvokeFunction',
+    });
   });
+};
+
+/**
+ * This permission logic was extracted from `specRestApi.arnForExecuteApi()`
+ * The arn structure is `arn:aws:execute-api:region:account-id:api-id/stage-name/http-method/resource-path`
+ * But the integration with api gateway is failing with this arn, so we need to use the arn with the resource name with only 2 levels of path (i.e., stage-name/http-method)
+ * This is the same strategy used in the `serverless` framework
+ *
+ * TODO: We need to further investigate it, and update the code to use `specRestApi.arnForExecuteApi()` directly
+ */
+const getRestApiExecutionArn = (scope: Construct, specRestApi: SpecRestApi): string => {
+  const restApiArn = Stack.of(scope).formatArn({
+    service: 'execute-api',
+    resource: specRestApi.restApiId,
+    arnFormat: ArnFormat.SLASH_RESOURCE_NAME,
+    resourceName: `*/*`,
+  });
+
+  return restApiArn;
 };
 
 /**
