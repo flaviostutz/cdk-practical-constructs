@@ -18,6 +18,11 @@ Creates an AWS APIGateway from definitions in an Openapi document based on Zod s
 
   - Check [Construct OpenapiGatewayLambda](./docs/openapigateway-lambda.md) for more details
 
+## Construct StaticS3Website
+  
+Creates an S3 bucket and upload the given folder into it
+
+  - Check [Construct StaticS3Website](./docs/static-s3-website.md) for more details
 
 ## WSO2
 
