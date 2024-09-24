@@ -6,6 +6,7 @@ settings:
 
 overrides:
   braces@<3.0.3: '>=3.0.3'
+  rollup@<3.29.5: '>=3.29.5'
 
 dependencies:
   '@apiture/openapi-down-convert':
@@ -18,8 +19,8 @@ dependencies:
     specifier: ^3.624.0
     version: 3.624.0
   '@stoplight/spectral-cli':
-    specifier: ^6.11.1
-    version: 6.11.1
+    specifier: ^6.13.1
+    version: 6.13.1
   aws-cdk-lib:
     specifier: 2.x
     version: 2.155.0(constructs@10.3.0)
@@ -104,8 +105,8 @@ devDependencies:
     specifier: ^0.2.6
     version: 0.2.6
   aws-sdk-client-mock:
-    specifier: ^3.0.1
-    version: 3.0.1
+    specifier: ^4.0.2
+    version: 4.0.2
   esbuild-jest:
     specifier: ^0.5.0
     version: 0.5.0(esbuild@0.19.11)
@@ -1664,33 +1665,161 @@ packages:
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
     dev: true
 
-  /@rollup/plugin-commonjs@22.0.2(rollup@2.79.1):
+  /@rollup/plugin-commonjs@22.0.2(rollup@4.22.4):
     resolution: {integrity: sha512-//NdP6iIwPbMTcazYsiBMbJW7gfmpHom33u1beiIoHDEM0Q9clvtQB1T0efvMqHeKsGohiHo97BCPCkBXdscwg==}
     engines: {node: '>= 12.0.0'}
     peerDependencies:
-      rollup: ^2.68.0
+      rollup: '>=3.29.5'
     dependencies:
-      '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 3.1.0(rollup@4.22.4)
       commondir: 1.0.1
       estree-walker: 2.0.2
       glob: 7.2.3
       is-reference: 1.2.1
       magic-string: 0.25.9
       resolve: 1.22.8
-      rollup: 2.79.1
+      rollup: 4.22.4
     dev: false
 
-  /@rollup/pluginutils@3.1.0(rollup@2.79.1):
+  /@rollup/pluginutils@3.1.0(rollup@4.22.4):
     resolution: {integrity: sha512-GksZ6pr6TpIjHm8h9lSQ8pi8BE9VeubNT0OMJ3B5uZJ8pz73NPiqOtCog/x2/QzM1ENChPKxMDhiQuRHsqc+lg==}
     engines: {node: '>= 8.0.0'}
     peerDependencies:
-      rollup: ^1.20.0||^2.0.0
+      rollup: '>=3.29.5'
     dependencies:
       '@types/estree': 0.0.39
       estree-walker: 1.0.1
       picomatch: 2.3.1
-      rollup: 2.79.1
+      rollup: 4.22.4
     dev: false
+
+  /@rollup/rollup-android-arm-eabi@4.22.4:
+    resolution: {integrity: sha512-Fxamp4aEZnfPOcGA8KSNEohV8hX7zVHOemC8jVBoBUHu5zpJK/Eu3uJwt6BMgy9fkvzxDaurgj96F/NiLukF2w==}
+    cpu: [arm]
+    os: [android]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-android-arm64@4.22.4:
+    resolution: {integrity: sha512-VXoK5UMrgECLYaMuGuVTOx5kcuap1Jm8g/M83RnCHBKOqvPPmROFJGQaZhGccnsFtfXQ3XYa4/jMCJvZnbJBdA==}
+    cpu: [arm64]
+    os: [android]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-darwin-arm64@4.22.4:
+    resolution: {integrity: sha512-xMM9ORBqu81jyMKCDP+SZDhnX2QEVQzTcC6G18KlTQEzWK8r/oNZtKuZaCcHhnsa6fEeOBionoyl5JsAbE/36Q==}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-darwin-x64@4.22.4:
+    resolution: {integrity: sha512-aJJyYKQwbHuhTUrjWjxEvGnNNBCnmpHDvrb8JFDbeSH3m2XdHcxDd3jthAzvmoI8w/kSjd2y0udT+4okADsZIw==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-arm-gnueabihf@4.22.4:
+    resolution: {integrity: sha512-j63YtCIRAzbO+gC2L9dWXRh5BFetsv0j0va0Wi9epXDgU/XUi5dJKo4USTttVyK7fGw2nPWK0PbAvyliz50SCQ==}
+    cpu: [arm]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-arm-musleabihf@4.22.4:
+    resolution: {integrity: sha512-dJnWUgwWBX1YBRsuKKMOlXCzh2Wu1mlHzv20TpqEsfdZLb3WoJW2kIEsGwLkroYf24IrPAvOT/ZQ2OYMV6vlrg==}
+    cpu: [arm]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-arm64-gnu@4.22.4:
+    resolution: {integrity: sha512-AdPRoNi3NKVLolCN/Sp4F4N1d98c4SBnHMKoLuiG6RXgoZ4sllseuGioszumnPGmPM2O7qaAX/IJdeDU8f26Aw==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-arm64-musl@4.22.4:
+    resolution: {integrity: sha512-Gl0AxBtDg8uoAn5CCqQDMqAx22Wx22pjDOjBdmG0VIWX3qUBHzYmOKh8KXHL4UpogfJ14G4wk16EQogF+v8hmA==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-powerpc64le-gnu@4.22.4:
+    resolution: {integrity: sha512-3aVCK9xfWW1oGQpTsYJJPF6bfpWfhbRnhdlyhak2ZiyFLDaayz0EP5j9V1RVLAAxlmWKTDfS9wyRyY3hvhPoOg==}
+    cpu: [ppc64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-riscv64-gnu@4.22.4:
+    resolution: {integrity: sha512-ePYIir6VYnhgv2C5Xe9u+ico4t8sZWXschR6fMgoPUK31yQu7hTEJb7bCqivHECwIClJfKgE7zYsh1qTP3WHUA==}
+    cpu: [riscv64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-s390x-gnu@4.22.4:
+    resolution: {integrity: sha512-GqFJ9wLlbB9daxhVlrTe61vJtEY99/xB3C8e4ULVsVfflcpmR6c8UZXjtkMA6FhNONhj2eA5Tk9uAVw5orEs4Q==}
+    cpu: [s390x]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-x64-gnu@4.22.4:
+    resolution: {integrity: sha512-87v0ol2sH9GE3cLQLNEy0K/R0pz1nvg76o8M5nhMR0+Q+BBGLnb35P0fVz4CQxHYXaAOhE8HhlkaZfsdUOlHwg==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-linux-x64-musl@4.22.4:
+    resolution: {integrity: sha512-UV6FZMUgePDZrFjrNGIWzDo/vABebuXBhJEqrHxrGiU6HikPy0Z3LfdtciIttEUQfuDdCn8fqh7wiFJjCNwO+g==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-win32-arm64-msvc@4.22.4:
+    resolution: {integrity: sha512-BjI+NVVEGAXjGWYHz/vv0pBqfGoUH0IGZ0cICTn7kB9PyjrATSkX+8WkguNjWoj2qSr1im/+tTGRaY+4/PdcQw==}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-win32-ia32-msvc@4.22.4:
+    resolution: {integrity: sha512-SiWG/1TuUdPvYmzmYnmd3IEifzR61Tragkbx9D3+R8mzQqDBz8v+BvZNDlkiTtI9T15KYZhP0ehn3Dld4n9J5g==}
+    cpu: [ia32]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@rollup/rollup-win32-x64-msvc@4.22.4:
+    resolution: {integrity: sha512-j8pPKp53/lq9lMXN57S8cFz0MynJk8OWNuUnXct/9KCpKU7DgU3bYMJhwWmcqC0UU29p8Lr0/7KEVcaM6bf47Q==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
 
   /@sinclair/typebox@0.27.8:
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -1720,6 +1849,12 @@ packages:
       '@sinonjs/commons': 3.0.1
     dev: true
 
+  /@sinonjs/fake-timers@13.0.2:
+    resolution: {integrity: sha512-4Bb+oqXZTSTZ1q27Izly9lv8B9dlV61CROxPiVtywwzv5SnytJqhvYe6FclHYuXml4cd1VHPo1zd5PmTeJozvA==}
+    dependencies:
+      '@sinonjs/commons': 3.0.1
+    dev: true
+
   /@sinonjs/samsam@8.0.0:
     resolution: {integrity: sha512-Bp8KUVlLp8ibJZrnvq2foVhP0IVX2CIprMJPK0vqGqgrDa0OHVKeZyBykqskkrdxV6yKBPmGasO8LVjAKR3Gew==}
     dependencies:
@@ -1728,8 +1863,8 @@ packages:
       type-detect: 4.0.8
     dev: true
 
-  /@sinonjs/text-encoding@0.7.2:
-    resolution: {integrity: sha512-sXXKG+uL9IrKqViTtao2Ws6dy0znu9sOaP1di/jKGW1M6VssO8vlpXCQcpZ+jisQ1tTFAC5Jo/EOzFbggBagFQ==}
+  /@sinonjs/text-encoding@0.7.3:
+    resolution: {integrity: sha512-DE427ROAphMQzU4ENbliGYrBSYPXF+TtLg9S8vzeA+OF4ZKzoDdzfL8sxuMUGS/lgRhM6j1URSk9ghf7Xo1tyA==}
     dev: true
 
   /@smithy/abort-controller@3.1.1:
@@ -2178,8 +2313,8 @@ packages:
     engines: {node: '>=8'}
     dev: false
 
-  /@stoplight/spectral-cli@6.11.1:
-    resolution: {integrity: sha512-1zqsQ0TOuVSnxxZ9mHBfC0IygV6ex7nAY6Mp59mLmw5fW103U9yPVK5ZcX9ZngCmr3PdteAnMDUIIaoDGso6nA==}
+  /@stoplight/spectral-cli@6.13.1:
+    resolution: {integrity: sha512-v6ipX4w6wRhtbOotwdPL7RrEkP0m1OwHTIyqzVrAPi932F/zkee24jmf1CHNrTynonmfGoU6/XpeqUHtQdKDFw==}
     engines: {node: ^12.20 || >= 14.13}
     hasBin: true
     dependencies:
@@ -2189,8 +2324,8 @@ packages:
       '@stoplight/spectral-formatters': 1.3.0
       '@stoplight/spectral-parsers': 1.0.3
       '@stoplight/spectral-ref-resolver': 1.0.4
-      '@stoplight/spectral-ruleset-bundler': 1.5.2
-      '@stoplight/spectral-ruleset-migrator': 1.9.5
+      '@stoplight/spectral-ruleset-bundler': 1.6.0
+      '@stoplight/spectral-ruleset-migrator': 1.10.0
       '@stoplight/spectral-rulesets': 1.18.1
       '@stoplight/spectral-runtime': 1.1.2
       '@stoplight/types': 13.20.0
@@ -2247,6 +2382,18 @@ packages:
       - encoding
     dev: false
 
+  /@stoplight/spectral-formats@1.7.0:
+    resolution: {integrity: sha512-vJ1vIkA2s96fdJp0d3AJBGuPAW3sj8yMamyzR+dquEFO6ZAoYBo/BVsKKQskYzZi/nwljlRqUmGVmcf2PncIaA==}
+    engines: {node: '>=12'}
+    dependencies:
+      '@stoplight/json': 3.21.0
+      '@stoplight/spectral-core': 1.18.3
+      '@types/json-schema': 7.0.15
+      tslib: 2.6.2
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
   /@stoplight/spectral-formatters@1.3.0:
     resolution: {integrity: sha512-ryuMwlzbPUuyn7ybSEbFYsljYmvTaTyD51wyCQs4ROzgfm3Yo5QDD0IsiJUzUpKK/Ml61ZX8ebgiPiRFEJtBpg==}
     engines: {node: ^12.20 || >=14.13}
@@ -2273,7 +2420,7 @@ packages:
       '@stoplight/better-ajv-errors': 1.0.3(ajv@8.12.0)
       '@stoplight/json': 3.21.0
       '@stoplight/spectral-core': 1.18.3
-      '@stoplight/spectral-formats': 1.6.0
+      '@stoplight/spectral-formats': 1.7.0
       '@stoplight/spectral-runtime': 1.1.2
       ajv: 8.12.0
       ajv-draft-04: 1.0.0(ajv@8.12.0)
@@ -2308,32 +2455,32 @@ packages:
       - encoding
     dev: false
 
-  /@stoplight/spectral-ruleset-bundler@1.5.2:
-    resolution: {integrity: sha512-4QUVUFAU+S7IQ9XeCu+0TQMYxKFpKnkOAfa9unRQ1iPL2cviaipEN6witpbAptdHJD3UUjx4OnwlX8WwmXSq9w==}
+  /@stoplight/spectral-ruleset-bundler@1.6.0:
+    resolution: {integrity: sha512-8CU7e4aEGdfU9ncVDtlnJSawg/6epzAHrQTjuNu1QfKAOoiwyG7oUk2XUTHWcvq6Q67iUctb0vjOokR+MPVg0Q==}
     engines: {node: ^12.20 || >= 14.13}
     dependencies:
-      '@rollup/plugin-commonjs': 22.0.2(rollup@2.79.1)
+      '@rollup/plugin-commonjs': 22.0.2(rollup@4.22.4)
       '@stoplight/path': 1.3.2
       '@stoplight/spectral-core': 1.18.3
-      '@stoplight/spectral-formats': 1.6.0
+      '@stoplight/spectral-formats': 1.7.0
       '@stoplight/spectral-functions': 1.7.2
       '@stoplight/spectral-parsers': 1.0.3
       '@stoplight/spectral-ref-resolver': 1.0.4
-      '@stoplight/spectral-ruleset-migrator': 1.9.5
+      '@stoplight/spectral-ruleset-migrator': 1.10.0
       '@stoplight/spectral-rulesets': 1.18.1
       '@stoplight/spectral-runtime': 1.1.2
       '@stoplight/types': 13.20.0
       '@types/node': 20.16.2
       pony-cause: 1.1.1
-      rollup: 2.79.1
+      rollup: 4.22.4
       tslib: 2.6.2
       validate-npm-package-name: 3.0.0
     transitivePeerDependencies:
       - encoding
     dev: false
 
-  /@stoplight/spectral-ruleset-migrator@1.9.5:
-    resolution: {integrity: sha512-76n/HETr3UinVl/xLNldrH9p0JNoD8Gz4K75J6E4OHp4xD0P+BA2e8+W30HjIvqm1LJdLU2BNma0ioy+q3B9RA==}
+  /@stoplight/spectral-ruleset-migrator@1.10.0:
+    resolution: {integrity: sha512-nDfkVfYeWWv0UvILC4TWZSnRqQ4rHgeOJO1/lHQ7XHeG5iONanQ639B1aK6ZS6vuUc8gwuyQsrPF67b4sHIyYw==}
     engines: {node: '>=12'}
     dependencies:
       '@stoplight/json': 3.21.0
@@ -2344,7 +2491,7 @@ packages:
       '@stoplight/types': 13.20.0
       '@stoplight/yaml': 4.2.3
       '@types/node': 20.16.2
-      ajv: 8.12.0
+      ajv: 8.17.1
       ast-types: 0.14.2
       astring: 1.8.6
       reserved: 0.1.2
@@ -2584,8 +2731,8 @@ packages:
     resolution: {integrity: sha512-kRz0VEkJqWLf1LLVN4pT1cg1Z9wAuvI6L97V3m2f5B76Tg8d413ddvLBPTEHAZJlnn4XSvu0FkZtViCQGVyrXQ==}
     dev: false
 
-  /@types/sinon@10.0.20:
-    resolution: {integrity: sha512-2APKKruFNCAZgx3daAyACGzWuJ028VVCUDk6o2rw/Z4PXT0ogwdV4KUegW0MwVs0Zu59auPXbbuBJHF12Sx1Eg==}
+  /@types/sinon@17.0.3:
+    resolution: {integrity: sha512-j3uovdn8ewky9kRBG19bOwaZbexJu/XjtkHyjvUgt4xfPFz18dcORIMqnYh66Fx3Powhcr85NT5+er3+oViapw==}
     dependencies:
       '@types/sinonjs__fake-timers': 8.1.5
     dev: true
@@ -2718,7 +2865,7 @@ packages:
       globby: 11.1.0
       is-glob: 4.0.3
       minimatch: 9.0.5
-      semver: 7.6.2
+      semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.5.4)
       typescript: 5.5.4
     transitivePeerDependencies:
@@ -2820,6 +2967,15 @@ packages:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
       uri-js: 4.4.1
+    dev: false
+
+  /ajv@8.17.1:
+    resolution: {integrity: sha512-B/gBuNg5SiMTrPkC+A2+cW0RszwxYmn6VYxB/inlBStS5nx6xHIt/ehKRhIMhqusl7a8LjQoZnjCs5vhwxOQ1g==}
+    dependencies:
+      fast-deep-equal: 3.1.3
+      fast-uri: 3.0.1
+      json-schema-traverse: 1.0.0
+      require-from-string: 2.0.2
     dev: false
 
   /ansi-escapes@4.3.2:
@@ -3028,11 +3184,11 @@ packages:
       watchpack: 2.4.0
     dev: false
 
-  /aws-sdk-client-mock@3.0.1:
-    resolution: {integrity: sha512-9VAzJLl8mz99KP9HjOm/93d8vznRRUTpJooPBOunRdUAnVYopCe9xmMuu7eVemu8fQ+w6rP7o5bBK1kAFkB2KQ==}
+  /aws-sdk-client-mock@4.0.2:
+    resolution: {integrity: sha512-saFLXQPqHuMH0A1peNIGoAFEq9B0bpS5y5qrr+Y5F86MasVkCctggHKhHPRVjGr852Nz7cLg/PBxKs6lQoK3mg==}
     dependencies:
-      '@types/sinon': 10.0.20
-      sinon: 16.1.3
+      '@types/sinon': 17.0.3
+      sinon: 18.0.1
       tslib: 2.6.2
     dev: true
 
@@ -3611,8 +3767,8 @@ packages:
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dev: true
 
-  /diff@5.1.0:
-    resolution: {integrity: sha512-D+mk+qE8VC/PAUrlAU34N+VfXev0ghe5ywmpqrawphmVZc1bEfn56uo9qpyGp1p4xpzOHkSW4ztBd6L7Xx4ACw==}
+  /diff@5.2.0:
+    resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
     engines: {node: '>=0.3.1'}
     dev: true
 
@@ -4303,6 +4459,10 @@ packages:
 
   /fast-memoize@2.5.2:
     resolution: {integrity: sha512-Ue0LwpDYErFbmNnZSF0UH6eImUwDmogUO1jyE+JbN2gsQz/jICm1Ve7t9QT0rNSsfJt+Hs4/S3GnsDVjL4HVrw==}
+    dev: false
+
+  /fast-uri@3.0.1:
+    resolution: {integrity: sha512-MWipKbbYiYI0UC7cl8m/i/IWTqfC8YXsqjzybjddLsFjStroQzsHXkc73JutMvBiXmOvapk+axIl79ig5t55Bw==}
     dev: false
 
   /fast-xml-parser@4.4.1:
@@ -5837,14 +5997,14 @@ packages:
       lodash.topath: 4.5.2
     dev: false
 
-  /nise@5.1.7:
-    resolution: {integrity: sha512-wWtNUhkT7k58uvWTB/Gy26eA/EJKtPZFVAhEilN5UYVmmGRYOURbejRUyKm0Uu9XVEW7K5nBOZfR8VMB4QR2RQ==}
+  /nise@6.1.1:
+    resolution: {integrity: sha512-aMSAzLVY7LyeM60gvBS423nBmIPP+Wy7St7hsb+8/fc1HmeoHJfLO8CKse4u3BtOZvQLJghYPI2i/1WZrEj5/g==}
     dependencies:
       '@sinonjs/commons': 3.0.1
-      '@sinonjs/fake-timers': 11.2.2
-      '@sinonjs/text-encoding': 0.7.2
+      '@sinonjs/fake-timers': 13.0.2
+      '@sinonjs/text-encoding': 0.7.3
       just-extend: 6.2.0
-      path-to-regexp: 6.2.1
+      path-to-regexp: 8.1.0
     dev: true
 
   /nock@13.5.0:
@@ -6117,8 +6277,9 @@ packages:
   /path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
 
-  /path-to-regexp@6.2.1:
-    resolution: {integrity: sha512-JLyh7xT1kizaEvcaXOQwOc2/Yhw6KZOvPf1S8401UyLk86CU79LN3vl7ztXGm/pZ+YjoyAJ4rxmHwbkBXJX+yw==}
+  /path-to-regexp@8.1.0:
+    resolution: {integrity: sha512-Bqn3vc8CMHty6zuD+tG23s6v2kwxslHEhTj4eYaVKGIEB+YX/2wd0/rgXLFD9G9id9KCtbVy/3ZgmvZjpa0UdQ==}
+    engines: {node: '>=16'}
     dev: true
 
   /path-type@4.0.0:
@@ -6336,11 +6497,29 @@ packages:
     dependencies:
       glob: 7.2.3
 
-  /rollup@2.79.1:
-    resolution: {integrity: sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==}
-    engines: {node: '>=10.0.0'}
+  /rollup@4.22.4:
+    resolution: {integrity: sha512-vD8HJ5raRcWOyymsR6Z3o6+RzfEPCnVLMFJ6vRslO1jt4LO6dUo5Qnpg7y4RkZFM2DMe3WUirkI5c16onjrc6A==}
+    engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
+    dependencies:
+      '@types/estree': 1.0.5
     optionalDependencies:
+      '@rollup/rollup-android-arm-eabi': 4.22.4
+      '@rollup/rollup-android-arm64': 4.22.4
+      '@rollup/rollup-darwin-arm64': 4.22.4
+      '@rollup/rollup-darwin-x64': 4.22.4
+      '@rollup/rollup-linux-arm-gnueabihf': 4.22.4
+      '@rollup/rollup-linux-arm-musleabihf': 4.22.4
+      '@rollup/rollup-linux-arm64-gnu': 4.22.4
+      '@rollup/rollup-linux-arm64-musl': 4.22.4
+      '@rollup/rollup-linux-powerpc64le-gnu': 4.22.4
+      '@rollup/rollup-linux-riscv64-gnu': 4.22.4
+      '@rollup/rollup-linux-s390x-gnu': 4.22.4
+      '@rollup/rollup-linux-x64-gnu': 4.22.4
+      '@rollup/rollup-linux-x64-musl': 4.22.4
+      '@rollup/rollup-win32-arm64-msvc': 4.22.4
+      '@rollup/rollup-win32-ia32-msvc': 4.22.4
+      '@rollup/rollup-win32-x64-msvc': 4.22.4
       fsevents: 2.3.3
     dev: false
 
@@ -6429,17 +6608,10 @@ packages:
       lru-cache: 6.0.0
     dev: true
 
-  /semver@7.6.2:
-    resolution: {integrity: sha512-FNAIBWCx9qcRhoHcgcJ0gvU7SN1lYU2ZXuSfl04bSC5OpvDHFyJCjdNHomPXxjQlCBU67YW64PzY7/VIEH7F2w==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dev: true
-
   /semver@7.6.3:
     resolution: {integrity: sha512-oVekP1cKtI+CTDvHWYFUcMtsK/00wmAEfyqKfNdARm8u1wNVhSgaX7A8d4UuIlUI5e84iEwOhs7ZPYRmzU9U6A==}
     engines: {node: '>=10'}
     hasBin: true
-    dev: false
 
   /set-function-length@1.2.0:
     resolution: {integrity: sha512-4DBHDoyHlM1IRPGYcoxexgh67y4ueR53FKV1yyxwFMY7aCqcN/38M1+SwZ/qJQ8iLv7+ck385ot4CcisOAPT9w==}
@@ -6511,14 +6683,14 @@ packages:
       jsep: 1.3.8
     dev: false
 
-  /sinon@16.1.3:
-    resolution: {integrity: sha512-mjnWWeyxcAf9nC0bXcPmiDut+oE8HYridTNzBbF98AYVLmWwGRp2ISEpyhYflG1ifILT+eNn3BmKUJPxjXUPlA==}
+  /sinon@18.0.1:
+    resolution: {integrity: sha512-a2N2TDY1uGviajJ6r4D1CyRAkzE9NNVlYOV1wX5xQDuAk0ONgzgRl0EjCQuRCPxOwp13ghsMwt9Gdldujs39qw==}
     dependencies:
       '@sinonjs/commons': 3.0.1
-      '@sinonjs/fake-timers': 10.3.0
+      '@sinonjs/fake-timers': 11.2.2
       '@sinonjs/samsam': 8.0.0
-      diff: 5.1.0
-      nise: 5.1.7
+      diff: 5.2.0
+      nise: 6.1.1
       supports-color: 7.2.0
     dev: true
 
