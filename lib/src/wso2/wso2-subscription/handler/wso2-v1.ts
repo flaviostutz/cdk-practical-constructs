@@ -25,72 +25,74 @@ export const removeSubscriptionInWso2 = async (args: {
   if (!args.wso2SubscriptionId) {
     throw new Error('wso2SubscriptionId is required for deleting Application');
   }
-  await args.wso2Axios.delete(`/api/am/store/v1/applications/${args.wso2ApplicationId}`);
+  await args.wso2Axios.delete(`/api/am/store/v1/applications/${args.wso2SubscriptionId}`);
 };
 
 /**
  * Perform calls in WSO2 API to create or update an Application
  * @returns {string} Id of the Application in WSO2
  */
-export const createUpdateApplicationInWso2 = async (args: UpsertWso2Args): Promise<string> => {
+export const createUpdateSubscriptionInWso2 = async (args: UpsertWso2Args): Promise<string> => {
   console.log('');
-  console.log(`>>> Create or update application in WSO2...`);
+  console.log(`>>> Create or update subscription in WSO2...`);
   // will retry create/update api operation if fails
-  const wso2ApplicationId = await backOff(
-    async () => createUpdateApplicationInWso2AndCheck(args),
+  const wso2SubscriptionId = await backOff(
+    async () => createUpdateSubscriptionInWso2AndCheck(args),
     args.retryOptions.mutationRetries,
   );
 
-  console.log('Application created/updated on WSO2 server successfuly');
+  console.log('Subscription created/updated on WSO2 server successfuly');
 
-  return wso2ApplicationId;
+  return wso2SubscriptionId;
 };
 
-export const createUpdateApplicationInWso2AndCheck = async (
+export const createUpdateSubscriptionInWso2AndCheck = async (
   args: UpsertWso2Args,
 ): Promise<string> => {
-  // create new API in WSO2
-  if (!args.existingApplication) {
-    console.log(`Creating new Application in WSO2`);
+  // create new Subscription in WSO2
+  if (!args.existingSubscription) {
+    console.log(`Creating new Subscription in WSO2...`);
     const apir = await args.wso2Axios.post(
-      `/api/am/store/v1/applications`,
-      args.applicationDefinition,
+      `/api/am/store/v1/subscriptions`,
+      args.subscriptionDefinition,
     );
 
-    const dataRes = apir.data as Wso2ApplicationInfo;
-    if (!dataRes.applicationId) {
+    const dataRes = apir.data as Wso2SubscriptionInfo;
+    if (!dataRes.subscriptionId) {
       throw new Error(
-        `'applicationId' id wasn't returned as part of the Application creation response`,
+        `'subscriptionId' wasn't returned as part of the Subscription creation response`,
       );
     }
-    console.log(`Application created in WSO2`);
+    console.log(`Subscription "${dataRes.subscriptionId}" created in WSO2`);
 
-    // wait for Application to be created by retrying checks
+    console.log(`Checking if the Subscription was created in WSO2 by retrying checks`);
     await backOff(async () => {
-      await args.wso2Axios.get(`/api/am/store/v1/applications/${dataRes.applicationId}`);
+      await args.wso2Axios.get(`/api/am/store/v1/subscriptions/${dataRes.subscriptionId}`);
+      // TODO check if returned contents match desired state
     }, args.retryOptions.checkRetries);
 
-    return dataRes.applicationId;
+    return dataRes.subscriptionId;
   }
 
-  // update existing API in WSO2
-  console.log(`Updating Application definitions in WSO2`);
+  // update existing Subscription in WSO2
+  console.log(`Updating Subscription definitions in WSO2`);
 
-  if (!args.existingApplication.applicationId) {
-    throw new Error('Existing applicationId should be defined');
+  if (!args.existingSubscription.subscriptionId) {
+    throw new Error('Existing subscriptionId should be defined');
   }
 
   await args.wso2Axios.put(
-    `/api/am/store/v1/applications/${args.existingApplication.applicationId}`,
-    args.applicationDefinition,
+    `/api/am/store/v1/subscriptions/${args.existingSubscription.subscriptionId}`,
+    args.subscriptionDefinition,
   );
 
-  // wait for Application to be created by retrying checks
+  console.log(`Checking if the Subscription exists in WSO2 by retrying checks`);
   await backOff(async () => {
     await args.wso2Axios.get(
-      `/api/am/store/v1/applications/${args.existingApplication?.applicationId}`,
+      `/api/am/store/v1/subscriptions/${args.existingSubscription?.applicationId}`,
     );
+    // TODO check if returned contents match desired state
   }, args.retryOptions.checkRetries);
 
-  return args.existingApplication.applicationId;
+  return args.existingSubscription.subscriptionId;
 };

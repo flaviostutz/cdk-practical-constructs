@@ -10,7 +10,7 @@ import type { Wso2SubscriptionCustomResourceProperties } from '../types';
 
 import { createUpdateSubscriptionInWso2, removeSubscriptionInWso2 } from './wso2-v1';
 
-export type Wso2ApplicationCustomResourceEvent = CdkCustomResourceEvent & {
+export type Wso2SubscriptionCustomResourceEvent = CdkCustomResourceEvent & {
   ResourceProperties: Wso2SubscriptionCustomResourceProperties;
 };
 
@@ -24,11 +24,9 @@ export type Wso2SubscriptionCustomResourceResponse = CdkCustomResourceResponse &
 };
 
 export const handler = async (
-  event: Wso2ApplicationCustomResourceEvent,
+  event: Wso2SubscriptionCustomResourceEvent,
 ): Promise<Wso2SubscriptionCustomResourceResponse> => {
-  // console.log(`WSO2 API Custom Resource invoked with: ${JSON.stringify(event)}`);
-
-  // FIXME CHECK SUBSCRIPTION API AND CHANGE IMPLEMENTATION BELOW
+  console.log(`WSO2 API Custom Resource invoked with: ${JSON.stringify(event)}`);
 
   if (!event.ResourceProperties.subscriptionDefinition) {
     throw new Error('event.subscriptionDefinition should be defined');
@@ -51,21 +49,21 @@ export const handler = async (
       if (event.RequestType === 'Update') {
         response.PhysicalResourceId = event.PhysicalResourceId;
       }
-      console.log('>>> Creating or Updating WSO2 Application...');
-      const wso2ApplicationId = await createOrUpdateWso2Application(event, wso2Axios);
-      response.PhysicalResourceId = wso2ApplicationId;
+      console.log('>>> Creating or Updating WSO2 Subscription...');
+      const wso2SubscriptionId = await createOrUpdateWso2Subscription(event, wso2Axios);
+      response.PhysicalResourceId = wso2SubscriptionId;
       response.Data = {
-        Wso2ApplicationId: wso2ApplicationId,
+        Wso2SubscriptionId: wso2SubscriptionId,
       };
       response.Status = 'SUCCESS';
       return response;
     }
     if (event.RequestType === 'Delete') {
-      console.log('>>> Deleting WSO2 Application...');
+      console.log('>>> Deleting WSO2 Subscription...');
       response.PhysicalResourceId = event.PhysicalResourceId;
-      await removeApplicationInWso2({
+      await removeSubscriptionInWso2({
         wso2Axios,
-        wso2ApplicationId: event.PhysicalResourceId,
+        wso2SubscriptionId: event.PhysicalResourceId,
       });
       response.Status = 'SUCCESS';
       return response;
@@ -82,55 +80,61 @@ export const handler = async (
   }
 };
 
-const createOrUpdateWso2Application = async (
-  event: Wso2ApplicationCustomResourceEvent,
+const createOrUpdateWso2Subscription = async (
+  event: Wso2SubscriptionCustomResourceEvent,
   wso2Axios: AxiosInstance,
 ): Promise<string> => {
-  if (!event.ResourceProperties.applicationDefinition?.name) {
-    throw new Error('applicationDefinition.name should be defined');
+  if (!event.ResourceProperties.subscriptionDefinition?.apiId) {
+    throw new Error('subscriptionDefinition.apiId should be defined');
+  }
+  if (!event.ResourceProperties.subscriptionDefinition?.applicationId) {
+    throw new Error('subscriptionDefinition.applicationId should be defined');
   }
 
-  // find existing WSO2 application
-  console.log('Searching if Application already exists in WSO2...');
-  let existingApplication: Wso2ApplicationInfo | undefined;
-  const apil = await wso2Axios.get(`/api/am/store/v1/applications`, {
-    params: { query: event.ResourceProperties.applicationDefinition.name },
+  // find existing WSO2 subscription to the same apiId by the same applicationId
+  console.log('Searching if Subscription already exists in WSO2...');
+  let existingSubscription: Wso2SubscriptionInfo | undefined;
+  const apil = await wso2Axios.get(`/api/am/store/v1/subscriptions`, {
+    params: {
+      applicationId: event.ResourceProperties.subscriptionDefinition.applicationId,
+      apiId: event.ResourceProperties.subscriptionDefinition.apiId,
+    },
   });
-  const apiRes = apil.data.list as Wso2ApplicationInfo[];
+  const apiRes = apil.data.list as Wso2SubscriptionInfo[];
   if (apiRes.length > 1) {
     throw new Error(
-      `More than one Application with name '${event.ResourceProperties.applicationDefinition.name}' was found in WSO2 so we cannot determine it's id automatically`,
+      `More than one Subscription for apiId='${event.ResourceProperties.subscriptionDefinition.apiId}' and applicationId='${event.ResourceProperties.subscriptionDefinition.applicationId}' was found in WSO2 so we cannot determine which subscription to manage automatically`,
     );
   }
   if (apiRes.length === 1) {
-    existingApplication = apiRes[0];
+    existingSubscription = apiRes[0];
     console.log(
-      `Found existing WSO2 Application. applicationId=${existingApplication.applicationId}; name=${existingApplication.name}`,
+      `Found existing WSO2 Subscription. subscriptionId=${existingSubscription.subscriptionId}; name=${existingSubscription.name}`,
     );
   }
 
   if (
     event.RequestType === 'Create' &&
-    existingApplication &&
+    existingSubscription &&
     event.ResourceProperties.failIfExists
   ) {
     throw new Error(
-      `WSO2 Application ${existingApplication.applicationId}' already exists but cannot be managed by this resource. Change 'failIfExists' to change this behavior`,
+      `WSO2 Subscription ${existingSubscription.subscriptionId}' already exists but cannot be managed by this resource. Change 'failIfExists' to change this behavior`,
     );
   }
 
-  if (event.RequestType === 'Update' && !existingApplication) {
+  if (event.RequestType === 'Update' && !existingSubscription) {
     console.log(
-      `WARNING: This is an Update operation but the Application couldn't be found in WSO2. It will be created again`,
+      `WARNING: This is an Update operation but the Subscription couldn't be found in WSO2. It will be created again`,
     );
   }
 
   if (event.RequestType === 'Create' || event.RequestType === 'Update') {
-    return createUpdateApplicationInWso2({
+    return createUpdateSubscriptionInWso2({
       wso2Axios,
       wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
-      applicationDefinition: event.ResourceProperties.applicationDefinition,
-      existingApplication,
+      subscriptionDefinition: event.ResourceProperties.subscriptionDefinition,
+      existingSubscription,
       retryOptions: applyRetryDefaults(event.ResourceProperties.retryOptions),
     });
   }
