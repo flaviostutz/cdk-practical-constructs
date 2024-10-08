@@ -8,7 +8,8 @@ Based on [AWS Construct NodeJsFunction](https://docs.aws.amazon.com/cdk/api/v2/d
   - explicit private VPC configuration (see props.network)
   - source code path standardization to "[basePath]/[lambdaEventType]/[lambdaName]/index.ts" (can be overwritten by explicit props.entry)
   - custom CA support for HTTP calls (NodeJS NODE_EXTRA_CA_CERTS). See props.extraCaPubCert
-  - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.logGroupSubscriberLambdaArn
+  - option to subscribe an Lambda Arn to the log group related to the Lambda function. See props.
+    - **Be aware** that you need to handle the permissions by yourself - we don't add the lambda permission to invoke the lambda in this construct (#40)
   - adds environment STAGE to Lambda. See props.stage
 
 ### Usage

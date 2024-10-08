@@ -117,11 +117,15 @@ describe('lambda-base', () => {
       FilterPattern: '',
     });
 
-    template.hasResourceProperties('AWS::Lambda::Permission', {
-      FunctionName: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
-      Action: 'lambda:InvokeFunction',
-      Principal: 'logs.eu-west-1.amazonaws.com',
-    });
+    template.resourcePropertiesCountIs(
+      'AWS::Lambda::Permission',
+      {
+        FunctionName: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
+        Action: 'lambda:InvokeFunction',
+        Principal: 'logs.eu-west-1.amazonaws.com',
+      },
+      0,
+    );
   });
 
   it('should allow ssm log group subscriptions', async () => {
