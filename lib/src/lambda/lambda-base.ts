@@ -12,7 +12,6 @@ import {
   ScalableTarget,
   ServiceNamespace,
 } from 'aws-cdk-lib/aws-applicationautoscaling';
-import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { RemovalPolicy } from 'aws-cdk-lib/core';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
@@ -276,12 +275,14 @@ const addLogSubscriber = (
   );
   new SubscriptionFilter(nodeJsFunction, 'Subscription', {
     logGroup: nodeJsFunction.logGroup,
-    destination: new LambdaDestination(logGroupFuncSubscriber),
+    destination: new LambdaDestination(logGroupFuncSubscriber, {
+      // ? We are not adding the permission because there is a size limit for the policy document
+      // ? After a certain number of lambda permissions, the policy document will be too large and will throw an error
+      // ? The lambda invoke permission should be held in the original log group lambda stack instead
+      addPermissions: false,
+    }),
     filterPattern: FilterPattern.allEvents(),
     filterName: 'all',
-  });
-  logGroupFuncSubscriber.addPermission('allow-log-subscriber', {
-    principal: new ServicePrincipal('logs.eu-west-1.amazonaws.com'),
   });
 };
 
