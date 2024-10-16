@@ -109,7 +109,7 @@ const createOrUpdateWso2Subscription = async (
   if (apiRes.length === 1) {
     existingSubscription = apiRes[0];
     console.log(
-      `Found existing WSO2 Subscription. subscriptionId=${existingSubscription.subscriptionId}; name=${existingSubscription.name}`,
+      `Found existing WSO2 Subscription. subscriptionId=${existingSubscription.subscriptionId}; apiId=${existingSubscription.apiId}; applicationId=${existingSubscription.applicationId}`,
     );
   }
 
@@ -119,7 +119,7 @@ const createOrUpdateWso2Subscription = async (
     event.ResourceProperties.failIfExists
   ) {
     throw new Error(
-      `WSO2 Subscription ${existingSubscription.subscriptionId}' already exists but cannot be managed by this resource. Change 'failIfExists' to change this behavior`,
+      `WSO2 Subscription '${existingSubscription.subscriptionId}' already exists but cannot be managed by this resource. Change 'failIfExists' to change this behavior`,
     );
   }
 

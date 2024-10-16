@@ -3,11 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import nock from 'nock';
-import { mockClient } from 'aws-sdk-client-mock';
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 import { Wso2ApplicationDefinition } from '../v1/types';
 import { Wso2ApplicationCustomResourceProperties } from '../types';
+import { nockBasicWso2SDK } from '../../wso2-utils.test';
 
 import { Wso2ApplicationCustomResourceEvent, handler } from './index';
 
@@ -43,7 +42,7 @@ describe('wso2 application custom resource lambda', () => {
   });
 
   it('wso2 application delete', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // application get mock
     nock(baseWso2Url)
@@ -56,7 +55,7 @@ describe('wso2 application custom resource lambda', () => {
   });
 
   it('basic wso2 application update', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     const testDefs: Wso2ApplicationDefinition = testApplicationDefs();
 
@@ -89,7 +88,7 @@ describe('wso2 application custom resource lambda', () => {
   });
 
   it('basic wso2 application create', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api list mock
     nock(baseWso2Url)
@@ -182,31 +181,5 @@ describe('wso2 application custom resource lambda', () => {
     },
     applicationDefinition: testApplicationDefs(),
     retryOptions: testRetryOptions,
-  };
-
-  const nockBasicWso2SDK = (): void => {
-    const secretMock = mockClient(SecretsManagerClient);
-    secretMock.on(GetSecretValueCommand).resolves({
-      SecretBinary: Buffer.from(JSON.stringify({ user: 'user1', pwd: 'pwd1' })),
-    });
-
-    // register client mock
-    nock(baseWso2Url).post('/client-registration/v0.17/register').reply(200, {
-      clientId: 'clientId1',
-      clientSecret: 'clientSecret1',
-    });
-
-    // get token mock
-    nock(baseWso2Url).post('/oauth2/token').reply(200, {
-      access_token: '1111-1111-1111',
-    });
-
-    // mock server check
-    nock(baseWso2Url)
-      .get('/services/Version')
-      .reply(
-        200,
-        '<ns:getVersionResponse xmlns:ns="http://version.services.core.carbon.wso2.org"><return>WSO2 API Manager-3.2.0</return></ns:getVersionResponse>',
-      );
   };
 });

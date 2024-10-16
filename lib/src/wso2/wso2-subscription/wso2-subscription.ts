@@ -33,7 +33,7 @@ export class Wso2Subscription extends Construct {
     const { customResourceProvider, customResourceFunction } =
       addLambdaAndProviderForWso2Operations({
         scope: this,
-        id: `${id}-wso2app`,
+        id: `${id}-wso2sub`,
         props,
         baseDir: __dirname,
       });
@@ -60,14 +60,14 @@ export const validateProps = (props: Wso2SubscriptionProps): void => {
   if (!props.wso2Config.credentialsSecretId) {
     throw new Error('wso2Config.credentialsSecretManagerPath is required');
   }
-
   if (!props.subscriptionDefinition) {
     throw new Error('subscriptionDefinition is required');
   }
-
-  // FIXME CHANGE TO SUBSCRIPTION
-  if (!props.subscriptionDefinition.name) {
-    throw new Error('subscriptionDefinition.name is required');
+  if (!props.subscriptionDefinition.apiId) {
+    throw new Error('subscriptionDefinition.apiId is required');
+  }
+  if (!props.subscriptionDefinition.applicationId) {
+    throw new Error('subscriptionDefinition.applicationId is required');
   }
   if (!props.subscriptionDefinition.throttlingPolicy) {
     throw new Error('subscriptionDefinition.throttlingPolicy is required');

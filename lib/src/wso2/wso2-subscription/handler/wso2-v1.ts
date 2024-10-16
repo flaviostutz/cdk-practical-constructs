@@ -13,8 +13,6 @@ export type UpsertWso2Args = {
   retryOptions: RetryOptions;
 };
 
-// FIXME FIND APIS AND CREATE CONNECTOR
-
 /**
  * Delete Subscription in WSO2 server
  */
@@ -25,7 +23,7 @@ export const removeSubscriptionInWso2 = async (args: {
   if (!args.wso2SubscriptionId) {
     throw new Error('wso2SubscriptionId is required for deleting Application');
   }
-  await args.wso2Axios.delete(`/api/am/store/v1/applications/${args.wso2SubscriptionId}`);
+  await args.wso2Axios.delete(`/api/am/store/v1/subscriptions/${args.wso2SubscriptionId}`);
 };
 
 /**
@@ -89,7 +87,7 @@ export const createUpdateSubscriptionInWso2AndCheck = async (
   console.log(`Checking if the Subscription exists in WSO2 by retrying checks`);
   await backOff(async () => {
     await args.wso2Axios.get(
-      `/api/am/store/v1/subscriptions/${args.existingSubscription?.applicationId}`,
+      `/api/am/store/v1/subscriptions/${args.existingSubscription?.subscriptionId}`,
     );
     // TODO check if returned contents match desired state
   }, args.retryOptions.checkRetries);

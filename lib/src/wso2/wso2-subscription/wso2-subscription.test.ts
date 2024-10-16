@@ -20,7 +20,7 @@ describe('wso2-subscription-construct', () => {
 
     const template = Template.fromStack(stack);
     // eslint-disable-next-line no-console
-    console.log(JSON.stringify(template.toJSON(), null, 2));
+    // console.log(JSON.stringify(template.toJSON(), null, 2));
 
     template.hasResourceProperties('Custom::Wso2Subscription', {
       wso2Config: testProps1.wso2Config,
@@ -36,7 +36,8 @@ const testProps = (): Wso2SubscriptionProps => {
       credentialsSecretId: 'arn::creds',
     },
     subscriptionDefinition: {
-      name: 'test-subscription',
+      apiId: '1111-2222',
+      applicationId: '3333-4444',
       throttlingPolicy: 'Unlimited',
     },
   };

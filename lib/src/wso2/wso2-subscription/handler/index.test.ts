@@ -2,16 +2,13 @@
 /* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// FIXME CHANGE IMPLEMENTATION
-
 import nock from 'nock';
-import { mockClient } from 'aws-sdk-client-mock';
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 import { Wso2SubscriptionDefinition } from '../v1/types';
 import { Wso2SubscriptionCustomResourceProperties } from '../types';
+import { nockBasicWso2SDK } from '../../wso2-utils.test';
 
-import { Wso2ApplicationCustomResourceEvent, handler } from './index';
+import { handler, Wso2SubscriptionCustomResourceEvent } from './index';
 
 const baseWso2Url = 'https://mywso2.com';
 
@@ -45,11 +42,11 @@ describe('wso2 subscription custom resource lambda', () => {
   });
 
   it('wso2 subscription delete', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // application get mock
     nock(baseWso2Url)
-      .delete(/.*\/store\/v1\/applications\/[^\\/]+$/)
+      .delete(/.*\/store\/v1\/subscriptions\/[^\\/]+$/)
       .times(1) // check if was created
       .reply(200);
 
@@ -57,27 +54,27 @@ describe('wso2 subscription custom resource lambda', () => {
     expect(eres.Status).toBe('SUCCESS');
   });
 
-  it('basic wso2 application update', async () => {
-    nockBasicWso2SDK();
+  it('basic wso2 subscription update', async () => {
+    nockBasicWso2SDK(baseWso2Url);
 
-    const testDefs: Wso2ApplicationDefinition = testApplicationDefs();
+    const testDefs: Wso2SubscriptionDefinition = testSubscriptionDefs();
 
-    // api list mock
+    // subscriptions list mock
     nock(baseWso2Url)
-      .get(/.*\/store\/v1\/applications.*/)
+      .get(/.*\/store\/v1\/subscriptions.*/)
       .query(true)
       .times(1) // check create or update
-      .reply(200, { list: [{ ...testDefs, applicationId: '123-456' }] });
+      .reply(200, { list: [{ ...testDefs, subscriptionId: '123-456' }] });
 
-    // application update mock
+    // subscription update mock
     nock(baseWso2Url)
-      .put(/.*\/store\/v1\/applications\/[^\\/]+$/)
+      .put(/.*\/store\/v1\/subscriptions\/[^\\/]+$/)
       .times(1)
       .reply(200);
 
-    // application get mock
+    // subscription get mock
     nock(baseWso2Url)
-      .get(/.*\/store\/v1\/applications\/[^\\/]+$/)
+      .get(/.*\/store\/v1\/subscriptions\/[^\\/]+$/)
       .times(1) // check if was created
       .reply(200, { ...testDefs });
 
@@ -90,26 +87,26 @@ describe('wso2 subscription custom resource lambda', () => {
     expect(eres.Status).toBe('SUCCESS');
   });
 
-  it('basic wso2 application create', async () => {
-    nockBasicWso2SDK();
+  it('basic wso2 subscription create', async () => {
+    nockBasicWso2SDK(baseWso2Url);
 
-    // api list mock
+    // subscriptions list mock
     nock(baseWso2Url)
-      .get(/.*\/store\/v1\/applications.*/)
+      .get(/.*\/store\/v1\/subscriptions.*/)
       .query(true)
       .times(1) // check create or update
       .reply(200, { list: [] });
 
-    const testDefs: Wso2ApplicationDefinition = testApplicationDefs();
+    const testDefs: Wso2SubscriptionDefinition = testSubscriptionDefs();
 
-    // application create mock
+    // subscription create mock
     nock(baseWso2Url)
-      .post(/.*\/store\/v1\/applications$/)
-      .reply(201, { ...testDefs, applicationId: '123-456' });
+      .post(/.*\/store\/v1\/subscriptions$/)
+      .reply(201, { ...testDefs, subscriptionId: '123-456' });
 
-    // application get mock
+    // subscription get mock
     nock(baseWso2Url)
-      .get(/.*\/store\/v1\/applications\/[^\\/]+$/)
+      .get(/.*\/store\/v1\/subscriptions\/[^\\/]+$/)
       .times(1) // check if was created
       .reply(200, { ...testDefs });
 
@@ -122,14 +119,11 @@ describe('wso2 subscription custom resource lambda', () => {
     expect(eres.Status).toBe('SUCCESS');
   });
 
-  const testApplicationDefs = (): Wso2ApplicationDefinition => {
+  const testSubscriptionDefs = (): Wso2SubscriptionDefinition => {
     return {
-      name: 'someapplication',
+      apiId: '111-222',
+      applicationId: '333-444',
       throttlingPolicy: 'Unlimited',
-      attributes: {
-        mycustom1: 'value1',
-        mycustom2: 'value2',
-      },
     };
   };
 
@@ -139,12 +133,12 @@ describe('wso2 subscription custom resource lambda', () => {
     LogicalResourceId: 'abc abc',
     ServiceToken: 'arn:somelambdatest',
     ResponseURL: 's3bucketxxx',
-    ResourceType: 'wso2application',
+    ResourceType: 'wso2subscription',
   };
 
   const testCFNEventCreate = (
-    baseProperties: Wso2ApplicationCustomResourceProperties,
-  ): Wso2ApplicationCustomResourceEvent => {
+    baseProperties: Wso2SubscriptionCustomResourceProperties,
+  ): Wso2SubscriptionCustomResourceEvent => {
     return {
       ...commonEvt,
       RequestType: 'Create',
@@ -152,9 +146,9 @@ describe('wso2 subscription custom resource lambda', () => {
     };
   };
   const testCFNEventDelete = (
-    baseProperties: Wso2ApplicationCustomResourceProperties,
+    baseProperties: Wso2SubscriptionCustomResourceProperties,
     PhysicalResourceId: string,
-  ): Wso2ApplicationCustomResourceEvent => {
+  ): Wso2SubscriptionCustomResourceEvent => {
     return {
       ...commonEvt,
       RequestType: 'Delete',
@@ -163,10 +157,10 @@ describe('wso2 subscription custom resource lambda', () => {
     };
   };
   // const testCFNEventUpdate = (
-  //   baseProperties: Wso2ApplicationCustomResourceProperties,
+  //   baseProperties: Wso2SubscriptionCustomResourceProperties,
   //   PhysicalResourceId: string,
   //   oldResourceProperties: Record<string, string>,
-  // ): Wso2ApplicationCustomResourceEvent => {
+  // ): Wso2SubscriptionCustomResourceEvent => {
   //   return {
   //     ...commonEvt,
   //     RequestType: 'Update',
@@ -176,39 +170,13 @@ describe('wso2 subscription custom resource lambda', () => {
   //   };
   // };
 
-  const testEvent: Wso2ApplicationCustomResourceProperties = {
+  const testEvent: Wso2SubscriptionCustomResourceProperties = {
     wso2Config: {
       baseApiUrl: baseWso2Url,
       credentialsSecretId: 'arn:aws:secretsmanager:us-east-1:123123123:secret:MySecret',
       apiVersion: 'v1',
     },
-    applicationDefinition: testApplicationDefs(),
+    subscriptionDefinition: testSubscriptionDefs(),
     retryOptions: testRetryOptions,
-  };
-
-  const nockBasicWso2SDK = (): void => {
-    const secretMock = mockClient(SecretsManagerClient);
-    secretMock.on(GetSecretValueCommand).resolves({
-      SecretBinary: Buffer.from(JSON.stringify({ user: 'user1', pwd: 'pwd1' })),
-    });
-
-    // register client mock
-    nock(baseWso2Url).post('/client-registration/v0.17/register').reply(200, {
-      clientId: 'clientId1',
-      clientSecret: 'clientSecret1',
-    });
-
-    // get token mock
-    nock(baseWso2Url).post('/oauth2/token').reply(200, {
-      access_token: '1111-1111-1111',
-    });
-
-    // mock server check
-    nock(baseWso2Url)
-      .get('/services/Version')
-      .reply(
-        200,
-        '<ns:getVersionResponse xmlns:ns="http://version.services.core.carbon.wso2.org"><return>WSO2 API Manager-3.2.0</return></ns:getVersionResponse>',
-      );
   };
 });
