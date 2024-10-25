@@ -33,5 +33,5 @@ export type Wso2ApiListV1 = {
 
 export type ApiFromListV1 = Pick<
   PublisherPortalAPIv1,
-  'id' | 'name' | 'type' | 'context' | 'version' | 'provider' | 'lifeCycleStatus'
+  'id' | 'name' | 'type' | 'context' | 'version' | 'provider' | 'lifeCycleStatus' | 'workflowStatus'
 >;

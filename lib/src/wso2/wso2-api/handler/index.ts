@@ -7,7 +7,7 @@ import { Wso2ApiCustomResourceProperties } from '../types';
 import { prepareAxiosForWso2Calls } from '../../wso2-utils';
 import { applyRetryDefaults, truncateStr } from '../../utils';
 
-import { createUpdateAndPublishApiInWso2, findWso2Api, removeApiInWso2 } from './wso2-v1';
+import { createUpdateAndChangeLifecycleStatusInWso2, findWso2Api, removeApiInWso2 } from './wso2-v1';
 
 export type Wso2ApiCustomResourceEvent = CdkCustomResourceEvent & {
   ResourceProperties: Wso2ApiCustomResourceProperties;
@@ -45,7 +45,6 @@ export const handler = async (
 
   try {
     console.log('>>> Prepare WSO2 API client...');
-    // const wso2Client = await prepareWso2ApiClient(event.ResourceProperties.wso2Config);
     const wso2Axios = await prepareAxiosForWso2Calls(event.ResourceProperties.wso2Config);
 
     if (event.RequestType === 'Create' || event.RequestType === 'Update') {
@@ -122,13 +121,14 @@ const createOrUpdateWso2Api = async (
   }
 
   if (event.RequestType === 'Create' || event.RequestType === 'Update') {
-    return createUpdateAndPublishApiInWso2({
+    return createUpdateAndChangeLifecycleStatusInWso2({
       wso2Axios,
       apiDefinition: event.ResourceProperties.apiDefinition,
       openapiDocument: event.ResourceProperties.openapiDocument,
       wso2Tenant: event.ResourceProperties.wso2Config.tenant ?? '',
       apiBeforeUpdate,
       retryOptions: applyRetryDefaults(event.ResourceProperties.retryOptions),
+      lifecycleStatus: event.ResourceProperties.lifecycleStatus,
     });
   }
 

@@ -1,0 +1,8 @@
+# This is used to normalise git reports
+# The format is "Proper Name <proper@email.xx> Commit Name <commit@email.xx>"
+# for more info, https://git-scm.com/docs/gitmailmap
+
+Marcio Meier <marciohmeier97@gmail.com> marcio meier <bf16wm@insim.biz>
+
+Flavio Stutz <flaviostutz@gmail.com> flaviostutz <flaviostutz@gmail.com>
+Flavio Stutz <flaviostutz@gmail.com> Flávio Stutz <flaviostutz@gmail.com>

@@ -58,6 +58,7 @@ export class Wso2Api extends Construct {
         apiDefinition: wso2ApiDefs,
         openapiDocument: props.openapiDocument,
         retryOptions: props.retryOptions,
+        lifecycleStatus: props.lifecycleStatus,
       } satisfies Wso2ApiCustomResourceProperties,
       resourceType: 'Custom::Wso2Api',
       removalPolicy: props.removalPolicy ?? RemovalPolicy.RETAIN,
@@ -73,7 +74,7 @@ export const validateProps = (props: Wso2ApiProps): void => {
   if (!props.wso2Config) throw new Error('wso2Config is required');
   if (!props.wso2Config.baseApiUrl) throw new Error('wso2Config.baseApiUrl is required');
   if (!props.wso2Config.credentialsSecretId) {
-    throw new Error('wso2Config.credentialsSecretManagerPath is required');
+    throw new Error('wso2Config.credentialsSecretId is required');
   }
   validateWso2ApiDefs(props.apiDefinition);
   if (!props.openapiDocument.openapi.startsWith('3.0')) {
