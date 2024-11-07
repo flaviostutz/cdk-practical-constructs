@@ -68,10 +68,13 @@
     "access": "public",
     "registry": "https://registry.npmjs.org"
   },
+  "//pnpm.overrides.braces": "braces is used by @stoplight/spectral-cli - Open issue: https://github.com/stoplightio/spectral/issues/2639. We will remove this override once the issue is fixed.",
+  "//pnpm.overrides.jsonpath-plus": "jsonpath-plus is used by @stoplight/spectral-cli and the safe version is not used yet by this library",
   "pnpm": {
     "overrides": {
       "braces@<3.0.3": ">=3.0.3",
-      "rollup@<3.29.5": ">=3.29.5"
+      "rollup@<3.29.5": ">=3.29.5",
+      "jsonpath-plus": ">=10"
     }
   }
 }
