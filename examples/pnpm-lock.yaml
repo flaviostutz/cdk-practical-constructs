@@ -7484,7 +7484,7 @@ packages:
     dev: false
 
   file:../lib/dist/cdk-practical-constructs-0.0.1.tgz(@asteasolutions/zod-to-openapi@7.0.0)(aws-cdk-lib@2.155.0)(zod@3.23.8):
-    resolution: {integrity: sha512-HqhjDpUeGE4sBDq9ikCokw8vTjzfWBl5JrSNsBtdq8OtD8VlopjRCWTpyYtbHVz0wuy9wEGQvn+9NaoBWorkdw==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
+    resolution: {integrity: sha512-5H/Y7HRg2tf0OEC6ec5v9o4shBUJOg2YdekWB2qC0Du/Rwv9cL/iH9SYJCevv9sv2wqZ+Pg/skYEHczgUenm8Q==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
     id: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
     name: cdk-practical-constructs
     version: 0.0.1

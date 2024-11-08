@@ -26,6 +26,9 @@ export const addLambdaAndProviderForWso2Operations = (args: {
 
   const { accountId, region } = new ScopedAws(args.scope);
 
+  // never use network configuration, only explicit VPC from previous step
+  const { network, ...customResourceConfig } = args.props.customResourceConfig ?? {};
+
   // resolve the entry file from workspace (.ts file), or
   // from the dist dir (.js file) when being used as a lib
   let wso2LambdaEntry = `${args.baseDir}/handler/index.ts`;
@@ -35,17 +38,12 @@ export const addLambdaAndProviderForWso2Operations = (args: {
 
   // vpc is undefined if no network is defined
   let vpc: IVpc | undefined;
-  const { customResourceConfig } = args.props;
 
   const securityGroups = [];
 
   // Create security group for custom resource if VPC is defined and no security group is defined
   if (args.props.customResourceConfig?.network) {
     vpc = vpcFromConfig(args.scope, args.props.customResourceConfig.network);
-
-    // never use network configuration, only explicit VPC from previous step
-    // eslint-disable-next-line fp/no-delete
-    delete customResourceConfig?.network;
 
     if (
       !customResourceConfig?.securityGroups ||
