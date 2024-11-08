@@ -7,6 +7,7 @@ settings:
 overrides:
   braces@<3.0.3: '>=3.0.3'
   rollup@<3.29.5: '>=3.29.5'
+  jsonpath-plus: '>=10'
 
 dependencies:
   '@apiture/openapi-down-convert':
@@ -1624,6 +1625,15 @@ packages:
       '@jridgewell/sourcemap-codec': 1.4.15
     dev: true
 
+  /@jsep-plugin/assignment@1.3.0(jsep@1.4.0):
+    resolution: {integrity: sha512-VVgV+CXrhbMI3aSusQyclHkenWSAm95WaiKrMxRFam3JSUiIaQjoMIw2sEs/OX4XifnqeQUN4DYbJjlA8EfktQ==}
+    engines: {node: '>= 10.16.0'}
+    peerDependencies:
+      jsep: ^0.4.0||^1.0.0
+    dependencies:
+      jsep: 1.4.0
+    dev: false
+
   /@jsep-plugin/regex@1.0.3(jsep@1.3.8):
     resolution: {integrity: sha512-XfZgry4DwEZvSFtS/6Y+R48D7qJYJK6R9/yJFyUFHCIUMEEHuJ4X95TDgJp5QkmzfLYvapMPzskV5HpIDrREug==}
     engines: {node: '>= 10.16.0'}
@@ -1631,6 +1641,15 @@ packages:
       jsep: ^0.4.0||^1.0.0
     dependencies:
       jsep: 1.3.8
+    dev: false
+
+  /@jsep-plugin/regex@1.0.3(jsep@1.4.0):
+    resolution: {integrity: sha512-XfZgry4DwEZvSFtS/6Y+R48D7qJYJK6R9/yJFyUFHCIUMEEHuJ4X95TDgJp5QkmzfLYvapMPzskV5HpIDrREug==}
+    engines: {node: '>= 10.16.0'}
+    peerDependencies:
+      jsep: ^0.4.0||^1.0.0
+    dependencies:
+      jsep: 1.4.0
     dev: false
 
   /@jsep-plugin/ternary@1.1.3(jsep@1.3.8):
@@ -2358,7 +2377,7 @@ packages:
       ajv-errors: 3.0.0(ajv@8.12.0)
       ajv-formats: 2.1.1(ajv@8.12.0)
       es-aggregate-error: 1.0.11
-      jsonpath-plus: 7.1.0
+      jsonpath-plus: 10.1.0
       lodash: 4.17.21
       lodash.topath: 4.5.2
       minimatch: 3.1.2
@@ -5658,6 +5677,11 @@ packages:
     engines: {node: '>= 10.16.0'}
     dev: false
 
+  /jsep@1.4.0:
+    resolution: {integrity: sha512-B7qPcEVE3NVkmSJbaYxvv4cHkVW7DQsZz13pUMrfS8z8Q/BuShN+gcTXrUlPiGqM2/t/EEaI030bpxMqY8gMlw==}
+    engines: {node: '>= 10.16.0'}
+    dev: false
+
   /jsesc@2.5.2:
     resolution: {integrity: sha512-OYu7XEzjkCQ3C5Ps3QIZsQfNpqoJyZZA99wd9aWd05NCtC5pWOkShK2mkL6HXQR6/Cy2lbNdPlZBpuQHXE63gA==}
     engines: {node: '>=4'}
@@ -5713,16 +5737,14 @@ packages:
       graceful-fs: 4.2.11
     dev: false
 
-  /jsonpath-plus@6.0.1:
-    resolution: {integrity: sha512-EvGovdvau6FyLexFH2OeXfIITlgIbgZoAZe3usiySeaIDm5QS+A10DKNpaPBBqqRSZr2HN6HVNXxtwUAr2apEw==}
-    engines: {node: '>=10.0.0'}
-    requiresBuild: true
-    dev: false
-    optional: true
-
-  /jsonpath-plus@7.1.0:
-    resolution: {integrity: sha512-gTaNRsPWO/K2KY6MrqaUFClF9kmuM6MFH5Dhg1VYDODgFbByw1yb7xu3hrViE/sz+dGOeMWgCzwUwQtAnCTE9g==}
-    engines: {node: '>=12.0.0'}
+  /jsonpath-plus@10.1.0:
+    resolution: {integrity: sha512-gHfV1IYqH8uJHYVTs8BJX1XKy2/rR93+f8QQi0xhx95aCiXn1ettYAd5T+7FU6wfqyDoX/wy0pm/fL3jOKJ9Lg==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    dependencies:
+      '@jsep-plugin/assignment': 1.3.0(jsep@1.4.0)
+      '@jsep-plugin/regex': 1.0.3(jsep@1.4.0)
+      jsep: 1.4.0
     dev: false
 
   /jsonpointer@5.0.1:
@@ -5993,7 +6015,7 @@ packages:
       astring: 1.8.6
       jsep: 1.3.8
     optionalDependencies:
-      jsonpath-plus: 6.0.1
+      jsonpath-plus: 10.1.0
       lodash.topath: 4.5.2
     dev: false
 
