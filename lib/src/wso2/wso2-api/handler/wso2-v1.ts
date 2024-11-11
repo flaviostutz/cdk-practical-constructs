@@ -179,6 +179,15 @@ export const createUpdateAndChangeLifecycleStatusInWso2 = async (
   return { wso2ApiId, endpointUrl };
 };
 
+const actionMap = {
+  PUBLISHED: 'Publish',
+  CREATED: 'Demote to created',
+  DEPRECATED: 'Deprecate',
+  BLOCKED: 'Block',
+  RETIRED: 'Retire',
+  PROTOTYPED: 'Deploy as a Prototype',
+};
+
 export const changeLifecycleStatusInWso2AndCheck = async (
   args: Pick<Wso2ApiProps, 'lifecycleStatus'> &
     Required<Pick<Wso2ApiProps, 'retryOptions' | 'apiDefinition'>> & {
@@ -187,31 +196,13 @@ export const changeLifecycleStatusInWso2AndCheck = async (
       wso2Tenant: string;
     },
 ): Promise<undefined> => {
+  if (!args.lifecycleStatus) throw new Error(`'lifecycleStatus' is required`);
   console.log(`Changing API status to '${args.lifecycleStatus}' in WSO2`);
 
   // define the action to be taken based on target lifecycle status
-  let action = '';
-  switch (args.lifecycleStatus) {
-    case 'PUBLISHED':
-      action = 'Publish';
-      break;
-    case 'CREATED':
-      action = 'Demote to created';
-      break;
-    case 'DEPRECATED':
-      action = 'Deprecate';
-      break;
-    case 'BLOCKED':
-      action = 'Block';
-      break;
-    case 'RETIRED':
-      action = 'Retire';
-      break;
-    case 'PROTOTYPED':
-      action = 'Deploy as a Prototype';
-      break;
-    default:
-      throw new Error(`Lifecycle status '${args.lifecycleStatus}' is not supported`);
+  const action = actionMap[args.lifecycleStatus];
+  if (!action) {
+    throw new Error(`Lifecycle status '${args.lifecycleStatus}' is not supported`);
   }
 
   console.log(`Using action '${action}' for lifecycle change`);
