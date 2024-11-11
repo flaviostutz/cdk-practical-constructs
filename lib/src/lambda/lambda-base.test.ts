@@ -16,6 +16,22 @@ describe('lambda-base', () => {
     const app = new App();
     const stack = new Stack(app);
 
+    const vpc = vpcFromConfig(stack, {
+      vpcId: 'aaa',
+      availabilityZones: ['a'],
+      privateSubnetIds: ['a'],
+      privateSubnetRouteTableIds: ['a'],
+    });
+
+    const customSG = new SecurityGroup(stack, 'customsg', {
+      vpc,
+      description: 'custom sg',
+      allowAllOutbound: false,
+    });
+    customSG.addIngressRule(Peer.ipv4('9.9.9.9/32'), Port.allTraffic(), 'allow ingress');
+    customSG.addEgressRule(Peer.ipv4('8.8.8.8/32'), Port.allTraffic(), 'allow egress');
+    customSG.addEgressRule(Peer.ipv4('1.2.3.4/32'), Port.tcp(8888), 'Sample egress rule');
+
     const lambdaConfig: BaseNodeJsProps = {
       stage: 'dev',
       network: {
@@ -32,33 +48,18 @@ describe('lambda-base', () => {
         minCapacity: 3,
       },
       logGroupRetention: RetentionDays.FIVE_DAYS,
+      securityGroups: [customSG],
     };
 
     if (!lambdaConfig.network) throw new Error('lambdaConfig.network should be defined');
-    const vpc = vpcFromConfig(stack, lambdaConfig.network);
     if (!vpc) throw new Error('vpc should be defined');
 
-    const customSG = new SecurityGroup(stack, 'customsg', {
-      vpc,
-      description: 'custom sg',
-      allowAllOutbound: false,
-    });
-    customSG.addIngressRule(Peer.ipv4('9.9.9.9/32'), Port.allTraffic(), 'allow ingress');
-    customSG.addEgressRule(Peer.ipv4('8.8.8.8/32'), Port.allTraffic(), 'allow egress');
-    lambdaConfig.securityGroups = [customSG];
     lambdaConfig.logGroupSubscriberLambdaArn = {
       type: LogGroupSubscriberLambdaArnType.Arn,
       value: 'arn:aws:lambda:eu-west-1:012345678:function:tstLogging',
     };
 
     const func = new BaseNodeJsFunction(stack, 'test-lambda', lambdaConfig);
-    if (!func.defaultSecurityGroup) throw new Error('defaultSecurityGroup should be defined');
-    func.defaultSecurityGroup.addEgressRule(
-      Peer.ipv4('1.2.3.4/32'),
-      Port.tcp(8888),
-      'Sample egress rule',
-    );
-
     expect(func).toBeDefined();
     expect(func.nodeJsFunction.runtime).toBe(Runtime.NODEJS_20_X);
     expect(func.nodeJsFunction.node.id).toBe('test-lambda');
@@ -98,14 +99,12 @@ describe('lambda-base', () => {
     });
 
     template.hasResourceProperties('AWS::EC2::SecurityGroup', {
-      GroupDescription: 'Default security group for Lambda test-lambda',
-      SecurityGroupEgress: [{ CidrIp: '1.2.3.4/32', FromPort: 8888, IpProtocol: 'tcp' }],
-    });
-
-    template.hasResourceProperties('AWS::EC2::SecurityGroup', {
       GroupDescription: 'custom sg',
       SecurityGroupIngress: [{ CidrIp: '9.9.9.9/32' }],
-      SecurityGroupEgress: [{ CidrIp: '8.8.8.8/32' }],
+      SecurityGroupEgress: [
+        { CidrIp: '8.8.8.8/32' },
+        { CidrIp: '1.2.3.4/32', FromPort: 8888, IpProtocol: 'tcp' },
+      ],
     });
 
     template.hasResourceProperties('AWS::Logs::SubscriptionFilter', {
@@ -178,7 +177,7 @@ describe('lambda-base', () => {
         stage: 'dev',
         eventType: EventType.Http,
         baseCodePath: 'src/lambda/__tests__',
-        allowOutboundTo: [{ peer: Peer.ipv4('0.0.0.0/0'), port: Port.tcp(443) }],
+        // allowOutboundTo: [{ peer: Peer.ipv4('0.0.0.0/0'), port: Port.tcp(443) }],
       });
     };
     expect(f).toThrow();
@@ -268,11 +267,6 @@ describe('lambda-base', () => {
           TEST1: 'VALUE1',
         },
       },
-    });
-
-    template.hasResourceProperties('AWS::EC2::SecurityGroup', {
-      GroupDescription: 'Default security group for Lambda test-lambda',
-      SecurityGroupEgress: [{ CidrIp: '255.255.255.255/32', Description: 'Disallow all traffic' }],
     });
 
     template.hasResource('AWS::Lambda::Version', {});

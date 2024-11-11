@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 import { NodejsFunction, NodejsFunctionProps } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-import { ISecurityGroup, SecurityGroup, SubnetType } from 'aws-cdk-lib/aws-ec2';
+import { SubnetType } from 'aws-cdk-lib/aws-ec2';
 import { LambdaDestination } from 'aws-cdk-lib/aws-logs-destinations';
 import { Runtime, Function, Alias, IAlias } from 'aws-cdk-lib/aws-lambda';
 import { FilterPattern, LogGroup, RetentionDays, SubscriptionFilter } from 'aws-cdk-lib/aws-logs';
@@ -25,7 +25,6 @@ import { BaseNodeJsProps, LambdaConfig, LogGroupSubscriberLambdaArnType } from '
 
 /**
  * This construct is based on AWS NodeJsFunction and adds the following capabilities:
- *   - creates a default security group. See property 'defaultSecurityGroup' of this construct
  *   - creates an alias called "live" pointing to the latest lambda version and replaced versions are deleted automatically. See property 'liveAlias' of this construct
  *   - typed configuration props for common usage scenarios
  *   - autoscaling of provisioned concurrent invocations (so you lower cold starts). You can also use automatic scheduling to tweak min/max depending on a cron expression. See props.provisionedConcurrentExecutions
@@ -39,8 +38,6 @@ import { BaseNodeJsProps, LambdaConfig, LogGroupSubscriberLambdaArnType } from '
 export class BaseNodeJsFunction extends Construct {
   public readonly nodeJsFunction: NodejsFunction;
 
-  public readonly defaultSecurityGroup?: ISecurityGroup;
-
   public readonly defaultLogGroup?: LogGroup;
 
   public readonly liveAlias?: IAlias;
@@ -53,9 +50,6 @@ export class BaseNodeJsFunction extends Construct {
     const propsWithDefaults = getPropsWithDefaults(id, props, scope);
 
     const { environment } = setupEnvironment(propsWithDefaults);
-
-    const { defaultSG, securityGroups } = addSecurityGroups(this, propsWithDefaults);
-    this.defaultSecurityGroup = defaultSG;
 
     // Don't use logRetention from NodeJsFunction because it's a deprecated attribute.
     // We are creating a log group with retention policies in this construct instead
@@ -73,14 +67,7 @@ export class BaseNodeJsFunction extends Construct {
       ...propsWithDefaults,
       ...defaultLogGroupProp,
       environment,
-      securityGroups,
-      // eslint-disable-next-line no-undefined
-      allowAllOutbound: undefined,
     };
-
-    // this is managed by our security group, so don't send this to NodeJsFunction
-    // eslint-disable-next-line fp/no-delete
-    // delete nodeJsProps.allowAllOutbound;
 
     const nodeJsFunc = new NodejsFunction(this, id, nodeJsProps);
     this.nodeJsFunction = nodeJsFunc;
@@ -303,48 +290,6 @@ const addDefaultLogGroup = (scope: Construct, props: BaseNodeJsProps): LogGroup 
     // TODO: create property to create custom log group name
     // logGroupName: `/aws/lambda/${props.functionName}`,
   });
-};
-
-/**
- * Create default security group and add to existing SGs from props if it exists
- */
-const addSecurityGroups = (
-  scope: Construct,
-  props: LambdaConfig,
-): {
-  defaultSG?: ISecurityGroup;
-  securityGroups?: ISecurityGroup[];
-} => {
-  if (!props.vpc) {
-    if (props.allowOutboundTo) {
-      throw new Error(`'allowOutboundTo' can only be used if vpc or network is defined`);
-    }
-    return {};
-  }
-
-  const securityGroups: ISecurityGroup[] = [];
-  if (props.securityGroups) {
-    // eslint-disable-next-line fp/no-mutating-methods
-    securityGroups.push(...props.securityGroups);
-  }
-
-  // Create a default security group and expose via class variable
-  const defaultSG = new SecurityGroup(scope, `sg-default-${scope.node.id}`, {
-    vpc: props.vpc,
-    description: `Default security group for Lambda ${scope.node.id}`,
-    allowAllOutbound:
-      (typeof props.allowAllOutbound !== 'undefined' && props.allowAllOutbound) ??
-      props.allowAllOutbound,
-  });
-  if (props.allowOutboundTo) {
-    props.allowOutboundTo.forEach((ato) => {
-      defaultSG.addEgressRule(ato.peer, ato.port, `Allow connection to ${ato.peer}:${ato.port}`);
-    });
-  }
-  // eslint-disable-next-line fp/no-mutating-methods
-  securityGroups.push(defaultSG);
-
-  return { defaultSG, securityGroups };
 };
 
 const setupEnvironment = (props: BaseNodeJsProps): { environment: Record<string, string> } => {

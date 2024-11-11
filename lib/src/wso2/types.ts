@@ -11,7 +11,6 @@ import { LambdaConfig } from '../lambda/types';
  */
 export type Wso2LambdaConfig = Pick<
   LambdaConfig,
-  | 'allowOutboundTo'
   | 'securityGroups'
   | 'extraCaPubCert'
   | 'network'

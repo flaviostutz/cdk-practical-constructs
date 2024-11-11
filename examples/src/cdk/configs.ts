@@ -6,7 +6,6 @@ import { TestConfig } from './types/TestConfig';
 export const testStageConfigs: StagesConfig<TestConfig> = {
   default: {
     lambda: {
-      allowAllOutbound: true,
       logGroupRetention: RetentionDays.ONE_WEEK,
     },
   },
