@@ -18,7 +18,7 @@ export type Wso2ApiProps = Wso2BaseProperties & {
    */
   openapiDocument: oas30.OpenAPIObject;
   /**
-   * The desired lifecycle status of the API in WSO2. 
+   * The desired lifecycle status of the API in WSO2.
    * If not defined, the status of the API won't be checked and no changes to the status will be performed.
    * If a workflow trigger is detected during the lifecycle change (e.g for manual approval), we skip the status change check
    * as the workflow might take a long time to complete.

@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { OpenAPIObject } from 'openapi3-ts/oas30';
 import { oas30 } from 'openapi3-ts';
 import FormData from 'form-data';
 import { backOff } from 'exponential-backoff';
@@ -18,7 +17,6 @@ import {
   normalizeCorsConfigurationValues,
   objectWithContentOrUndefined,
 } from '../utils';
-import { RetryOptions } from '../../types';
 import { Wso2ApiProps } from '../types';
 
 export const findWso2Api = async (args: {
@@ -75,14 +73,15 @@ export const findWso2Api = async (args: {
   );
 };
 
-export type UpsertWso2Args = Pick<Wso2ApiProps, 'lifecycleStatus'> & Required<Pick<Wso2ApiProps, 'retryOptions' | 'openapiDocument' | 'apiDefinition'>> & {
-  wso2Axios: AxiosInstance;
-  wso2Tenant: string;
-  apiBeforeUpdate?: {
-    id?: string;
-    lastUpdatedTime?: string;
+export type UpsertWso2Args = Pick<Wso2ApiProps, 'lifecycleStatus'> &
+  Required<Pick<Wso2ApiProps, 'retryOptions' | 'openapiDocument' | 'apiDefinition'>> & {
+    wso2Axios: AxiosInstance;
+    wso2Tenant: string;
+    apiBeforeUpdate?: {
+      id?: string;
+      lastUpdatedTime?: string;
+    };
   };
-};
 
 /**
  * Delete API in WSO2 server
@@ -138,11 +137,11 @@ export const createUpdateAndChangeLifecycleStatusInWso2 = async (
     args.retryOptions.mutationRetries,
   );
 
-  if(!args.lifecycleStatus) {
+  if (args.lifecycleStatus) {
     console.log('');
     console.log(`>>> Changing lifecycle status to '${args.lifecycleStatus}'...`);
     // will retry changing to PUBLISHED if fails
-    const endpointUrl = await backOff(async () =>
+    await backOff(async () =>
       changeLifecycleStatusInWso2AndCheck({
         wso2Axios: args.wso2Axios,
         wso2ApiId,
@@ -180,12 +179,14 @@ export const createUpdateAndChangeLifecycleStatusInWso2 = async (
   return { wso2ApiId, endpointUrl };
 };
 
-export const changeLifecycleStatusInWso2AndCheck = async (args: Pick<Wso2ApiProps, 'lifecycleStatus'> & Required<Pick<Wso2ApiProps, 'retryOptions' | 'apiDefinition'>> & {
-  wso2Axios: AxiosInstance;
-  wso2ApiId: string;
-  wso2Tenant: string;
-}): Promise<undefined> => {
-
+export const changeLifecycleStatusInWso2AndCheck = async (
+  args: Pick<Wso2ApiProps, 'lifecycleStatus'> &
+    Required<Pick<Wso2ApiProps, 'retryOptions' | 'apiDefinition'>> & {
+      wso2Axios: AxiosInstance;
+      wso2ApiId: string;
+      wso2Tenant: string;
+    },
+): Promise<undefined> => {
   console.log(`Changing API status to '${args.lifecycleStatus}' in WSO2`);
 
   // define the action to be taken based on target lifecycle status
@@ -241,23 +242,29 @@ export const changeLifecycleStatusInWso2AndCheck = async (args: Pick<Wso2ApiProp
 
     // Workflow trigger detected. It might indicate the need for manual approval or a slow process
     // so we will ignore checking the API lifecycle status check for now
-    if(fapi.workflowStatus !== '' && fapi.workflowStatus !== 'APPROVED') {
-      console.log(`API lifecycle status check SKIPPED. API ${args.wso2ApiId} has workflow status '${fapi.workflowStatus}', which might require manual approval before the actual lifecycle status is changed`);
-      return
+    if (fapi.workflowStatus !== '' && fapi.workflowStatus !== 'APPROVED') {
+      console.log(
+        `API lifecycle status check SKIPPED. API ${args.wso2ApiId} has workflow status '${fapi.workflowStatus}', which might require manual approval before the actual lifecycle status is changed`,
+      );
+      return;
     }
 
     if (fapi.lifeCycleStatus !== args.lifecycleStatus) {
-      throw new Error(`API ${args.wso2ApiId} is in status ${fapi.lifeCycleStatus} (not '${args.lifecycleStatus}')`);
+      throw new Error(
+        `API ${args.wso2ApiId} is in status ${fapi.lifeCycleStatus} (not '${args.lifecycleStatus}')`,
+      );
     }
     console.log(`API lifecycle status check OK. lifecycleStatus='${args.lifecycleStatus}'`);
   }, args.retryOptions.checkRetries);
 };
 
-export const updateOpenapiInWso2AndCheck = async (args: Required<Pick<Wso2ApiProps, 'openapiDocument' | 'apiDefinition' | 'retryOptions'>> & {
-  wso2Axios: AxiosInstance;
-  wso2ApiId: string;
-  wso2Tenant: string;
-}): Promise<void> => {
+export const updateOpenapiInWso2AndCheck = async (
+  args: Required<Pick<Wso2ApiProps, 'openapiDocument' | 'apiDefinition' | 'retryOptions'>> & {
+    wso2Axios: AxiosInstance;
+    wso2ApiId: string;
+    wso2Tenant: string;
+  },
+): Promise<void> => {
   console.log('Updating Openapi document in WSO2');
   const fdata = new FormData();
   const openapiDocumentStr = JSON.stringify(args.openapiDocument);

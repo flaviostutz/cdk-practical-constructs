@@ -7,7 +7,11 @@ import { Wso2ApiCustomResourceProperties } from '../types';
 import { prepareAxiosForWso2Calls } from '../../wso2-utils';
 import { applyRetryDefaults, truncateStr } from '../../utils';
 
-import { createUpdateAndChangeLifecycleStatusInWso2, findWso2Api, removeApiInWso2 } from './wso2-v1';
+import {
+  createUpdateAndChangeLifecycleStatusInWso2,
+  findWso2Api,
+  removeApiInWso2,
+} from './wso2-v1';
 
 export type Wso2ApiCustomResourceEvent = CdkCustomResourceEvent & {
   ResourceProperties: Wso2ApiCustomResourceProperties;
