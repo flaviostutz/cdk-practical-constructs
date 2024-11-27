@@ -305,6 +305,7 @@ export const generateOpenapiDocWithExtensions = (
           // https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
           // @ts-ignore
           jsonObj['x-amazon-apigateway-integration'] = {
+            ...lambdaOp.integrationOptions,
             // We need to use a api gw lambda invocation function to invocate the lambda we are integrating
             // https://stackoverflow.com/a/50696321
             uri: `arn:aws:apigateway:${awsRegion}:lambda:path/2015-03-31/functions/${lambdaOp.lambdaAlias.functionArn}/invocations`,
