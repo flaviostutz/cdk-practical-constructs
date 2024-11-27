@@ -170,10 +170,6 @@ const addLogGroupForTracing = (
   scope: Construct,
   props: OpenApiGatewayLambdaProps,
 ): { deployOptions: StageOptions; logGroupAccessLog?: LogGroup } => {
-  if (props.accessLogEnable && props.deployOptions) {
-    throw new Error("When 'accessLogEnable' is defined, 'deployOptions' cannot be defined");
-  }
-
   if (props.accessLogEnable) {
     const logGroupAccessLog = new LogGroup(scope, 'AccessLogGroup', {
       logGroupName: `apigateway-accesslogs-${scope.node.id}`,
@@ -182,11 +178,13 @@ const addLogGroupForTracing = (
 
     const deployOptionsAccessLog: StageOptions = {
       ...props.deployOptions,
-      accessLogDestination: new LogGroupLogDestination(logGroupAccessLog),
-      accessLogFormat: AccessLogFormat.jsonWithStandardFields(),
-      loggingLevel: MethodLoggingLevel.INFO,
-      dataTraceEnabled: false,
-      tracingEnabled: true,
+      accessLogDestination:
+        props.deployOptions?.accessLogDestination ?? new LogGroupLogDestination(logGroupAccessLog),
+      accessLogFormat:
+        props.deployOptions?.accessLogFormat ?? AccessLogFormat.jsonWithStandardFields(),
+      loggingLevel: props.deployOptions?.loggingLevel ?? MethodLoggingLevel.INFO,
+      dataTraceEnabled: props.deployOptions?.dataTraceEnabled ?? false,
+      tracingEnabled: props.deployOptions?.tracingEnabled ?? true,
       metricsEnabled: props.deployOptions?.metricsEnabled ?? true,
     };
 
