@@ -166,7 +166,7 @@ const getRestApiExecutionArn = (scope: Construct, specRestApi: SpecRestApi): str
 /**
  * Setup log groups for access log
  */
-const addLogGroupForTracing = (
+export const addLogGroupForTracing = (
   scope: Construct,
   props: OpenApiGatewayLambdaProps,
 ): { deployOptions: StageOptions; logGroupAccessLog?: LogGroup } => {

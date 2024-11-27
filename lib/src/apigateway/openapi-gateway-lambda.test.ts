@@ -9,9 +9,14 @@ import {
 import z from 'zod';
 import type { oas30, oas31 } from 'openapi3-ts';
 import { Converter } from '@apiture/openapi-down-convert';
-import { EndpointType } from 'aws-cdk-lib/aws-apigateway';
+import {
+  AccessLogFormat,
+  EndpointType,
+  LogGroupLogDestination,
+  MethodLoggingLevel,
+} from 'aws-cdk-lib/aws-apigateway';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
-import { App, Stack } from 'aws-cdk-lib/core';
+import { App, Duration, Stack } from 'aws-cdk-lib/core';
 import { Template } from 'aws-cdk-lib/assertions';
 import { Construct } from 'constructs';
 import { CfnFunction } from 'aws-cdk-lib/aws-lambda';
@@ -27,6 +32,7 @@ import {
   generateOpenapiDocWithExtensions,
   generateOperationId,
   getPropsWithDefaults,
+  addLogGroupForTracing,
 } from './openapi-gateway-lambda';
 
 extendZodWithOpenApi(z);
@@ -473,6 +479,127 @@ describe('openapi-gateway-lambda', () => {
         Ref: stack.getLogicalId(userGetOperation.lambdaAlias.node.defaultChild as CfnFunction),
       },
       Principal: 'apigateway.amazonaws.com',
+    });
+  });
+
+  it('should correctly construct deployOptionsAccessLog without provided deploy options', () => {
+    const stack = new Stack();
+    const props: OpenApiGatewayLambdaProps = {
+      stage: 'dev',
+      openapiBasic: {
+        openapi: '3.0.3',
+        info: {
+          title: 'test api',
+          version: 'v1',
+        },
+      },
+      openapiOperations: [],
+      accessLogEnable: true,
+    };
+
+    const { deployOptions, logGroupAccessLog } = addLogGroupForTracing(stack, props);
+
+    if (!logGroupAccessLog) {
+      throw new Error('logGroupAccessLog should be defined');
+    }
+    expect(deployOptions.accessLogDestination).toStrictEqual(
+      new LogGroupLogDestination(logGroupAccessLog),
+    );
+    expect(deployOptions.accessLogFormat).toStrictEqual(AccessLogFormat.jsonWithStandardFields());
+    expect(deployOptions.loggingLevel).toBe(MethodLoggingLevel.INFO);
+    expect(deployOptions.dataTraceEnabled).toBe(false);
+    expect(deployOptions.tracingEnabled).toBe(true);
+    expect(deployOptions.metricsEnabled).toBe(true);
+    expect(logGroupAccessLog).toStrictEqual(logGroupAccessLog);
+  });
+
+  it('should correctly construct deployOptionsAccessLog with provided deployOptions', () => {
+    const stack = new Stack();
+    const props: OpenApiGatewayLambdaProps = {
+      stage: 'dev',
+      openapiBasic: {
+        openapi: '3.0.3',
+        info: {
+          title: 'test api',
+          version: 'v1',
+        },
+      },
+      openapiOperations: [],
+      accessLogEnable: true,
+      deployOptions: {
+        loggingLevel: MethodLoggingLevel.ERROR,
+        dataTraceEnabled: true,
+        stageName: 'dev',
+        cachingEnabled: true,
+        methodOptions: {
+          '/messages/GET': {
+            cachingEnabled: true,
+            cacheTtl: Duration.seconds(3600),
+          },
+        },
+      },
+    };
+
+    const { deployOptions, logGroupAccessLog } = addLogGroupForTracing(stack, props);
+
+    if (!logGroupAccessLog) {
+      throw new Error('logGroupAccessLog should be defined');
+    }
+    expect(deployOptions.accessLogDestination).toStrictEqual(
+      new LogGroupLogDestination(logGroupAccessLog),
+    );
+    expect(deployOptions.accessLogFormat).toStrictEqual(AccessLogFormat.jsonWithStandardFields());
+    expect(deployOptions.loggingLevel).toBe(MethodLoggingLevel.ERROR);
+    expect(deployOptions.dataTraceEnabled).toBe(true);
+    expect(deployOptions.tracingEnabled).toBe(true);
+    expect(deployOptions.metricsEnabled).toBe(true);
+    expect(deployOptions.stageName).toBe('dev');
+    expect(deployOptions.cachingEnabled).toBe(true);
+    expect(deployOptions.methodOptions).toStrictEqual({
+      '/messages/GET': {
+        cachingEnabled: true,
+        cacheTtl: Duration.seconds(3600),
+      },
+    });
+    expect(logGroupAccessLog).toStrictEqual(logGroupAccessLog);
+  });
+
+  it('should correctly merge lambdaOp.integrationOptions into x-amazon-apigateway-integration', () => {
+    const awsRegion = 'eu-west-1';
+    const lambdaArn = 'arn:aws:lambda:eu-west-1:123123123:function:my-function:live';
+    const gatewayProps = {
+      ...testGatewayProps(),
+      openapiOperations: [
+        {
+          ...testGatewayProps().openapiOperations[0],
+          integrationOptions: {
+            cacheKeyParameters: [
+              'method.request.querystring.portal',
+              'method.request.querystring.active',
+            ],
+            requestParameters: {
+              'integration.request.querystring.portal': 'method.request.querystring.portal',
+              'integration.request.querystring.active': 'method.request.querystring.active',
+            },
+          },
+        },
+      ],
+    };
+    const openapidoc = generateOpenapiDocWithExtensions(gatewayProps, awsRegion);
+
+    // @ts-ignore
+    expect(openapidoc.paths['/users/{id}'].get['x-amazon-apigateway-integration']).toStrictEqual({
+      uri: `arn:aws:apigateway:${awsRegion}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations`,
+      httpMethod: 'POST',
+      type: 'AWS_PROXY',
+      cacheKeyParameters: [
+        'method.request.querystring.portal',
+        'method.request.querystring.active',
+      ],
+      requestParameters: {
+        'integration.request.querystring.portal': 'method.request.querystring.portal',
+        'integration.request.querystring.active': 'method.request.querystring.active',
+      },
     });
   });
 });
