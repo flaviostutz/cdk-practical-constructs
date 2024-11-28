@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 import { AxiosInstance } from 'axios';
+import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 
 import { PublisherPortalAPIv1 } from '../v1/types';
 import { Wso2ApiCustomResourceProperties } from '../types';
