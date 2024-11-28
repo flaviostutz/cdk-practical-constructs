@@ -23,6 +23,7 @@
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^7.0.0",
     "aws-cdk-lib": "^2.155.0",
+    "aws-lambda": "^1.0.7",
     "cdk-practical-constructs": "file:../lib/dist/cdk-practical-constructs-0.0.1.tgz",
     "constructs": "^10.3.0",
     "esbuild": "^0.19.11",
