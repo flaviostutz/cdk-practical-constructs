@@ -44,6 +44,7 @@
     "@apiture/openapi-down-convert": "^0.9.0",
     "@aws-sdk/client-secrets-manager": "^3.624.0",
     "@stoplight/spectral-cli": "^6.13.1",
+    "aws-lambda": "^1.0.7",
     "axios": "^1.7.5",
     "constructs": "^10.3.0",
     "esbuild": "^0.19.11",
