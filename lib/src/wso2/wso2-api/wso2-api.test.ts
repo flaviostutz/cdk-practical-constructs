@@ -25,6 +25,10 @@ describe('wso2-api-construct', () => {
     const template = Template.fromStack(stack);
     // console.log(JSON.stringify(template.toJSON(), null, 2));
 
+    const templateStr = JSON.stringify(template.toJSON());
+    expect(templateStr).toContain('"Action":"secretsmanager:GetSecretValue"');
+    expect(templateStr).toContain('"Action":"kms:decrypt"');
+
     template.hasResourceProperties('Custom::Wso2Api', {
       wso2Config: testProps1.wso2Config,
       apiDefinition: wso2Api.apiDefinition,
@@ -94,6 +98,7 @@ const testProps = (): Wso2ApiProps => {
     wso2Config: {
       baseApiUrl: 'http://localhost:8080/wso2',
       credentialsSecretId: 'arn::creds',
+      credentialsSecretKMSKeyId: '1234-5678-0000',
     },
     apiDefinition: testWso2ApiDefs({
       context: '/test1',

@@ -88,6 +88,12 @@ export type Wso2Config = {
    */
   credentialsSecretId: string;
   /**
+   * KMS key id used to decrypt the secret with credentials for accessing the WSO2 API.
+   * A permission to this KMS key will be added to the Lambda function that will be used to invoke the WSO2 API.
+   * @example '122234-55445-23423'
+   */
+  credentialsSecretKMSKeyId?: string;
+  /**
    * Version of the WSO2 server API
    * @default v1
    */

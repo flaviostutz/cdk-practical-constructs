@@ -69,9 +69,12 @@
     "registry": "https://registry.npmjs.org"
   },
   "pnpm": {
+    "// cross-spawn: audit errors due to @stutzlab/eslint-config@3.1.1 and esbuild-jest@0.5.0": "",
     "overrides": {
       "braces@<3.0.3": ">=3.0.3",
-      "rollup@<3.29.5": ">=3.29.5"
+      "rollup@<3.29.5": ">=3.29.5",
+      "jsonpath-plus": ">=10",
+      "cross-spawn": ">=7.0.5"
     }
   }
 }
