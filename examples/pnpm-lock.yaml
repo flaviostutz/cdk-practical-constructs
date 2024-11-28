@@ -11,6 +11,9 @@ dependencies:
   aws-cdk-lib:
     specifier: ^2.155.0
     version: 2.155.0(constructs@10.3.0)
+  aws-lambda:
+    specifier: ^1.0.7
+    version: 1.0.7
   cdk-practical-constructs:
     specifier: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
     version: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz(@asteasolutions/zod-to-openapi@7.0.0)(aws-cdk-lib@2.155.0)(zod@3.23.8)
@@ -7558,7 +7561,7 @@ packages:
     dev: false
 
   file:../lib/dist/cdk-practical-constructs-0.0.1.tgz(@asteasolutions/zod-to-openapi@7.0.0)(aws-cdk-lib@2.155.0)(zod@3.23.8):
-    resolution: {integrity: sha512-ZnCaLoTfeii0Cc83gvBOJfF7FRgMQCljvxerOrEY5tCdE/7R5ZW/WPb+9s2XX1DcgU+CMiX6LDpSM/jVqjP06g==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
+    resolution: {integrity: sha512-+0BD8dAYRRRB9oPeDem+yuQLnxf0WNtW78rGlKEt0YUIgQwPhvRV96rW+yy/wxgPwmqlqjGKD59xdiOUZ8PFOQ==, tarball: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz}
     id: file:../lib/dist/cdk-practical-constructs-0.0.1.tgz
     name: cdk-practical-constructs
     version: 0.0.1
