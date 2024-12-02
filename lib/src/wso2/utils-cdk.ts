@@ -59,6 +59,25 @@ export const addLambdaAndProviderForWso2Operations = (args: {
     }
   }
 
+  // define the initial policy for the custom resource lambda by adding secret and CMK permissions
+  const initialPolicy = [
+    PolicyStatement.fromJson({
+      Effect: 'Allow',
+      Action: 'secretsmanager:GetSecretValue',
+      Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${args.props.wso2Config.credentialsSecretId}*`,
+    }),
+  ];
+
+  if (args.props.wso2Config.credentialsSecretKMSKeyId) {
+    initialPolicy.push(
+      PolicyStatement.fromJson({
+        Effect: 'Allow',
+        Action: 'kms:decrypt',
+        Resource: `arn:aws:kms:${region}:${accountId}:key/${args.props.wso2Config.credentialsSecretKMSKeyId}`,
+      }),
+    );
+  }
+
   // lambda function used for invoking WSO2 APIs during CFN operations
   const customResourceFunction = new BaseNodeJsFunction(args.scope, `${args.id}-custom-lambda`, {
     ...customResourceConfig,
@@ -72,13 +91,7 @@ export const addLambdaAndProviderForWso2Operations = (args: {
     createLiveAlias: false,
     createDefaultLogGroup: true,
     entry: wso2LambdaEntry,
-    initialPolicy: [
-      PolicyStatement.fromJson({
-        Effect: 'Allow',
-        Action: 'secretsmanager:GetSecretValue',
-        Resource: `arn:aws:secretsmanager:${region}:${accountId}:secret:${args.props.wso2Config.credentialsSecretId}*`,
-      }),
-    ],
+    initialPolicy,
     logGroupRetention,
   });
 
