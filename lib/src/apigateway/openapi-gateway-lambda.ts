@@ -166,14 +166,10 @@ const getRestApiExecutionArn = (scope: Construct, specRestApi: SpecRestApi): str
 /**
  * Setup log groups for access log
  */
-const addLogGroupForTracing = (
+export const addLogGroupForTracing = (
   scope: Construct,
   props: OpenApiGatewayLambdaProps,
 ): { deployOptions: StageOptions; logGroupAccessLog?: LogGroup } => {
-  if (props.accessLogEnable && props.deployOptions) {
-    throw new Error("When 'accessLogEnable' is defined, 'deployOptions' cannot be defined");
-  }
-
   if (props.accessLogEnable) {
     const logGroupAccessLog = new LogGroup(scope, 'AccessLogGroup', {
       logGroupName: `apigateway-accesslogs-${scope.node.id}`,
@@ -182,11 +178,13 @@ const addLogGroupForTracing = (
 
     const deployOptionsAccessLog: StageOptions = {
       ...props.deployOptions,
-      accessLogDestination: new LogGroupLogDestination(logGroupAccessLog),
-      accessLogFormat: AccessLogFormat.jsonWithStandardFields(),
-      loggingLevel: MethodLoggingLevel.INFO,
-      dataTraceEnabled: false,
-      tracingEnabled: true,
+      accessLogDestination:
+        props.deployOptions?.accessLogDestination ?? new LogGroupLogDestination(logGroupAccessLog),
+      accessLogFormat:
+        props.deployOptions?.accessLogFormat ?? AccessLogFormat.jsonWithStandardFields(),
+      loggingLevel: props.deployOptions?.loggingLevel ?? MethodLoggingLevel.INFO,
+      dataTraceEnabled: props.deployOptions?.dataTraceEnabled ?? false,
+      tracingEnabled: props.deployOptions?.tracingEnabled ?? true,
       metricsEnabled: props.deployOptions?.metricsEnabled ?? true,
     };
 
@@ -307,6 +305,7 @@ export const generateOpenapiDocWithExtensions = (
           // https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions-integration.html
           // @ts-ignore
           jsonObj['x-amazon-apigateway-integration'] = {
+            ...lambdaOp.integrationOptions,
             // We need to use a api gw lambda invocation function to invocate the lambda we are integrating
             // https://stackoverflow.com/a/50696321
             uri: `arn:aws:apigateway:${awsRegion}:lambda:path/2015-03-31/functions/${lambdaOp.lambdaAlias.functionArn}/invocations`,

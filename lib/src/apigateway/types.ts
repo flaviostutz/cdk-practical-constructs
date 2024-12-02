@@ -1,4 +1,4 @@
-import { EndpointType, SpecRestApiProps } from 'aws-cdk-lib/aws-apigateway';
+import { EndpointType, IntegrationOptions, SpecRestApiProps } from 'aws-cdk-lib/aws-apigateway';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { RouteConfig } from '@asteasolutions/zod-to-openapi';
 import { IAlias } from 'aws-cdk-lib/aws-lambda';
@@ -46,4 +46,5 @@ export type LambdaOperation = {
   routeConfig: RouteConfig;
   lambdaAlias: LambdaAlias;
   awsExtensions?: AwsExtensions;
+  integrationOptions?: IntegrationOptions;
 };
