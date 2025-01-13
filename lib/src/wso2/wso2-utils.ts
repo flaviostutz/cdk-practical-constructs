@@ -170,12 +170,18 @@ export const getBearerToken = async (
   config: Wso2ApimConfig,
   clientCredentials: ClientCredentials,
 ): Promise<string> => {
+  // tested minimum for publisher: apim:api_create apim:api_view apim:api_publish apim:api_delete
+  const scopesPublisher =
+    'apim:api_create apim:api_delete apim:api_publish apim:api_view apim:client_certificates_add apim:client_certificates_update apim:client_certificates_view apim:document_create apim:document_manage apim:ep_certificates_add apim:ep_certificates_update apim:ep_certificates_view apim:mediation_policy_manage apim:pub_alert_manage apim:publisher_settings apim:subscription_block apim:subscription_view apim:threat_protection_policy_create apim:threat_protection_policy_manage';
+  const scopesStore =
+    'apim:api_key apim:app_manage apim:store_settings apim:sub_alert_manage apim:sub_manage apim:subscribe';
+
   const data = qs.stringify({
     // eslint-disable-next-line camelcase
     grant_type: 'password',
     username: config.username,
     password: config.password,
-    scope: 'apim:api_create apim:api_view apim:api_publish apim:api_delete',
+    scope: `${scopesPublisher} ${scopesStore}`,
   });
 
   const authTokenBase64 = Buffer.from(
