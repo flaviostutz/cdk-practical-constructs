@@ -93,7 +93,12 @@ export const removeApiInWso2 = async (args: {
   if (!args.wso2ApiId) {
     throw new Error('wso2ApiId is required for deleting API');
   }
-  await args.wso2Axios.delete(`/api/am/publisher/v1/apis/${args.wso2ApiId}`);
+  await args.wso2Axios.delete(`/api/am/publisher/v1/apis/${args.wso2ApiId}`, {
+    validateStatus(status) {
+      // If it returns 404, the api is already deleted
+      return status === 200 || status === 404;
+    },
+  });
 };
 
 /**

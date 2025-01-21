@@ -381,6 +381,25 @@ describe('wso2 custom resource lambda', () => {
     expect(eres.Status).toBe('SUCCESS');
   });
 
+  it('should return success when api does not exists on DELETE operation', async () => {
+    nockBasicWso2SDK();
+
+    // api update mock
+    nock(baseWso2Url)
+      .delete(/.*\/publisher\/v1\/apis\/.*$/)
+      .reply(404);
+
+    const eres = await handler(
+      testCFNEventDelete(
+        {
+          ...testEvent,
+        },
+        '123-456',
+      ),
+    );
+    expect(eres.Status).toBe('SUCCESS');
+  });
+
   const toResultList = (apiDefs: PublisherPortalAPIv1): { list: ApiFromListV1[] } => {
     return {
       list: [
