@@ -19,12 +19,10 @@ lint:
 lint-fix:
 	pnpm exec eslint . --ext .ts --fix
 
-test: unit-tests
-
 test-watch:
 	pnpm exec jest -i --watch
 
-unit-tests:
+test:
 	@# can't be in parallel because we use nock that has shared contexts
 	pnpm exec jest -i --verbose
 

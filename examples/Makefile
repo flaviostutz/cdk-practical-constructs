@@ -13,10 +13,8 @@ lint:
 lint-fix:
 	pnpm exec eslint . --ext .ts --fix
 
-test: unit-tests
-
-unit-tests:
-	# pnpm exec jest --verbose
+test:
+	@echo "No unit tests available"
 
 clean:
 	rm -rf node_modules
