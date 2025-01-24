@@ -88,7 +88,7 @@ export const prepareAxiosForWso2Calls = async (wso2Config: Wso2Config): Promise<
   client.interceptors.request.use((config: any) => {
     // eslint-disable-next-line no-param-reassign
     config.metadata = { startTime: new Date().getTime() };
-    console.log(`> REQUEST: ${config.method?.toUpperCase()} ${wso2Config.baseApiUrl}${config.url}`);
+    console.log(`> REQUEST: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
     console.log(
       JSON.stringify({
         baseURL: config.baseURL,
@@ -141,7 +141,7 @@ export const registerClient = async (config: Wso2ApimConfig): Promise<ClientCred
   const data = {
     clientName: config.clientName ?? 'wso2apim-sdk-client',
     owner: config.owner ?? config.username,
-    grantType: 'password refresh_token',
+    grantType: 'password refresh_token client_credentials',
     saasApp: true,
   };
 
@@ -178,9 +178,7 @@ export const getBearerToken = async (
 
   const data = qs.stringify({
     // eslint-disable-next-line camelcase
-    grant_type: 'password',
-    username: config.username,
-    password: config.password,
+    grant_type: 'client_credentials',
     scope: `${scopesPublisher} ${scopesStore}`,
   });
 
