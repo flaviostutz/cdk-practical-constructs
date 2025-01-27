@@ -7,7 +7,6 @@ import isEqual from 'lodash.isequal';
 
 import {
   ApiFromListV1,
-  DevPortalAPIv1,
   PublisherPortalAPIv1,
   Wso2ApiDefinitionV1,
   Wso2ApiListV1,
