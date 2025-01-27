@@ -7,7 +7,6 @@ import isEqual from 'lodash.isequal';
 
 import {
   ApiFromListV1,
-  DevPortalAPIv1,
   PublisherPortalAPIv1,
   Wso2ApiDefinitionV1,
   Wso2ApiListV1,
@@ -159,25 +158,27 @@ export const createUpdateAndChangeLifecycleStatusInWso2 = async (
   }
 
   // get endpoint url
-  console.log(`Getting API endpoint url`);
-  const apir = await args.wso2Axios.get(`/api/am/store/v1/apis/${wso2ApiId}`);
+  // console.log(`Getting API endpoint url`);
+  // const apir = await args.wso2Axios.get(`/api/am/store/v1/apis/${wso2ApiId}`);
 
-  // find the endpoint URL of the environment that was defined in this API
-  const apid = apir.data as DevPortalAPIv1;
-  const endpointUrl = apid.endpointURLs?.reduce((acc, elem) => {
-    if (
-      elem.environmentName &&
-      args.apiDefinition.gatewayEnvironments?.includes(elem.environmentName)
-    ) {
-      if (elem.URLs?.https) {
-        return elem.URLs?.https;
-      }
-      if (elem.defaultVersionURLs?.https) {
-        return elem.defaultVersionURLs?.https;
-      }
-    }
-    return acc;
-  }, '');
+  // DISABLING ENDPOINT URL WHILE WE FIX AN ISSUE
+  const endpointUrl = '';
+  // // find the endpoint URL of the environment that was defined in this API
+  // const apid = apir.data as DevPortalAPIv1;
+  // const endpointUrl = apid.endpointURLs?.reduce((acc, elem) => {
+  //   if (
+  //     elem.environmentName &&
+  //     args.apiDefinition.gatewayEnvironments?.includes(elem.environmentName)
+  //   ) {
+  //     if (elem.URLs?.https) {
+  //       return elem.URLs?.https;
+  //     }
+  //     if (elem.defaultVersionURLs?.https) {
+  //       return elem.defaultVersionURLs?.https;
+  //     }
+  //   }
+  //   return acc;
+  // }, '');
 
   console.log('API created/updated successfully on WSO2 server');
 
