@@ -10,7 +10,11 @@ import {
   getWso2ApplicationById,
 } from '../../wso2-application/handler/wso2-v1';
 import { Wso2ApplicationInfo } from '../../wso2-application/v1/types';
-import { Subscription, SubscriptionList } from '../v1/types';
+import {
+  Wso2SubscriptionDefinition,
+  Wso2SubscriptionInfo,
+  Wso2SubscriptionList,
+} from '../v1/types';
 
 export type GetWso2ApiArgs = Pick<Wso2ApiSubscriptionProps, 'apiId' | 'apiSearchParameters'> & {
   wso2Axios: AxiosInstance;
@@ -95,8 +99,8 @@ export const findWso2ApiSubscription = async ({
   wso2Axios,
   apiId,
   applicationId,
-}: FindWso2ApiSubscriptionArgs): Promise<Subscription | undefined> => {
-  const apil = await wso2Axios.get<SubscriptionList>(`/api/am/store/v1/subscriptions`, {
+}: FindWso2ApiSubscriptionArgs): Promise<Wso2SubscriptionInfo | undefined> => {
+  const apil = await wso2Axios.get<Wso2SubscriptionList>(`/api/am/store/v1/subscriptions`, {
     params: {
       apiId,
       applicationId,
@@ -136,8 +140,10 @@ export type GetWso2ApiSubscriptionByIdArgs = {
 const getWso2ApiSubscriptionById = async ({
   wso2Axios,
   subscriptionId,
-}: GetWso2ApiSubscriptionByIdArgs): Promise<Subscription> => {
-  const res = await wso2Axios.get<Subscription>(`/api/am/store/v1/subscriptions/${subscriptionId}`);
+}: GetWso2ApiSubscriptionByIdArgs): Promise<Wso2SubscriptionInfo> => {
+  const res = await wso2Axios.get<Wso2SubscriptionInfo>(
+    `/api/am/store/v1/subscriptions/${subscriptionId}`,
+  );
   return res.data;
 };
 
@@ -145,7 +151,7 @@ export type CreateWso2ApiSubscriptionArgs = Pick<Wso2ApiSubscriptionProps, 'retr
   wso2Axios: AxiosInstance;
   apiId: string;
   applicationId: string;
-  throttlingPolicy: string;
+  throttlingPolicy: Wso2SubscriptionInfo['throttlingPolicy'];
 };
 
 export const createWso2ApiSubscription = async ({
@@ -154,15 +160,15 @@ export const createWso2ApiSubscription = async ({
   applicationId,
   throttlingPolicy,
   retryOptions,
-}: CreateWso2ApiSubscriptionArgs): Promise<Subscription> => {
-  const payload: Subscription = {
+}: CreateWso2ApiSubscriptionArgs): Promise<Wso2SubscriptionInfo> => {
+  const payload: Wso2SubscriptionDefinition = {
     applicationId,
     apiId,
     throttlingPolicy,
   };
 
   const res = await backOff(
-    async () => wso2Axios.post(`/api/am/store/v1/subscriptions`, payload),
+    async () => wso2Axios.post<Wso2SubscriptionInfo>(`/api/am/store/v1/subscriptions`, payload),
     retryOptions?.mutationRetries,
   );
 
@@ -170,7 +176,7 @@ export const createWso2ApiSubscription = async ({
   await backOff(async () => {
     await getWso2ApiSubscriptionById({
       wso2Axios,
-      subscriptionId: res.data.subscriptionId!,
+      subscriptionId: res.data.subscriptionId,
     });
   }, retryOptions?.checkRetries);
 
@@ -188,15 +194,19 @@ export const updateWso2ApiSubscription = async ({
   applicationId,
   throttlingPolicy,
   retryOptions,
-}: UpdateWso2ApiSubscriptionArgs): Promise<Subscription> => {
-  const payload: Subscription = {
+}: UpdateWso2ApiSubscriptionArgs): Promise<Wso2SubscriptionInfo> => {
+  const payload: Wso2SubscriptionDefinition = {
     applicationId,
     apiId,
     throttlingPolicy,
   };
 
   const res = await backOff(
-    async () => wso2Axios.post(`/api/am/store/v1/subscriptions/${subscriptionId}`, payload),
+    async () =>
+      wso2Axios.put<Wso2SubscriptionInfo>(
+        `/api/am/store/v1/subscriptions/${subscriptionId}`,
+        payload,
+      ),
     retryOptions?.mutationRetries,
   );
 

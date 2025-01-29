@@ -1,7 +1,15 @@
 import { ApiFromListV1 } from '../../wso2-api/v1/types';
 import { Wso2ApplicationInfo } from '../../wso2-application/v1/types';
 
-export type Subscription = {
+export type Wso2SubscriptionInfo = Wso2SubscriptionDefinition & {
+  /**
+   * Subscription Id
+   * @example 123-456-789
+   */
+  subscriptionId: string;
+};
+
+export type Wso2SubscriptionDefinition = {
   /**
    * The UUID of the subscription
    */
@@ -15,13 +23,13 @@ export type Subscription = {
   /**
    * The unique identifier of the API.
    */
-  apiId?: string;
+  apiId: string;
 
   apiInfo?: ApiFromListV1;
 
   applicationInfo?: Wso2ApplicationInfo;
 
-  throttlingPolicy: string;
+  throttlingPolicy: 'Unlimited' | 'Bronze' | 'Silver' | 'Gold' | string;
 
   requestedThrottlingPolicy?: string;
 
@@ -39,12 +47,12 @@ export type Subscription = {
   redirectionParams?: string;
 };
 
-export type SubscriptionList = {
+export type Wso2SubscriptionList = {
   /**
    * Number of Subscriptions returned.
    */
   count?: number;
-  list?: Array<Subscription>;
+  list?: Array<Wso2SubscriptionInfo>;
   pagination?: Pagination;
 };
 
