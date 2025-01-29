@@ -102,7 +102,9 @@ const createOrUpdateWso2ApiSubscription = async (
     apiSearchParameters: event.ResourceProperties.apiSearchParameters,
   });
 
-  console.log(`Verifying if WSO2 Application ${event.ResourceProperties.applicationId} exists in WSO2...`);
+  console.log(
+    `Verifying if WSO2 Application ${event.ResourceProperties.applicationId} exists in WSO2...`,
+  );
   const wso2Application = await getWso2Application({
     wso2Axios,
     applicationId: event.ResourceProperties.applicationId,
