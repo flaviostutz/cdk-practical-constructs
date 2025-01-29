@@ -97,6 +97,9 @@ export const validateProps = (props: Wso2ApiSubscriptionProps): void => {
       wso2Config: z.object({
         baseApiUrl: z.string(),
         credentialsSecretId: z.string(),
+        tenant: z.string().optional(),
+        apiVersion: z.string().optional(),
+        credentialsSecretKMSKeyId: z.string().optional(),
       }),
     })
     .and(apiSchema)

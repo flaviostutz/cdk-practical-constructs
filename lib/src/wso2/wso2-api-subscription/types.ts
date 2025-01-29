@@ -11,5 +11,5 @@ export type Wso2ApiSubscriptionProps = Wso2BaseProperties & {
   applicationSearchParameters?: {
     name: string;
   };
-  throttlingPolicy: 'Unlimited' | 'Gold' | 'Silver' | 'Bronze';
+  throttlingPolicy: 'Unlimited' | 'Gold' | 'Silver' | 'Bronze' | string;
 };
