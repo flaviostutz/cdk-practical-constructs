@@ -3,12 +3,11 @@
 import {
   OpenAPIRegistry,
   RouteConfig,
-  OpenApiGeneratorV31,
   extendZodWithOpenApi,
+  OpenApiGeneratorV3,
 } from '@asteasolutions/zod-to-openapi';
 import z from 'zod';
-import type { oas30, oas31 } from 'openapi3-ts';
-import { Converter } from '@apiture/openapi-down-convert';
+import type { oas30 } from 'openapi3-ts';
 import {
   AccessLogFormat,
   EndpointType,
@@ -247,30 +246,30 @@ describe('openapi-gateway-lambda', () => {
 
   it('addVPCEndpointConfig private endpoint', async () => {
     const originProps = testGatewayProps();
-    const originDoc31 = testOpenpidoc31();
-    const { openapiDoc31WithVPCE } = addVPCEndpointConfig(originProps, originDoc31);
-    expect(openapiDoc31WithVPCE['x-amazon-apigateway-endpoint-configuration']).toStrictEqual({
+    const originDoc30 = testOpenApidoc30();
+    const { openapiDoc30WithVPCE } = addVPCEndpointConfig(originProps, originDoc30);
+    expect(openapiDoc30WithVPCE['x-amazon-apigateway-endpoint-configuration']).toStrictEqual({
       vpcEndpointIds: ['vpce-1111'],
     });
     expect(
-      openapiDoc31WithVPCE['x-amazon-apigateway-policy'].Statement[0].Condition.StringEquals[
+      openapiDoc30WithVPCE['x-amazon-apigateway-policy'].Statement[0].Condition.StringEquals[
         'aws:sourceVpce'
       ],
     ).toStrictEqual(originProps.vpcEndpointIds);
     // output includes fields from input
-    expect(originDoc31.info).toStrictEqual(openapiDoc31WithVPCE.info);
+    expect(originDoc30.info).toStrictEqual(openapiDoc30WithVPCE.info);
   });
 
   it('addVPCEndpointConfig private endpoint should fail if invalid', async () => {
     const originProps = testGatewayProps();
-    const originDoc31 = testOpenpidoc31();
+    const originDoc30 = testOpenApidoc30();
     const f = (): void => {
       addVPCEndpointConfig(
         {
           ...originProps,
           vpcEndpointIds: [],
         },
-        originDoc31,
+        originDoc30,
       );
     };
     expect(f).toThrow();
@@ -281,10 +280,10 @@ describe('openapi-gateway-lambda', () => {
       ...testGatewayProps(),
       endpointTypes: [EndpointType.REGIONAL],
     };
-    const originDoc31 = testOpenpidoc31();
-    const { openapiDoc31WithVPCE } = addVPCEndpointConfig(originProps, originDoc31);
-    expect(openapiDoc31WithVPCE['x-amazon-apigateway-endpoint-configuration']).toBeUndefined();
-    expect(openapiDoc31WithVPCE['x-amazon-apigateway-policy']).toBeUndefined();
+    const originDoc30 = testOpenApidoc30();
+    const { openapiDoc30WithVPCE } = addVPCEndpointConfig(originProps, originDoc30);
+    expect(openapiDoc30WithVPCE['x-amazon-apigateway-endpoint-configuration']).toBeUndefined();
+    expect(openapiDoc30WithVPCE['x-amazon-apigateway-policy']).toBeUndefined();
   });
 
   it('generateOpenapiDocWithExtensions', async () => {
@@ -310,13 +309,13 @@ describe('openapi-gateway-lambda', () => {
 
   it('openapi lint should work', async () => {
     const f = (): void => {
-      lintOpenapiDocument(testOpenpidoc30(), true);
+      lintOpenapiDocument(testOpenApidoc30(), true);
     };
     expect(f).not.toThrow();
   });
 
   it('openapi lint should fail', async () => {
-    const odoc = testOpenpidoc30();
+    const odoc = testOpenApidoc30();
 
     // fail if parameter ids in path and declaration doesn't match
     // @ts-ignore
@@ -744,25 +743,14 @@ const testGatewayProps = (): OpenApiGatewayLambdaProps => {
   };
 };
 
-const testOpenpidoc30 = (): oas30.OpenAPIObject => {
-  const odoc = testOpenpidoc31();
-  const converter = new Converter(odoc, {
-    verbose: false,
-    deleteExampleWithId: true,
-    allOfTransform: false,
-  });
-
-  return converter.convert() as oas30.OpenAPIObject;
-};
-
-const testOpenpidoc31 = (): oas31.OpenAPIObject => {
+const testOpenApidoc30 = (): oas30.OpenAPIObject => {
   const registry = new OpenAPIRegistry();
 
   registry.registerPath(testRouteConfig());
 
-  const generator = new OpenApiGeneratorV31(registry.definitions);
-  const openapiDoc31 = generator.generateDocument({
-    openapi: '3.1.0',
+  const generator = new OpenApiGeneratorV3(registry.definitions);
+  const openapiDoc30 = generator.generateDocument({
+    openapi: '3.0.3',
     info: {
       version: '1.0.0',
       title: 'My API',
@@ -774,12 +762,7 @@ const testOpenpidoc31 = (): oas31.OpenAPIObject => {
     servers: [{ url: 'http://test.com/api' }],
   });
 
-  if (openapiDoc31.webhooks && Object.keys(openapiDoc31.webhooks).length === 0) {
-    // eslint-disable-next-line fp/no-delete
-    delete openapiDoc31.webhooks;
-  }
-
-  return openapiDoc31;
+  return openapiDoc30;
 };
 
 const testRouteConfig = (): RouteConfig => {
