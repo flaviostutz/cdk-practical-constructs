@@ -117,6 +117,12 @@ const createOrUpdateWso2ApiSubscription = async (
     applicationId: wso2Application.applicationId!,
   });
 
+  if (event.RequestType === 'Create' && wso2Subscription && event.ResourceProperties.failIfExists) {
+    throw new Error(
+      `WSO2 Subscription '${wso2Subscription.subscriptionId}' already exists but cannot be managed by this resource. Change 'failIfExists' to change this behavior`,
+    );
+  }
+
   if (
     wso2Subscription &&
     wso2Subscription.throttlingPolicy === event.ResourceProperties.throttlingPolicy
