@@ -3,7 +3,7 @@ import { AxiosInstance } from 'axios';
 import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 
 import { prepareAxiosForWso2Calls } from '../../wso2-utils';
-import { truncateStr } from '../../utils';
+import { applyRetryDefaults, truncateStr } from '../../utils';
 import { Wso2ApiSubscriptionProps } from '../types';
 
 import {
@@ -15,7 +15,7 @@ import {
   updateWso2ApiSubscription,
 } from './wso2-v1';
 
-export type Wso2ApiCustomResourceEvent = CdkCustomResourceEvent & {
+export type Wso2ApiSubscriptionCustomResourceEvent = CdkCustomResourceEvent & {
   ResourceProperties: Wso2ApiSubscriptionProps;
 };
 
@@ -31,7 +31,7 @@ export type Wso2ApiCustomResourceResponse = CdkCustomResourceResponse & {
 };
 
 export const handler = async (
-  event: Wso2ApiCustomResourceEvent,
+  event: Wso2ApiSubscriptionCustomResourceEvent,
 ): Promise<Wso2ApiCustomResourceResponse> => {
   const response: Wso2ApiCustomResourceResponse = {
     StackId: event.StackId,
@@ -69,7 +69,7 @@ export const handler = async (
       await removeWso2ApiSubscription({
         wso2Axios,
         subscriptionId: event.PhysicalResourceId,
-        retryOptions: event.ResourceProperties.retryOptions,
+        retryOptions: applyRetryDefaults(event.ResourceProperties.retryOptions),
       });
 
       return {
@@ -91,7 +91,7 @@ export const handler = async (
 };
 
 const createOrUpdateWso2ApiSubscription = async (
-  event: Wso2ApiCustomResourceEvent,
+  event: Wso2ApiSubscriptionCustomResourceEvent,
   wso2Axios: AxiosInstance,
 ): Promise<{ wso2ApiId: string; subscriptionId: string; applicationId: string }> => {
   console.log(`Verifying if WSO2 API ${event.ResourceProperties.apiId} exists in WSO2...`);
@@ -143,7 +143,7 @@ const createOrUpdateWso2ApiSubscription = async (
       apiId: wso2Api.id!,
       applicationId: wso2Application.applicationId!,
       throttlingPolicy: event.ResourceProperties.throttlingPolicy,
-      retryOptions: event.ResourceProperties.retryOptions,
+      retryOptions: applyRetryDefaults(event.ResourceProperties.retryOptions),
     });
 
     return {
@@ -159,7 +159,7 @@ const createOrUpdateWso2ApiSubscription = async (
     apiId: wso2Api.id!,
     applicationId: wso2Application.applicationId!,
     throttlingPolicy: event.ResourceProperties.throttlingPolicy,
-    retryOptions: event.ResourceProperties.retryOptions,
+    retryOptions: applyRetryDefaults(event.ResourceProperties.retryOptions),
   });
 
   return {
