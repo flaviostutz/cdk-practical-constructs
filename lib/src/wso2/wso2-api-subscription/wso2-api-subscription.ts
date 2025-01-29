@@ -8,7 +8,12 @@ import { addLambdaAndProviderForWso2Operations } from '../utils-cdk';
 import { Wso2ApiSubscriptionProps } from './types';
 
 /**
- * WSO2 API CDK construct for subscribing a WSO2 Application into a WSO2 API
+ * WSO2 API CDK construct for creating a WSO2 subscription from one application to an API
+ * This construct is related to one "physical" subscription in WSO2.
+ *
+ * The internal implementation tries to protect itself from various scenarios where larger or more complex
+ * WSO2 clusters might lead to out-of-order or delays in operations that happen asynchronously after the API
+ * accepts the requests, so for every mutation, there is a check to verify sanity.
  *
  * @example
  *
@@ -42,6 +47,14 @@ export class Wso2ApiSubscription extends Construct {
     super(scope, id);
 
     validateProps(props);
+
+    // Do as much of the logic in the construct as possible and leave only
+    // the minimal complexity to the Lambda Custom Resource as it's harder
+    // to debug and eventual errors will rollback the entire stack and will
+    // make the feedback cycle much longer.
+
+    // Keep this construct stateless (don't access WSO2 apis) and
+    // leave the stateful part to the Lambda Custom Resource (accessing WSO2 apis etc)
 
     const { customResourceProvider, customResourceFunction } =
       addLambdaAndProviderForWso2Operations({
