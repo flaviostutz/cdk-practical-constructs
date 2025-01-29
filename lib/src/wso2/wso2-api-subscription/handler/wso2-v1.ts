@@ -224,7 +224,13 @@ export const removeWso2ApiSubscription = async ({
   retryOptions,
 }: RemoveWso2ApiSubscriptionArgs): Promise<void> => {
   await backOff(
-    async () => wso2Axios.delete(`/api/am/store/v1/subscriptions/${subscriptionId}`),
+    async () =>
+      wso2Axios.delete(`/api/am/store/v1/subscriptions/${subscriptionId}`, {
+        validateStatus(status) {
+          // If it returns 404, the api is already deleted
+          return status === 200 || status === 404;
+        },
+      }),
     retryOptions?.mutationRetries,
   );
 };
