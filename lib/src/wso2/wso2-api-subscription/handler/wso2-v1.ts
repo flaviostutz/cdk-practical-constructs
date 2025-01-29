@@ -43,7 +43,7 @@ export const getWso2Api = async ({
   });
 
   if (!apiDetails) {
-    throw new Error('Cannot find the WSO2 API is related to this Custom Resource.');
+    throw new Error(`Cannot find the WSO2 API from the provided search parameters (name=${apiSearchParameters.name}; version=${apiSearchParameters.version}; context=${apiSearchParameters.context})`);
   }
 
   return apiDetails;

@@ -64,7 +64,7 @@ export const handler = async (
     }
 
     if (event.RequestType === 'Delete') {
-      console.log('>>> Deleting WSO2 API...');
+      console.log('>>> Deleting WSO2 API Subscription...');
 
       await removeWso2ApiSubscription({
         wso2Axios,
@@ -94,7 +94,7 @@ const createOrUpdateWso2ApiSubscription = async (
   event: Wso2ApiCustomResourceEvent,
   wso2Axios: AxiosInstance,
 ): Promise<{ wso2ApiId: string; subscriptionId: string; applicationId: string }> => {
-  console.log('Searching for the API in WSO2...');
+  console.log(`Verifying if WSO2 API ${event.ResourceProperties.apiId} exists in WSO2...`);
   const wso2Api = await getWso2Api({
     wso2Axios,
     apiId: event.ResourceProperties.apiId,
@@ -102,6 +102,7 @@ const createOrUpdateWso2ApiSubscription = async (
     apiSearchParameters: event.ResourceProperties.apiSearchParameters,
   });
 
+  console.log(`Verifying if WSO2 Application ${event.ResourceProperties.applicationId} exists in WSO2...`);
   const wso2Application = await getWso2Application({
     wso2Axios,
     applicationId: event.ResourceProperties.applicationId,
