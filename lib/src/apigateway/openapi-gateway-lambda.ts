@@ -13,13 +13,12 @@ import {
   StageOptions,
   CfnRestApi,
 } from 'aws-cdk-lib/aws-apigateway';
-import type { oas30, oas31 } from 'openapi3-ts';
+import type { oas30 } from 'openapi3-ts';
 import { Construct } from 'constructs';
 import { ArnFormat, ScopedAws, Size, Stack } from 'aws-cdk-lib/core';
 import { ILogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
-import { OpenAPIRegistry, OpenApiGeneratorV31, RouteConfig } from '@asteasolutions/zod-to-openapi';
-import { Converter } from '@apiture/openapi-down-convert';
+import { OpenAPIRegistry, OpenApiGeneratorV3, RouteConfig } from '@asteasolutions/zod-to-openapi';
 
 import { lintOpenapiDocument } from '../utils/openapi-lint';
 import { randomId } from '../utils/misc';
@@ -51,25 +50,10 @@ export class OpenApiGatewayLambda extends Construct {
     const propsWithDefaults = getPropsWithDefaults(id, props);
     const { deployOptions, logGroupAccessLog } = addLogGroupForTracing(this, propsWithDefaults);
 
-    // zod-to-openapi only supports openapi 3.1
-    let openapiDoc31 = generateOpenapiDocWithExtensions(propsWithDefaults, awsRegion);
+    let openapiDoc30 = generateOpenapiDocWithExtensions(propsWithDefaults, awsRegion);
 
-    const { openapiDoc31WithVPCE } = addVPCEndpointConfig(propsWithDefaults, openapiDoc31);
-    openapiDoc31 = openapiDoc31WithVPCE;
-
-    // cleanups
-    if (openapiDoc31.webhooks && Object.keys(openapiDoc31.webhooks).length === 0) {
-      // eslint-disable-next-line fp/no-delete
-      delete openapiDoc31.webhooks;
-    }
-
-    // AWS Gateway only supports openapi 3.0, so downconvert doc from 3.1 to 3.0
-    const converter = new Converter(openapiDoc31, {
-      verbose: false,
-      deleteExampleWithId: true,
-      allOfTransform: false,
-    });
-    const openapiDoc30 = converter.convert() as oas30.OpenAPIObject;
+    const { openapiDoc30WithVPCE } = addVPCEndpointConfig(propsWithDefaults, openapiDoc30);
+    openapiDoc30 = openapiDoc30WithVPCE;
 
     lintOpenapiDocument(openapiDoc30, true);
 
@@ -200,23 +184,23 @@ export const addLogGroupForTracing = (
 
 export const addVPCEndpointConfig = (
   props: OpenApiGatewayLambdaProps,
-  openapiDoc31: oas31.OpenAPIObject,
-): { openapiDoc31WithVPCE: oas31.OpenAPIObject } => {
+  openapiDoc30: oas30.OpenAPIObject,
+): { openapiDoc30WithVPCE: oas30.OpenAPIObject } => {
   const hasPrivate = props.endpointTypes?.some((value) => value === EndpointType.PRIVATE);
   if (!hasPrivate) {
-    return { openapiDoc31WithVPCE: openapiDoc31 };
+    return { openapiDoc30WithVPCE: openapiDoc30 };
   }
 
   if (!props.vpcEndpointIds || props.vpcEndpointIds.length === 0) {
     throw new Error("At least one 'vpcEndpoint' is required when any endpointType is PRIVATE");
   }
 
-  const openapiDoc31WithVPCE = {
-    ...openapiDoc31,
+  const openapiDoc30WithVPCE = {
+    ...openapiDoc30,
   };
 
   // add x-amazon-apigateway-endpoint-configuration connecting to VPCE
-  openapiDoc31WithVPCE['x-amazon-apigateway-endpoint-configuration'] = {
+  openapiDoc30WithVPCE['x-amazon-apigateway-endpoint-configuration'] = {
     vpcEndpointIds: props.vpcEndpointIds,
   };
 
@@ -237,15 +221,15 @@ export const addVPCEndpointConfig = (
       },
     ],
   };
-  openapiDoc31WithVPCE['x-amazon-apigateway-policy'] = accessPolicy;
+  openapiDoc30WithVPCE['x-amazon-apigateway-policy'] = accessPolicy;
 
-  return { openapiDoc31WithVPCE };
+  return { openapiDoc30WithVPCE };
 };
 
 export const generateOpenapiDocWithExtensions = (
   props: OpenApiGatewayLambdaProps,
   awsRegion: string,
-): oas31.OpenAPIObject => {
+): oas30.OpenAPIObject => {
   // generate basic openapi document
   const registry = new OpenAPIRegistry();
 
@@ -265,11 +249,11 @@ export const generateOpenapiDocWithExtensions = (
     lambdaOperationsMap[operationId] = lambdaOperation;
   }
 
-  const generator = new OpenApiGeneratorV31(registry.definitions);
-  const openapiDoc31 = generator.generateDocument(props.openapiBasic);
+  const generator = new OpenApiGeneratorV3(registry.definitions);
+  const openapiDoc30 = generator.generateDocument(props.openapiBasic);
 
   // add aws extensions with default validators
-  openapiDoc31['x-amazon-apigateway-request-validators'] = {
+  openapiDoc30['x-amazon-apigateway-request-validators'] = {
     requestparams: {
       validateRequestBody: true,
       validateRequestParameters: true,
@@ -322,9 +306,9 @@ export const generateOpenapiDocWithExtensions = (
       // jsonObj is a number or string
     }
   };
-  traverse(openapiDoc31);
+  traverse(openapiDoc30);
 
-  return openapiDoc31;
+  return openapiDoc30;
 };
 
 export const getPropsWithDefaults = (
