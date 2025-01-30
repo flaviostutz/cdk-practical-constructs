@@ -550,12 +550,12 @@ describe('wso2 custom resource lambda', () => {
     }
 
     // api get endpoint urls mock
-    // nocks.push(
-    //   nock(baseWso2Url)
-    //     .get(/.*\/store\/v1\/apis\/123-456$/)
-    //     .times(1)
-    //     .reply(200, testDefs),
-    // );
+    nocks.push(
+      nock(baseWso2Url)
+        .get(/.*\/store\/v1\/apis\/123-456$/)
+        .times(1)
+        .reply(200, testDefs),
+    );
 
     // api get apis mock
     nocks.push(

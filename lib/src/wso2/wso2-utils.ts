@@ -102,7 +102,7 @@ export const registerClient = async (
   axiosClient: AxiosInstance,
 ): Promise<ClientCredentials> => {
   const data = {
-    clientName: config.clientName ?? 'wso2apim-sdk-client',
+    clientName: config.clientName ?? `cdk-practical-constructs-2025-01}`,
     owner: config.owner ?? config.username,
     grantType: 'password refresh_token client_credentials',
     saasApp: true,
