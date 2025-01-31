@@ -24,7 +24,7 @@ export type Wso2ApimConfig = {
   password: string;
   /**
    * WSO2 client name registered before API calls
-   * @default 'wso2apim-sdk-client'
+   * @default cdk-practical-constructs-2015-01
    */
   clientName?: string;
   /**
@@ -71,7 +71,7 @@ export const prepareAxiosForWso2Calls = async (wso2Config: Wso2Config): Promise<
     baseUrl: wso2Config.baseApiUrl,
     username,
     password: wso2Creds.pwd,
-    clientName: 'cdk-practical-constructs-wso2',
+    clientName: `${wso2Config.credentialsSecretId}_2015-01`,
   };
 
   // get Bearer Token
