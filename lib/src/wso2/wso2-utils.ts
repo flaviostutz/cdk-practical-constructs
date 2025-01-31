@@ -71,7 +71,7 @@ export const prepareAxiosForWso2Calls = async (wso2Config: Wso2Config): Promise<
     baseUrl: wso2Config.baseApiUrl,
     username,
     password: wso2Creds.pwd,
-    clientName: `${wso2Config.credentialsSecretId}_2015-01`,
+    clientName: `${username}_2015-01`,
   };
 
   // get Bearer Token
