@@ -71,7 +71,7 @@ export const prepareAxiosForWso2Calls = async (wso2Config: Wso2Config): Promise<
     baseUrl: wso2Config.baseApiUrl,
     username,
     password: wso2Creds.pwd,
-    clientName: `${username}_2015-01`,
+    clientName: `${username}_2015-01`, // change this suffix every time different scopes are requested to avoid problems with WSO2 caching
   };
 
   // get Bearer Token
