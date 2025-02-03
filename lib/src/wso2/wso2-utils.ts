@@ -1,8 +1,10 @@
 /* eslint-disable no-console */
 import https from 'https';
 
-import axios, { AxiosError, AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import qs from 'qs';
+
+import { prepareAxiosLogs } from '../utils/axios';
 
 import { Wso2Config } from './types';
 import { getSecretValue } from './utils';
@@ -22,7 +24,7 @@ export type Wso2ApimConfig = {
   password: string;
   /**
    * WSO2 client name registered before API calls
-   * @default 'wso2apim-sdk-client'
+   * @default cdk-practical-constructs-2015-01
    */
   clientName?: string;
   /**
@@ -69,14 +71,20 @@ export const prepareAxiosForWso2Calls = async (wso2Config: Wso2Config): Promise<
     baseUrl: wso2Config.baseApiUrl,
     username,
     password: wso2Creds.pwd,
-    clientName: 'cdk-practical-constructs-wso2',
+    clientName: `cdk-practical-constructs-01-2025`, // change this suffix every time different scopes are requested to avoid problems with WSO2 caching
   };
 
-  const clientCredentials = await registerClient(wso2ApimConfig);
-  const accessToken = await getBearerToken(wso2ApimConfig, clientCredentials);
+  // get Bearer Token
+  const axiosClient = axios.create({
+    baseURL: wso2Config.baseApiUrl,
+  });
+  prepareAxiosLogs(axiosClient);
 
-  await checkWso2ServerVersion(wso2ApimConfig, 'v1');
+  const clientCredentials = await registerClient(wso2ApimConfig, axiosClient);
+  const accessToken = await getBearerToken(wso2ApimConfig, axiosClient, clientCredentials);
+  await checkWso2ServerVersion(wso2ApimConfig, axiosClient, 'v1');
 
+  // set bearer token for all invocations
   const client = axios.create({
     baseURL: wso2Config.baseApiUrl,
     headers: {
@@ -84,64 +92,19 @@ export const prepareAxiosForWso2Calls = async (wso2Config: Wso2Config): Promise<
     },
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  client.interceptors.request.use((config: any) => {
-    // eslint-disable-next-line no-param-reassign
-    config.metadata = { startTime: new Date().getTime() };
-    console.log(`> REQUEST: ${config.method?.toUpperCase()} ${wso2Config.baseApiUrl}${config.url}`);
-    console.log(
-      JSON.stringify({
-        baseURL: config.baseURL,
-        url: config.url,
-        params: config.params,
-        method: config.method,
-        headers: config.headers,
-        status: config.status,
-        data: config.data,
-      }),
-    );
-    return config;
-  });
-
-  client.interceptors.response.use(
-    (response) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const elapsedTime = new Date().getTime() - response.config.metadata.startTime;
-      console.log(`> RESPONSE: ${response.status} (${elapsedTime}ms)`);
-      console.log(
-        JSON.stringify({
-          status: response.status,
-          headers: response.headers,
-          data: response.data,
-        }),
-      );
-      return response;
-    },
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
-    (error: Error | AxiosError) => {
-      if (axios.isAxiosError(error)) {
-        console.log(`RESPONSE ERROR: status=${error.response?.status}`);
-        console.log(
-          JSON.stringify({
-            status: error.response?.status,
-            headers: error.response?.headers,
-            data: error.response?.data,
-          }),
-        );
-      }
-      throw error;
-    },
-  );
+  prepareAxiosLogs(client);
 
   return client;
 };
 
-export const registerClient = async (config: Wso2ApimConfig): Promise<ClientCredentials> => {
+export const registerClient = async (
+  config: Wso2ApimConfig,
+  axiosClient: AxiosInstance,
+): Promise<ClientCredentials> => {
   const data = {
-    clientName: config.clientName ?? 'wso2apim-sdk-client',
+    clientName: config.clientName ?? `cdk-practical-constructs-2025-01}`,
     owner: config.owner ?? config.username,
-    grantType: 'password refresh_token',
+    grantType: 'password refresh_token client_credentials',
     saasApp: true,
   };
 
@@ -157,8 +120,10 @@ export const registerClient = async (config: Wso2ApimConfig): Promise<ClientCred
     }),
   };
 
-  const res = axios.post<ClientCredentials>(
-    `${config.baseUrl}/client-registration/v0.17/register`,
+  console.log('Registering client...');
+
+  const res = axiosClient.post<ClientCredentials>(
+    `/client-registration/v0.17/register`,
     data,
     axiosConfig,
   );
@@ -168,6 +133,7 @@ export const registerClient = async (config: Wso2ApimConfig): Promise<ClientCred
 
 export const getBearerToken = async (
   config: Wso2ApimConfig,
+  axiosClient: AxiosInstance,
   clientCredentials: ClientCredentials,
 ): Promise<string> => {
   // tested minimum for publisher: apim:api_create apim:api_view apim:api_publish apim:api_delete
@@ -178,9 +144,7 @@ export const getBearerToken = async (
 
   const data = qs.stringify({
     // eslint-disable-next-line camelcase
-    grant_type: 'password',
-    username: config.username,
-    password: config.password,
+    grant_type: 'client_credentials',
     scope: `${scopesPublisher} ${scopesStore}`,
   });
 
@@ -198,22 +162,21 @@ export const getBearerToken = async (
     }),
   };
 
-  const res = axios.post<{ access_token: string }>(
-    `${config.baseUrl}/oauth2/token`,
-    data,
-    axiosConfig,
-  );
+  console.log('Getting bearer token...');
+
+  const res = axiosClient.post<{ access_token: string }>(`/oauth2/token`, data, axiosConfig);
 
   return (await res).data.access_token;
 };
 
 export const checkWso2ServerVersion = async (
   config: Wso2ApimConfig,
+  axiosClient: AxiosInstance,
   wso2ApiVersion: string,
 ): Promise<void> => {
   let info = '';
   try {
-    const res = axios.get<string>(`${config.baseUrl}/services/Version`, {
+    const res = axiosClient.get<string>(`/services/Version`, {
       httpsAgent: new https.Agent({ rejectUnauthorized: config.tlsRejectUnauthorized }),
     });
     const responseBody = (await res).data;
