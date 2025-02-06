@@ -24,7 +24,7 @@ export type Wso2ApimConfig = {
   password: string;
   /**
    * WSO2 client name registered before API calls
-   * @default cdk-practical-constructs-2015-01
+   * @default cdk-practical-constructs-2025-01
    */
   clientName?: string;
   /**
@@ -71,7 +71,7 @@ export const prepareAxiosForWso2Calls = async (wso2Config: Wso2Config): Promise<
     baseUrl: wso2Config.baseApiUrl,
     username,
     password: wso2Creds.pwd,
-    clientName: `cdk-practical-constructs-01-2025`, // change this suffix every time different scopes are requested to avoid problems with WSO2 caching
+    clientName: `cdk-practical-constructs-2025-01`, // change this suffix every time different scopes are requested to avoid problems with WSO2 caching
   };
 
   // get Bearer Token
