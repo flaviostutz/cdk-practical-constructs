@@ -17,6 +17,8 @@ import { Wso2ApplicationCustomResourceProperties, Wso2ApplicationProps } from '.
 export class Wso2Application extends Construct {
   readonly customResourceFunction: IFunction;
 
+  readonly wso2ApplicationId: string;
+
   constructor(scope: Construct, id: string, props: Wso2ApplicationProps) {
     super(scope, id);
 
@@ -39,7 +41,7 @@ export class Wso2Application extends Construct {
       });
 
     // eslint-disable-next-line no-new
-    new CustomResource(this, `${id}-wso2app-custom-resource`, {
+    const resource = new CustomResource(this, `${id}-wso2app-custom-resource`, {
       serviceToken: customResourceProvider.serviceToken,
       properties: {
         wso2Config: props.wso2Config,
@@ -51,6 +53,10 @@ export class Wso2Application extends Construct {
     });
 
     this.customResourceFunction = customResourceFunction.nodeJsFunction;
+
+    // TODO: check for a better way to retrieve the application id
+    // https://github.com/aws-samples/aws-cdk-examples/discussions/641
+    this.wso2ApplicationId = resource.getAtt('Wso2ApplicationId').toString();
   }
 }
 

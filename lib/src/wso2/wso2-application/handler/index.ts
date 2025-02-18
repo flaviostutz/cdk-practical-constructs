@@ -5,10 +5,13 @@ import type { AxiosInstance } from 'axios';
 
 import { prepareAxiosForWso2Calls } from '../../wso2-utils';
 import { applyRetryDefaults, truncateStr } from '../../utils';
-import type { Wso2ApplicationInfo } from '../v1/types';
 import type { Wso2ApplicationCustomResourceProperties } from '../types';
 
-import { createUpdateApplicationInWso2, removeApplicationInWso2 } from './wso2-v1';
+import {
+  createUpdateApplicationInWso2,
+  removeApplicationInWso2,
+  findWso2Application,
+} from './wso2-v1';
 
 export type Wso2ApplicationCustomResourceEvent = CdkCustomResourceEvent & {
   ResourceProperties: Wso2ApplicationCustomResourceProperties;
@@ -90,22 +93,10 @@ const createOrUpdateWso2Application = async (
 
   // find existing WSO2 application
   console.log('Searching if Application already exists in WSO2...');
-  let existingApplication: Wso2ApplicationInfo | undefined;
-  const apil = await wso2Axios.get(`/api/am/store/v1/applications`, {
-    params: { query: event.ResourceProperties.applicationDefinition.name },
+  const existingApplication = await findWso2Application({
+    wso2Axios,
+    name: event.ResourceProperties.applicationDefinition.name,
   });
-  const apiRes = apil.data.list as Wso2ApplicationInfo[];
-  if (apiRes.length > 1) {
-    throw new Error(
-      `More than one Application with name '${event.ResourceProperties.applicationDefinition.name}' was found in WSO2 so we cannot determine it's id automatically`,
-    );
-  }
-  if (apiRes.length === 1) {
-    existingApplication = apiRes[0];
-    console.log(
-      `Found existing WSO2 Application. applicationId=${existingApplication.applicationId}; name=${existingApplication.name}`,
-    );
-  }
 
   if (
     event.RequestType === 'Create' &&

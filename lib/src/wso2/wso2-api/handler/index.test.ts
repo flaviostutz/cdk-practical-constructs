@@ -3,12 +3,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import nock from 'nock';
-import { mockClient } from 'aws-sdk-client-mock';
-import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 import { petstoreOpenapi } from '../__tests__/petstore';
 import { ApiFromListV1, PublisherPortalAPIv1, Wso2ApiDefinitionV1 } from '../v1/types';
 import { Wso2ApiCustomResourceProperties } from '../types';
+import { nockBasicWso2SDK } from '../../__tests__/wso2-utils';
 
 import { Wso2ApiCustomResourceEvent, handler } from './index';
 
@@ -44,7 +43,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('basic wso2 api create', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api list mock
     nock(baseWso2Url)
@@ -87,7 +86,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('wso2 api create and PUBLISH', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api list mock
     nock(baseWso2Url)
@@ -134,7 +133,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('basic wso2 api update', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api list mock
     const testDefs: Wso2ApiDefinitionV1 = {
@@ -182,7 +181,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('basic wso2 api change on UPDATE operation', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api list mock
     const testDefs: Wso2ApiDefinitionV1 = {
@@ -227,7 +226,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('should pass with success if wso2 answers properly after a few retries', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api list mock
     const testDefs: Wso2ApiDefinitionV1 = {
@@ -303,7 +302,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('should fail after retrying checking WSO2 api for a few times', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api list mock
     const testDefs: Wso2ApiDefinitionV1 = {
@@ -363,7 +362,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('basic wso2 api delete on DELETE operation', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api update mock
     nock(baseWso2Url)
@@ -382,7 +381,7 @@ describe('wso2 custom resource lambda', () => {
   });
 
   it('should return success when api does not exists on DELETE operation', async () => {
-    nockBasicWso2SDK();
+    nockBasicWso2SDK(baseWso2Url);
 
     // api update mock
     nock(baseWso2Url)
@@ -478,32 +477,6 @@ describe('wso2 custom resource lambda', () => {
     apiDefinition: testBasicWso2ApiDefs(),
     // defaults to not retrying in regular tests
     retryOptions: testRetryOptions,
-  };
-
-  const nockBasicWso2SDK = (): void => {
-    const secretMock = mockClient(SecretsManagerClient);
-    secretMock.on(GetSecretValueCommand).resolves({
-      SecretBinary: Buffer.from(JSON.stringify({ user: 'user1', pwd: 'pwd1' })),
-    });
-
-    // register client mock
-    nock(baseWso2Url).post('/client-registration/v0.17/register').reply(200, {
-      clientId: 'clientId1',
-      clientSecret: 'clientSecret1',
-    });
-
-    // get token mock
-    nock(baseWso2Url).post('/oauth2/token').reply(200, {
-      access_token: '1111-1111-1111',
-    });
-
-    // mock server check
-    nock(baseWso2Url)
-      .get('/services/Version')
-      .reply(
-        200,
-        '<ns:getVersionResponse xmlns:ns="http://version.services.core.carbon.wso2.org"><return>WSO2 API Manager-3.2.0</return></ns:getVersionResponse>',
-      );
   };
 
   const nockAfterCreateUpdateAndChangeLifecycleStatusInWso2 = (

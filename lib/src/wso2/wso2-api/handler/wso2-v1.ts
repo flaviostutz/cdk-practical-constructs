@@ -21,10 +21,12 @@ import { Wso2ApiProps } from '../types';
 
 export const findWso2Api = async (args: {
   wso2Axios: AxiosInstance;
-  apiDefinition: Wso2ApiDefinitionV1;
-  wso2Tenant: string;
+  apiName: string;
+  apiVersion: string;
+  apiContext: string;
+  wso2Tenant?: string;
 }): Promise<ApiFromListV1 | undefined> => {
-  const searchQuery = `name:${args.apiDefinition.name} version:${args.apiDefinition.version} context:${args.apiDefinition.context}`;
+  const searchQuery = `name:${args.apiName} version:${args.apiVersion} context:${args.apiContext}`;
 
   const res = await args.wso2Axios.get(`/api/am/publisher/v1/apis`, {
     params: { query: searchQuery },
@@ -45,12 +47,12 @@ export const findWso2Api = async (args: {
 
   // filter out apis that were found but don't match our tenant
   const filteredApis = apilist.list.filter((api) => {
-    if (api.name !== args.apiDefinition.name || api.version !== args.apiDefinition.version) {
+    if (api.name !== args.apiName || api.version !== args.apiVersion) {
       return false;
     }
     if (!api.context) return false;
     // 'api.context' may contain the full context name in wso2, which means '/t/[tenant]/[api context]'
-    if (api.context.endsWith(args.apiDefinition.context)) {
+    if (api.context.endsWith(args.apiContext)) {
       if (args.wso2Tenant) {
         return api.context.startsWith(`/t/${args.wso2Tenant}`);
       }
@@ -69,8 +71,18 @@ export const findWso2Api = async (args: {
     return undefined;
   }
   throw new Error(
-    `Cannot determine which WSO2 API is related to this Custom Resource. More than 1 API with search query '${searchQuery}' matches. name=${args.apiDefinition.name} context=${args.apiDefinition.context} version=${args.apiDefinition.version} tenant=${args.wso2Tenant}`,
+    `Cannot determine which WSO2 API is related to this Custom Resource. More than 1 API with search query '${searchQuery}' matches. name=${args.apiName} context=${args.apiContext} version=${args.apiVersion} tenant=${args.wso2Tenant}`,
   );
+};
+
+export const getWso2ApiById = async (args: {
+  wso2Axios: AxiosInstance;
+  wso2ApiId: string;
+}): Promise<PublisherPortalAPIv1> => {
+  const apir = await args.wso2Axios.get<PublisherPortalAPIv1>(
+    `/api/am/publisher/v1/apis/${args.wso2ApiId}`,
+  );
+  return apir.data;
 };
 
 export type UpsertWso2Args = Pick<Wso2ApiProps, 'lifecycleStatus'> &
@@ -228,7 +240,9 @@ export const changeLifecycleStatusInWso2AndCheck = async (
     console.log('');
     console.log(`Checking if API is in lifecycle status '${args.lifecycleStatus}'...`);
     const fapi = await findWso2Api({
-      apiDefinition: args.apiDefinition,
+      apiName: args.apiDefinition.name,
+      apiVersion: args.apiDefinition.version,
+      apiContext: args.apiDefinition.context,
       wso2Axios: args.wso2Axios,
       wso2Tenant: args.wso2Tenant,
     });
@@ -341,19 +355,20 @@ const checkApiExistsAndMatches = async (
   console.log('');
   console.log('Checking if API exists and matches the desired definition in WSO2...');
   const searchApi = await findWso2Api({
-    apiDefinition: args.apiDefinition,
+    apiName: args.apiDefinition.name,
+    apiVersion: args.apiDefinition.version,
+    apiContext: args.apiDefinition.context,
     wso2Axios: args.wso2Axios,
     wso2Tenant: args.wso2Tenant,
   });
 
-  if (!searchApi) {
+  if (!searchApi || !searchApi.id) {
     throw new Error(`API couldn't be found on WSO2`);
   }
 
   console.log(`API '${searchApi.id}' found in WSO2 search`);
 
-  const apir = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${searchApi.id}`);
-  const apiDetails = apir.data as PublisherPortalAPIv1;
+  const apiDetails = await getWso2ApiById({ wso2Axios: args.wso2Axios, wso2ApiId: searchApi.id });
 
   if (!apiDetails.lastUpdatedTime) {
     throw new Error('lastUpdatedTime is null in api');
@@ -514,17 +529,18 @@ const checkApiDefAndOpenapiOverlap = async (args: UpsertWso2Args): Promise<boole
 
   return backOff(async () => {
     const searchApi = await findWso2Api({
-      apiDefinition: args.apiDefinition,
+      apiName: args.apiDefinition.name,
+      apiVersion: args.apiDefinition.version,
+      apiContext: args.apiDefinition.context,
       wso2Axios: args.wso2Axios,
       wso2Tenant: args.wso2Tenant,
     });
 
-    if (!searchApi) {
+    if (!searchApi || !searchApi.id) {
       throw new Error('WSO2 API not found');
     }
 
-    const apir = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${searchApi.id}`);
-    const apiDetails = apir.data as PublisherPortalAPIv1;
+    const apiDetails = await getWso2ApiById({ wso2Axios: args.wso2Axios, wso2ApiId: searchApi.id });
 
     const { isEquivalent } = checkWSO2Equivalence(apiDetails, args.apiDefinition);
 

@@ -65,7 +65,10 @@ export const createUpdateApplicationInWso2AndCheck = async (
 
     // wait for Application to be created by retrying checks
     await backOff(async () => {
-      await args.wso2Axios.get(`/api/am/store/v1/applications/${dataRes.applicationId}`);
+      await getWso2ApplicationById({
+        wso2Axios: args.wso2Axios,
+        applicationId: dataRes.applicationId!,
+      });
     }, args.retryOptions.checkRetries);
 
     return dataRes.applicationId;
@@ -85,10 +88,54 @@ export const createUpdateApplicationInWso2AndCheck = async (
 
   // wait for Application to be created by retrying checks
   await backOff(async () => {
-    await args.wso2Axios.get(
-      `/api/am/store/v1/applications/${args.existingApplication?.applicationId}`,
-    );
+    await getWso2ApplicationById({
+      wso2Axios: args.wso2Axios,
+      applicationId: args.existingApplication!.applicationId!,
+    });
   }, args.retryOptions.checkRetries);
 
   return args.existingApplication.applicationId;
+};
+
+export const getWso2ApplicationById = async (args: {
+  wso2Axios: AxiosInstance;
+  applicationId: string;
+}): Promise<Wso2ApplicationInfo> => {
+  const res = await args.wso2Axios.get<Wso2ApplicationInfo>(
+    `/api/am/store/v1/applications/${args.applicationId}`,
+  );
+  return res.data;
+};
+
+export const findWso2Application = async (args: {
+  wso2Axios: AxiosInstance;
+  name: string;
+}): Promise<Wso2ApplicationInfo | undefined> => {
+  const apil = await args.wso2Axios.get<{ list: Wso2ApplicationInfo[] }>(
+    `/api/am/store/v1/applications`,
+    {
+      params: {
+        query: args.name,
+      },
+    },
+  );
+  const apiRes = apil.data.list;
+
+  if (apiRes.length > 1) {
+    throw new Error(
+      `More than one Application with name '${args.name}' was found in WSO2 so we cannot determine it's id automatically`,
+    );
+  }
+
+  if (apiRes.length === 0) {
+    // eslint-disable-next-line no-undefined
+    return undefined;
+  }
+
+  const existingApplication = apiRes[0];
+  console.log(
+    `Found existing WSO2 Application. applicationId=${existingApplication.applicationId}; name=${existingApplication.name}`,
+  );
+
+  return existingApplication;
 };

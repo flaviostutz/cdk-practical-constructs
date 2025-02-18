@@ -25,6 +25,8 @@ export class Wso2Api extends Construct {
 
   readonly openapiDocument: OpenAPIObject;
 
+  readonly wso2ApiId: string;
+
   constructor(scope: Construct, id: string, props: Wso2ApiProps) {
     super(scope, id);
 
@@ -51,7 +53,7 @@ export class Wso2Api extends Construct {
     // TODO check if large open api documents can be passed by Custom Resource properties
 
     // eslint-disable-next-line no-new
-    new CustomResource(this, `${id}-wso2api-custom-resource`, {
+    const resource = new CustomResource(this, `${id}-wso2api-custom-resource`, {
       serviceToken: customResourceProvider.serviceToken,
       properties: {
         wso2Config: props.wso2Config,
@@ -67,6 +69,10 @@ export class Wso2Api extends Construct {
     this.apiDefinition = wso2ApiDefs;
     this.openapiDocument = props.openapiDocument;
     this.customResourceFunction = customResourceFunction.nodeJsFunction;
+
+    // TODO: check for a better way to retrieve the api id
+    // https://github.com/aws-samples/aws-cdk-examples/discussions/641
+    this.wso2ApiId = resource.getAtt('Wso2ApiId').toString();
   }
 }
 
