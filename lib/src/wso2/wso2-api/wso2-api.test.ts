@@ -4,7 +4,8 @@
 
 import cloneDeep from 'lodash.clonedeep';
 import { App, Stack } from 'aws-cdk-lib/core';
-import { Template } from 'aws-cdk-lib/assertions';
+import { Match, Template } from 'aws-cdk-lib/assertions';
+import { SecurityGroup, Vpc } from 'aws-cdk-lib/aws-ec2';
 
 import { petstoreOpenapi } from './__tests__/petstore';
 import { Wso2Api } from './wso2-api';
@@ -71,6 +72,75 @@ describe('wso2-api-construct', () => {
       corsConfigurationEnabled: true,
       accessControlAllowOrigins: ['testwebsite.com'],
     });
+  });
+});
+
+it('should automatically add a default securitygroup', async () => {
+  const app = new App();
+  const stack = new Stack(app);
+
+  const testProps1 = testProps();
+  const wso2Api = new Wso2Api(stack, 'wso2', {
+    ...testProps1,
+    customResourceConfig: {
+      network: {
+        vpcId: 'vpc',
+        availabilityZones: ['a'],
+        privateSubnetIds: ['a'],
+        privateSubnetRouteTableIds: ['a'],
+      },
+    },
+  });
+
+  expect(wso2Api.customResourceFunction).toBeDefined();
+
+  const template = Template.fromStack(stack);
+
+  template.hasResourceProperties('AWS::Lambda::Function', {
+    VpcConfig: {
+      SecurityGroupIds: Match.arrayWith([
+        {
+          'Fn::GetAtt': [Match.stringLikeRegexp('wso2sg*'), 'GroupId'],
+        },
+      ]),
+    },
+  });
+});
+
+it('should support custom securitygroup', async () => {
+  const app = new App();
+  const stack = new Stack(app);
+
+  const vpc = new Vpc(stack, 'vpc');
+
+  const mySecurityGroup = new SecurityGroup(stack, 'sg-test', { vpc });
+
+  const testProps1 = testProps();
+  const wso2Api = new Wso2Api(stack, 'wso2', {
+    ...testProps1,
+    customResourceConfig: {
+      securityGroups: [mySecurityGroup],
+      network: {
+        vpcId: 'vpc',
+        availabilityZones: ['a'],
+        privateSubnetIds: ['a'],
+        privateSubnetRouteTableIds: ['a'],
+      },
+    },
+  });
+
+  expect(wso2Api.customResourceFunction).toBeDefined();
+
+  const template = Template.fromStack(stack);
+
+  template.hasResourceProperties('AWS::Lambda::Function', {
+    VpcConfig: {
+      SecurityGroupIds: Match.arrayWith([
+        {
+          'Fn::GetAtt': [Match.stringLikeRegexp('sgtest*'), 'GroupId'],
+        },
+      ]),
+    },
   });
 });
 

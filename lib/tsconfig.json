@@ -3,7 +3,8 @@
   "compilerOptions": {
     "sourceMap": true,
     "declaration": true,
-    "declarationMap": true
+    "declarationMap": true,
+    "esModuleInterop": true
   },
   "include": ["src", ".eslintrc.js", "jest.config.js"],
   "exclude": ["node_modules"]
