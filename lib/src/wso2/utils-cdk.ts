@@ -39,16 +39,13 @@ export const addLambdaAndProviderForWso2Operations = (args: {
   // vpc is undefined if no network is defined
   let vpc: IVpc | undefined;
 
-  const securityGroups = [];
+  const securityGroups = customResourceConfig?.securityGroups ?? [];
 
   // Create security group for custom resource if VPC is defined and no security group is defined
   if (args.props.customResourceConfig?.network) {
     vpc = vpcFromConfig(args.scope, args.props.customResourceConfig.network);
 
-    if (
-      !customResourceConfig?.securityGroups ||
-      customResourceConfig?.securityGroups.length === 0
-    ) {
+    if (securityGroups.length === 0) {
       // create default security group for the lambda function
       const securityGroup = new SecurityGroup(args.scope, `sg-cr-${args.scope.node.id}`, {
         vpc,

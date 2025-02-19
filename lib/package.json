@@ -75,7 +75,7 @@
     "overrides": {
       "braces@<3.0.3": ">=3.0.3",
       "rollup@<3.29.5": ">=3.29.5",
-      "jsonpath-plus": ">=10",
+      "jsonpath-plus": ">=10.2.0",
       "cross-spawn": ">=7.0.5"
     }
   }
