@@ -73,6 +73,16 @@ export const findWso2Api = async (args: {
   );
 };
 
+export const getWso2Api = async (args: {
+  wso2Axios: AxiosInstance;
+  wso2ApiId: string;
+}): Promise<PublisherPortalAPIv1> => {
+  const apir = await args.wso2Axios.get<PublisherPortalAPIv1>(
+    `/api/am/publisher/v1/apis/${args.wso2ApiId}`,
+  );
+  return apir.data;
+};
+
 export type UpsertWso2Args = Pick<Wso2ApiProps, 'lifecycleStatus'> &
   Required<Pick<Wso2ApiProps, 'retryOptions' | 'openapiDocument' | 'apiDefinition'>> & {
     wso2Axios: AxiosInstance;
@@ -93,6 +103,7 @@ export const removeApiInWso2 = async (args: {
   if (!args.wso2ApiId) {
     throw new Error('wso2ApiId is required for deleting API');
   }
+
   await args.wso2Axios.delete(`/api/am/publisher/v1/apis/${args.wso2ApiId}`, {
     validateStatus(status) {
       // If it returns 404, the api is already deleted
@@ -158,27 +169,36 @@ export const createUpdateAndChangeLifecycleStatusInWso2 = async (
     );
   }
 
-  // get endpoint url
-  console.log(`Getting API endpoint url`);
-  const apir = await args.wso2Axios.get(`/api/am/store/v1/apis/${wso2ApiId}`);
+  let endpointUrl: string | undefined;
 
-  // DISABLING ENDPOINT URL WHILE WE FIX AN ISSUE
-  // find the endpoint URL of the environment that was defined in this API
-  const apid = apir.data as DevPortalAPIv1;
-  const endpointUrl = apid.endpointURLs?.reduce((acc, elem) => {
-    if (
-      elem.environmentName &&
-      args.apiDefinition.gatewayEnvironments?.includes(elem.environmentName)
-    ) {
-      if (elem.URLs?.https) {
-        return elem.URLs?.https;
+  const apiData = await getWso2Api({ wso2Axios: args.wso2Axios, wso2ApiId });
+
+  if (apiData.lifeCycleStatus === 'PUBLISHED') {
+    // get endpoint url
+    console.log(`Getting API endpoint url`);
+    const apiStoreData = await args.wso2Axios.get<DevPortalAPIv1>(
+      `/api/am/store/v1/apis/${wso2ApiId}`,
+    );
+
+    // DISABLING ENDPOINT URL WHILE WE FIX AN ISSUE
+    // find the endpoint URL of the environment that was defined in this API
+    endpointUrl = apiStoreData.data.endpointURLs?.reduce((acc, elem) => {
+      if (
+        elem.environmentName &&
+        args.apiDefinition.gatewayEnvironments?.includes(elem.environmentName)
+      ) {
+        if (elem.URLs?.https) {
+          return elem.URLs?.https;
+        }
+        if (elem.defaultVersionURLs?.https) {
+          return elem.defaultVersionURLs?.https;
+        }
       }
-      if (elem.defaultVersionURLs?.https) {
-        return elem.defaultVersionURLs?.https;
-      }
-    }
-    return acc;
-  }, '');
+      return acc;
+    }, '');
+  } else {
+    console.log('API is not published, skipping the endpoint URL retrieval');
+  }
 
   console.log('API created/updated successfully on WSO2 server');
 
@@ -346,14 +366,13 @@ const checkApiExistsAndMatches = async (
     wso2Tenant: args.wso2Tenant,
   });
 
-  if (!searchApi) {
+  if (!searchApi || !searchApi.id) {
     throw new Error(`API couldn't be found on WSO2`);
   }
 
   console.log(`API '${searchApi.id}' found in WSO2 search`);
 
-  const apir = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${searchApi.id}`);
-  const apiDetails = apir.data as PublisherPortalAPIv1;
+  const apiDetails = await getWso2Api({ wso2Axios: args.wso2Axios, wso2ApiId: searchApi.id });
 
   if (!apiDetails.lastUpdatedTime) {
     throw new Error('lastUpdatedTime is null in api');
@@ -519,12 +538,11 @@ const checkApiDefAndOpenapiOverlap = async (args: UpsertWso2Args): Promise<boole
       wso2Tenant: args.wso2Tenant,
     });
 
-    if (!searchApi) {
+    if (!searchApi || !searchApi.id) {
       throw new Error('WSO2 API not found');
     }
 
-    const apir = await args.wso2Axios.get(`/api/am/publisher/v1/apis/${searchApi.id}`);
-    const apiDetails = apir.data as PublisherPortalAPIv1;
+    const apiDetails = await getWso2Api({ wso2Axios: args.wso2Axios, wso2ApiId: searchApi.id });
 
     const { isEquivalent } = checkWSO2Equivalence(apiDetails, args.apiDefinition);
 
