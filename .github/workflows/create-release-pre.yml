@@ -25,5 +25,4 @@ jobs:
             --prerelease \
             --git-username="Flávio Stutz" \
             --git-email="flaviostutz@gmail.com" \
-            --prefix= \
-            --changelog-file CHANGELOG.md
+            --prefix=
