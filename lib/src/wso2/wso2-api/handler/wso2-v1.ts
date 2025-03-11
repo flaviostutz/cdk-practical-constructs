@@ -176,26 +176,27 @@ export const createUpdateAndChangeLifecycleStatusInWso2 = async (
   if (apiData.lifeCycleStatus === 'PUBLISHED') {
     // get endpoint url
     console.log(`Getting API endpoint url`);
-    const apiStoreData = await args.wso2Axios.get<DevPortalAPIv1>(
-      `/api/am/store/v1/apis/${wso2ApiId}`,
-    );
+    endpointUrl = await backOff(async () => {
+      const apiStoreData = await args.wso2Axios.get<DevPortalAPIv1>(
+        `/api/am/store/v1/apis/${wso2ApiId}`,
+      );
 
-    // DISABLING ENDPOINT URL WHILE WE FIX AN ISSUE
-    // find the endpoint URL of the environment that was defined in this API
-    endpointUrl = apiStoreData.data.endpointURLs?.reduce((acc, elem) => {
-      if (
-        elem.environmentName &&
-        args.apiDefinition.gatewayEnvironments?.includes(elem.environmentName)
-      ) {
-        if (elem.URLs?.https) {
-          return elem.URLs?.https;
+      // find the endpoint URL of the environment that was defined in this API
+      return apiStoreData.data.endpointURLs?.reduce((acc, elem) => {
+        if (
+          elem.environmentName &&
+          args.apiDefinition.gatewayEnvironments?.includes(elem.environmentName)
+        ) {
+          if (elem.URLs?.https) {
+            return elem.URLs?.https;
+          }
+          if (elem.defaultVersionURLs?.https) {
+            return elem.defaultVersionURLs?.https;
+          }
         }
-        if (elem.defaultVersionURLs?.https) {
-          return elem.defaultVersionURLs?.https;
-        }
-      }
-      return acc;
-    }, '');
+        return acc;
+      }, '');
+    }, args.retryOptions.checkRetries);
   } else {
     console.log('API is not published, skipping the endpoint URL retrieval');
   }
@@ -259,7 +260,8 @@ export const changeLifecycleStatusInWso2AndCheck = async (
 
     // Workflow trigger detected. It might indicate the need for manual approval or a slow process
     // so we will ignore checking the API lifecycle status check for now
-    if (fapi.workflowStatus !== '' && fapi.workflowStatus !== 'APPROVED') {
+    // `workflowStatus` can be null and undefined as well
+    if (!!fapi.workflowStatus && fapi.workflowStatus !== 'APPROVED') {
       console.log(
         `API lifecycle status check SKIPPED. API ${args.wso2ApiId} has workflow status '${fapi.workflowStatus}', which might require manual approval before the actual lifecycle status is changed`,
       );
