@@ -2,7 +2,6 @@
 import { AxiosInstance } from 'axios';
 import { CdkCustomResourceEvent, CdkCustomResourceResponse } from 'aws-lambda';
 
-import { PublisherPortalAPIv1 } from '../v1/types';
 import { Wso2ApiCustomResourceProperties } from '../types';
 import { prepareAxiosForWso2Calls } from '../../wso2-utils';
 import { applyRetryDefaults, truncateStr } from '../../utils';
@@ -10,6 +9,7 @@ import { applyRetryDefaults, truncateStr } from '../../utils';
 import {
   createUpdateAndChangeLifecycleStatusInWso2,
   findWso2Api,
+  getWso2Api,
   removeApiInWso2,
 } from './wso2-v1';
 
@@ -104,12 +104,12 @@ const createOrUpdateWso2Api = async (
   });
 
   let apiBeforeUpdate;
-  if (existingApi) {
+  if (existingApi && existingApi.id) {
     console.log(
       `Found existing WSO2 API. apiId=${existingApi.id}; name=${existingApi.name}; version=${existingApi.version} context=${existingApi.context}`,
     );
-    const apir = await wso2Axios.get(`/api/am/publisher/v1/apis/${existingApi.id}`);
-    apiBeforeUpdate = apir.data as PublisherPortalAPIv1;
+
+    apiBeforeUpdate = await getWso2Api({ wso2Axios, wso2ApiId: existingApi.id });
   }
 
   if (event.RequestType === 'Create' && existingApi && event.ResourceProperties.failIfExists) {

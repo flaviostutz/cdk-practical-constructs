@@ -7,7 +7,7 @@ import { mockClient } from 'aws-sdk-client-mock';
 import { GetSecretValueCommand, SecretsManagerClient } from '@aws-sdk/client-secrets-manager';
 
 import { petstoreOpenapi } from '../__tests__/petstore';
-import { ApiFromListV1, PublisherPortalAPIv1, Wso2ApiDefinitionV1 } from '../v1/types';
+import { ApiFromListV1, PublisherPortalAPIv1 } from '../v1/types';
 import { Wso2ApiCustomResourceProperties } from '../types';
 
 import { Wso2ApiCustomResourceEvent, handler } from './index';
@@ -53,9 +53,10 @@ describe('wso2 custom resource lambda', () => {
       .times(1) // check create or update
       .reply(200, { list: [] });
 
-    const testDefs: Wso2ApiDefinitionV1 = {
+    const testDefs: PublisherPortalAPIv1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
+      lifeCycleStatus: 'CREATED',
     };
 
     // api create mock
@@ -63,27 +64,44 @@ describe('wso2 custom resource lambda', () => {
       .post(/.*\/publisher\/v1\/apis\?.*$/)
       .reply(201, testDefs);
 
+    // api find mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis$/)
+      .query(true)
+      .times(1) // check if content matches
+      .reply(200, toResultList(testDefs));
+
     // api get mock
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis\/[^\\/]*$/)
-      .times(2) // check if content matches
+      .times(1) // check if content matches
       .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
 
-    const nocksUpdateCreate = nockAfterCreateUpdateAndChangeLifecycleStatusInWso2(testDefs);
+    const nocksUpdateCreate = nockAfterCreateUpdateAndChangeLifecycleStatusInWso2(
+      testDefs,
+      'Publish',
+    );
 
     const eres = await handler(
       testCFNEventCreate({
         ...testEvent,
       }),
     );
+
     expect(eres.PhysicalResourceId).toBe('123-456');
     expect(eres.Status).toBe('SUCCESS');
 
     // check if the correct endpoints were invoked during update/create process
     // eslint-disable-next-line no-restricted-syntax
-    for (const n of nocksUpdateCreate) {
+    for (const n of nocksUpdateCreate.nocksForOpenapi) {
       n.done();
     }
+
+    // check that the lifecycle status was not changed
+    expect(nocksUpdateCreate.nocksForLifecycle[0].isDone()).toBeFalsy();
+
+    // check that the endpoint url was not retrieved
+    expect(nocksUpdateCreate.nocksEndpointUrl[1].isDone()).toBeFalsy();
   });
 
   it('wso2 api create and PUBLISH', async () => {
@@ -96,7 +114,7 @@ describe('wso2 custom resource lambda', () => {
       .times(1) // check create or update
       .reply(200, { list: [] });
 
-    const testDefs: Wso2ApiDefinitionV1 = {
+    const testDefs: PublisherPortalAPIv1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
@@ -109,7 +127,7 @@ describe('wso2 custom resource lambda', () => {
     // api get mock
     nock(baseWso2Url)
       .get(/.*\/publisher\/v1\/apis\/[^\\/]*$/)
-      .times(2) // check if content matches
+      .times(1) // check if content matches
       .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
 
     const nocksUpdateCreate = nockAfterCreateUpdateAndChangeLifecycleStatusInWso2(
@@ -127,8 +145,14 @@ describe('wso2 custom resource lambda', () => {
     expect(eres.Status).toBe('SUCCESS');
 
     // check if the correct endpoints were invoked during update/create process
+    const allNocks = [
+      ...nocksUpdateCreate.nocksEndpointUrl,
+      ...nocksUpdateCreate.nocksForLifecycle,
+      ...nocksUpdateCreate.nocksForOpenapi,
+    ];
+
     // eslint-disable-next-line no-restricted-syntax
-    for (const n of nocksUpdateCreate) {
+    for (const n of allNocks) {
       n.done();
     }
   });
@@ -137,7 +161,7 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs: Wso2ApiDefinitionV1 = {
+    const testDefs: PublisherPortalAPIv1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
@@ -185,7 +209,7 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs: Wso2ApiDefinitionV1 = {
+    const testDefs: PublisherPortalAPIv1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
@@ -230,7 +254,7 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs: Wso2ApiDefinitionV1 = {
+    const testDefs: PublisherPortalAPIv1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
@@ -306,7 +330,7 @@ describe('wso2 custom resource lambda', () => {
     nockBasicWso2SDK();
 
     // api list mock
-    const testDefs: Wso2ApiDefinitionV1 = {
+    const testDefs: PublisherPortalAPIv1 = {
       ...testBasicWso2ApiDefs(),
       id: '123-456',
     };
@@ -400,6 +424,62 @@ describe('wso2 custom resource lambda', () => {
     expect(eres.Status).toBe('SUCCESS');
   });
 
+  it('should be able to update the lifecycle on UPDATE operation', async () => {
+    nockBasicWso2SDK();
+
+    // api list mock
+    const testDefs: PublisherPortalAPIv1 = {
+      ...testBasicWso2ApiDefs(),
+      id: '123-456',
+      lifeCycleStatus: 'CREATED',
+    };
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis$/)
+      .query(true)
+      .times(3) // check overlap, check create or update, check if updated, check if published
+      .reply(200, toResultList(testDefs));
+
+    // api get mock
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(2) // check overlap, check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-10' });
+
+    nock(baseWso2Url)
+      .get(/.*\/publisher\/v1\/apis\/.*$/)
+      .times(1) // check if content matches
+      .reply(200, { ...testDefs, lastUpdatedTime: '2020-10-11' });
+
+    // api update mock
+    nock(baseWso2Url)
+      .put(/.*\/publisher\/v1\/apis\/.*$/)
+      .reply(201, testDefs);
+
+    const { nocksForLifecycle } = nockAfterCreateUpdateAndChangeLifecycleStatusInWso2(
+      testDefs,
+      'Publish',
+    );
+
+    const eres = await handler(
+      testCFNEventUpdate(
+        {
+          ...testEvent,
+          lifecycleStatus: 'PUBLISHED',
+        },
+        '123-456',
+        {},
+      ),
+    );
+    expect(eres.PhysicalResourceId).toBe('123-456');
+    expect(eres.Status).toBe('SUCCESS');
+
+    // check that the lifecycle status was changed
+    // eslint-disable-next-line no-restricted-syntax
+    for (const n of nocksForLifecycle) {
+      n.done();
+    }
+  });
+
   const toResultList = (apiDefs: PublisherPortalAPIv1): { list: ApiFromListV1[] } => {
     return {
       list: [
@@ -416,7 +496,7 @@ describe('wso2 custom resource lambda', () => {
     };
   };
 
-  const testBasicWso2ApiDefs = (): Wso2ApiDefinitionV1 => {
+  const testBasicWso2ApiDefs = (): PublisherPortalAPIv1 => {
     return {
       context: '/testcontext1',
       name: 'myapitest',
@@ -507,13 +587,19 @@ describe('wso2 custom resource lambda', () => {
   };
 
   const nockAfterCreateUpdateAndChangeLifecycleStatusInWso2 = (
-    testDefs: Wso2ApiDefinitionV1,
+    testDefs: PublisherPortalAPIv1,
     lifecycleAction?: string,
-  ): nock.Scope[] => {
-    const nocks: nock.Scope[] = [];
+  ): {
+    nocksForOpenapi: nock.Scope[];
+    nocksForLifecycle: nock.Scope[];
+    nocksEndpointUrl: nock.Scope[];
+  } => {
+    const nocksForOpenapi: nock.Scope[] = [];
+    const nocksForLifecycle: nock.Scope[] = [];
+    const nocksEndpointUrl: nock.Scope[] = [];
 
     // api openapi update mock
-    nocks.push(
+    nocksForOpenapi.push(
       nock(baseWso2Url)
         .put(/.*\/publisher\/v1\/apis\/123-456\/swagger/)
         .times(1)
@@ -521,7 +607,7 @@ describe('wso2 custom resource lambda', () => {
     );
 
     // api openapi get mock
-    nocks.push(
+    nocksForOpenapi.push(
       nock(baseWso2Url)
         .get(/.*\/publisher\/v1\/apis\/123-456\/swagger/)
         .times(1)
@@ -531,7 +617,7 @@ describe('wso2 custom resource lambda', () => {
     if (lifecycleAction) {
       console.log('NOCK CHANGE LIFE CYCLE');
       // api change to published mock
-      nocks.push(
+      nocksForLifecycle.push(
         nock(baseWso2Url)
           .post(/.*\/publisher\/v1\/apis\/change-lifecycle/)
           .query({ apiId: '123-456', action: lifecycleAction })
@@ -540,17 +626,29 @@ describe('wso2 custom resource lambda', () => {
       );
 
       // api get apis mock for checking if lifecycle was changed
-      nocks.push(
+      nocksForLifecycle.push(
         nock(baseWso2Url)
           .get(/.*\/publisher\/v1\/apis$/)
           .query(true)
           .times(1) // check if it is published
-          .reply(200, toResultList(testDefs)),
+          .reply(200, toResultList({ ...testDefs, lifeCycleStatus: 'PUBLISHED' })),
       );
     }
 
+    // Endpoint url retrieval - checking if the api is published
+    nocksEndpointUrl.push(
+      nock(baseWso2Url)
+        .get(/.*\/publisher\/v1\/apis\/.*$/)
+        .times(1)
+        .reply(200, {
+          ...testDefs,
+          lastUpdatedTime: '2020-10-11',
+          ...(lifecycleAction === 'Publish' && { lifecycleStatus: 'PUBLISHED' }),
+        }),
+    );
+
     // api get endpoint urls mock
-    nocks.push(
+    nocksEndpointUrl.push(
       nock(baseWso2Url)
         .get(/.*\/store\/v1\/apis\/123-456$/)
         .times(1)
@@ -558,14 +656,18 @@ describe('wso2 custom resource lambda', () => {
     );
 
     // api get apis mock
-    nocks.push(
+    nocksEndpointUrl.push(
       nock(baseWso2Url)
         .get(/.*\/publisher\/v1\/apis$/)
         .query(true)
-        .times(1) // check if it is published
+        .times(1)
         .reply(200, toResultList(testDefs)),
     );
 
-    return nocks;
+    return {
+      nocksEndpointUrl,
+      nocksForLifecycle,
+      nocksForOpenapi,
+    };
   };
 });
