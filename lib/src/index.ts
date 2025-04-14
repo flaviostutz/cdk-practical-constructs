@@ -2,7 +2,10 @@ export * from './utils';
 
 export * from './config/configs';
 
-export { OpenApiGatewayLambda } from './apigateway/openapi-gateway-lambda';
+export {
+  OpenApiGatewayLambda,
+  generateOpenapiDocWithExtensions,
+} from './apigateway/openapi-gateway-lambda';
 export * from './apigateway/types';
 
 export { BaseNodeJsFunction } from './lambda/lambda-base';
