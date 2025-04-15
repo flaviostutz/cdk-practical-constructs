@@ -7,8 +7,7 @@ import {
   extendZodWithOpenApi,
 } from '@asteasolutions/zod-to-openapi';
 import z from 'zod';
-import type { oas30, oas31 } from 'openapi3-ts';
-import { Converter } from '@apiture/openapi-down-convert';
+import { oas31 } from 'openapi3-ts';
 import {
   AccessLogFormat,
   EndpointType,
@@ -33,6 +32,7 @@ import {
   generateOperationId,
   getPropsWithDefaults,
   addLogGroupForTracing,
+  convertOpenapi31ToV30,
 } from './openapi-gateway-lambda';
 
 extendZodWithOpenApi(z);
@@ -309,20 +309,23 @@ describe('openapi-gateway-lambda', () => {
   });
 
   it('openapi lint should work', async () => {
+    const odoc31 = testOpenpidoc31();
+
     const f = (): void => {
-      lintOpenapiDocument(testOpenpidoc30(), true);
+      lintOpenapiDocument(convertOpenapi31ToV30(odoc31), true);
     };
     expect(f).not.toThrow();
   });
 
   it('openapi lint should fail', async () => {
-    const odoc = testOpenpidoc30();
+    const odoc31 = testOpenpidoc31();
+    const odoc30 = convertOpenapi31ToV30(odoc31);
 
     // fail if parameter ids in path and declaration doesn't match
     // @ts-ignore
-    odoc.paths['/users/{id}'].get.parameters[0].name = 'SOMETHING';
+    odoc30.paths['/users/{id}'].get.parameters[0].name = 'SOMETHING';
     const f = (): void => {
-      lintOpenapiDocument(odoc, true);
+      lintOpenapiDocument(odoc30, true);
     };
     expect(f).toThrow();
   });
@@ -742,17 +745,6 @@ const testGatewayProps = (): OpenApiGatewayLambdaProps => {
       },
     ],
   };
-};
-
-const testOpenpidoc30 = (): oas30.OpenAPIObject => {
-  const odoc = testOpenpidoc31();
-  const converter = new Converter(odoc, {
-    verbose: false,
-    deleteExampleWithId: true,
-    allOfTransform: false,
-  });
-
-  return converter.convert() as oas30.OpenAPIObject;
 };
 
 const testOpenpidoc31 = (): oas31.OpenAPIObject => {

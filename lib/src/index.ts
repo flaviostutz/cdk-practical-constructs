@@ -5,6 +5,7 @@ export * from './config/configs';
 export {
   OpenApiGatewayLambda,
   generateOpenapiDocWithExtensions,
+  convertOpenapi31ToV30,
 } from './apigateway/openapi-gateway-lambda';
 export * from './apigateway/types';
 

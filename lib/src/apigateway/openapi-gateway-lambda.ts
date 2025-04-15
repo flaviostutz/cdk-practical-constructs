@@ -19,7 +19,7 @@ import { ArnFormat, ScopedAws, Size, Stack } from 'aws-cdk-lib/core';
 import { ILogGroup, LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { OpenAPIRegistry, OpenApiGeneratorV31, RouteConfig } from '@asteasolutions/zod-to-openapi';
-import { Converter } from '@apiture/openapi-down-convert';
+import { Converter, ConverterOptions } from '@apiture/openapi-down-convert';
 
 import { lintOpenapiDocument } from '../utils/openapi-lint';
 import { randomId } from '../utils/misc';
@@ -64,13 +64,7 @@ export class OpenApiGatewayLambda extends Construct {
     }
 
     // AWS Gateway only supports openapi 3.0, so downconvert doc from 3.1 to 3.0
-    const converter = new Converter(openapiDoc31, {
-      verbose: false,
-      deleteExampleWithId: true,
-      allOfTransform: false,
-    });
-    const openapiDoc30 = converter.convert() as oas30.OpenAPIObject;
-
+    const openapiDoc30 = convertOpenapi31ToV30(openapiDoc31);
     lintOpenapiDocument(openapiDoc30, true);
 
     // The api gateway does not appends the stackname/stage into it by default
@@ -325,6 +319,22 @@ export const generateOpenapiDocWithExtensions = (
   traverse(openapiDoc31);
 
   return openapiDoc31;
+};
+
+// converts OpenAPI 3.1 document to OpenAPI 3.0
+export const convertOpenapi31ToV30 = (
+  openapiDoc31: oas31.OpenAPIObject,
+  converterOpts?: ConverterOptions,
+): oas30.OpenAPIObject => {
+  const converter = new Converter(
+    openapiDoc31,
+    converterOpts ?? {
+      verbose: false,
+      deleteExampleWithId: true,
+      allOfTransform: false,
+    },
+  );
+  return converter.convert() as oas30.OpenAPIObject;
 };
 
 export const getPropsWithDefaults = (
