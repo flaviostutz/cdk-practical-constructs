@@ -49,7 +49,7 @@ publish:
 	fi
 
 	# check if tag is current and bump version in package.json to latest tag
-	npx -y monotag@1.20.0 current --bump-action=latest --prefix=
+	npx -y monotag@1.25.0 current --bump-action=latest --prefix=
 
 	echo "" >> .npmrc
 	echo "//registry.npmjs.org/:_authToken=$${NPM_ACCESS_TOKEN}" >> .npmrc

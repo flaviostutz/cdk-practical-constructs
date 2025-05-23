@@ -1,6 +1,6 @@
 {
   "name": "cdk-practical-constructs",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "A collection of CDK constructs for making the development of AWS based applications easier and safer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
