@@ -170,17 +170,20 @@ const applyOpenapiAsDefaults = (
   apiDef: Wso2ApiDefinitionV1,
 ): Wso2ApiDefinitionV1 => {
   const apiDefr = { ...apiDef };
-  // user openapi contact info for business/technical information of the api
+  // use openapi contact info for business/technical information of the api
   if (
-    (!apiDefr.businessInformation && openapiDocument.info.contact?.email) ||
-    openapiDocument.info.contact?.name
+    !apiDefr.businessInformation &&
+    (openapiDocument.info.contact?.email || openapiDocument.info.contact?.name)
   ) {
-    apiDefr.businessInformation = {
-      businessOwnerEmail: openapiDocument.info.contact?.email,
-      technicalOwnerEmail: openapiDocument.info.contact?.email,
-      technicalOwner: openapiDocument.info.contact?.name,
-      businessOwner: openapiDocument.info.contact?.name,
-    };
+    apiDefr.businessInformation = {};
+    if (openapiDocument.info.contact?.email) {
+      apiDefr.businessInformation.businessOwnerEmail = openapiDocument.info.contact?.email;
+      apiDefr.businessInformation.technicalOwnerEmail = openapiDocument.info.contact?.email;
+    }
+    if (openapiDocument.info.contact?.name) {
+      apiDefr.businessInformation.businessOwner = openapiDocument.info.contact?.name;
+      apiDefr.businessInformation.technicalOwner = openapiDocument.info.contact?.name;
+    }
   }
 
   if (!apiDefr.description && openapiDocument.info.description) {
