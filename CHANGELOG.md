@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.19.3 (2025-08-14)
+
+### Maintenance
+
+* release: 0.19.2 [[d8697c9](https://github.com/flaviostutz/cdk-practical-constructs/commit/d8697c961df5493c6fc6d9d2c59a305d31c08f5b)]
+* bump lib versions to fix security findings [[0b88687](https://github.com/flaviostutz/cdk-practical-constructs/commit/0b886879e11a30da2f03b853a81f3a108e653398)]
+* upgrading to node 22 [[bc27a17](https://github.com/flaviostutz/cdk-practical-constructs/commit/bc27a17639f7124948d5e410735af11822d335a7)]
+
+### Misc
+
+
+### Info
+
+* Authors: Flávio Stutz <flaviostutz@gmail.com>, flaviostutz <flaviostutz@gmail.com>
+
+
 ## 0.19.2 (2025-03-10)
 
 ### Features
