@@ -18,7 +18,7 @@ jobs:
           token: ${{ secrets.GH_PERSONAL_TOKEN }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '22.x'
       - name: Create tag and push to repo
         run: |
           npx -y monotag@1.25.0 tag-push \
