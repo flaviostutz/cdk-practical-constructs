@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.19.4 (2025-08-14)
+
+### Maintenance
+
+* release: 0.19.3 [[1c14c23](https://github.com/flaviostutz/cdk-practical-constructs/commit/1c14c2346d36bd509bbb65c38b7cbd4553d26a6f)]
+* bumping monotag to show better errors [[6b71ed3](https://github.com/flaviostutz/cdk-practical-constructs/commit/6b71ed32570774ac2597cf3a31fa678c88d71738)]
+
+### Misc
+
+
+### Info
+
+* Authors: Flávio Stutz <flaviostutz@gmail.com>, flaviostutz <flaviostutz@gmail.com>
+
+
 ## 0.19.3 (2025-08-14)
 
 ### Maintenance
