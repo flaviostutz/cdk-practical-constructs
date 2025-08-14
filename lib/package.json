@@ -1,6 +1,6 @@
 {
   "name": "cdk-practical-constructs",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A collection of CDK constructs for making the development of AWS based applications easier and safer",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,7 @@
     "package.json",
     "README.md"
   ],
-  "packageManager": "pnpm@8.9.0",
+  "packageManager": "pnpm@8.9.0+sha512.ef8859938e1f0537b9fcf0309044311392f3b38b344176e6cd4fdee21b225524b0ac2a1b08ae2ae2ddd5b3ff4b8ca496d6778e950f3e7c9f555b81325982441c",
   "scripts": {},
   "repository": {
     "type": "git",
@@ -45,11 +45,11 @@
     "@aws-sdk/client-secrets-manager": "^3.624.0",
     "@stoplight/spectral-cli": "^6.13.1",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.8.2",
+    "axios": "^1.11.0",
     "constructs": "^10.3.0",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.25.9",
     "exponential-backoff": "^3.1.1",
-    "form-data": "^4.0.0",
+    "form-data": "^4.0.4",
     "fs": "0.0.1-security",
     "lodash.clonedeep": "^4.5.0",
     "lodash.isequal": "^4.5.0",

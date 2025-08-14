@@ -26,7 +26,7 @@
     "aws-lambda": "^1.0.7",
     "cdk-practical-constructs": "file:../lib/dist/cdk-practical-constructs-0.0.1.tgz",
     "constructs": "^10.3.0",
-    "esbuild": "^0.19.11",
+    "esbuild": "^0.25.9",
     "openapi3-ts": "^4.2.1",
     "zod": "^3.23.8"
   }
