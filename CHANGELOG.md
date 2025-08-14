@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.19.5 (2025-08-14)
+
+### Maintenance
+
+* release: 0.19.4 [[807f065](https://github.com/flaviostutz/cdk-practical-constructs/commit/807f0650ba68c233fc8aeb671d14a562d899558e)]
+* updating package lock from examples [[f74a968](https://github.com/flaviostutz/cdk-practical-constructs/commit/f74a9681f81be29bc517bfa2c815ed1caf22d77a)]
+
+### Misc
+
+
+### Info
+
+* Authors: Flávio Stutz <flaviostutz@gmail.com>, flaviostutz <flaviostutz@gmail.com>
+
+
 ## 0.19.4 (2025-08-14)
 
 ### Maintenance
