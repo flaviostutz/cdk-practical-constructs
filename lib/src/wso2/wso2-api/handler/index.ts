@@ -47,6 +47,12 @@ export const handler = async (
     LogicalResourceId: event.LogicalResourceId,
   };
 
+  if (event.ResourceProperties.disableDeployment) {
+    console.log(`>>> WSO2 API deployment disabled...`);
+    response.Status = 'SUCCESS';
+    return response;
+  }
+
   try {
     console.log('>>> Prepare WSO2 API client...');
     const wso2Axios = await prepareAxiosForWso2Calls(event.ResourceProperties.wso2Config);

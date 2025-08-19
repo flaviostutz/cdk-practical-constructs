@@ -24,4 +24,8 @@ export type Wso2ApiProps = Wso2BaseProperties & {
    * as the workflow might take a long time to complete.
    */
   lifecycleStatus?: 'CREATED' | 'PUBLISHED' | 'DEPRECATED' | 'BLOCKED' | 'RETIRED' | 'PROTOTYPED';
+  /**
+   * Flag to either enable or disable deployment for the WSO2 API.
+   */
+  disableDeployment?: boolean;
 };
