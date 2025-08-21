@@ -14,7 +14,9 @@ import {
 } from './wso2-v1';
 
 export type Wso2ApiCustomResourceEvent = CdkCustomResourceEvent & {
-  ResourceProperties: Wso2ApiCustomResourceProperties;
+  ResourceProperties: Omit<Wso2ApiCustomResourceProperties, 'disableDeployment'> & {
+    disableDeployment: 'false' | 'true';
+  };
 };
 
 export type Wso2ApiCustomResourceResponse = CdkCustomResourceResponse & {
@@ -47,7 +49,7 @@ export const handler = async (
     LogicalResourceId: event.LogicalResourceId,
   };
 
-  if (event.ResourceProperties.disableDeployment) {
+  if (event.ResourceProperties.disableDeployment === 'true') {
     console.log(`>>> WSO2 API deployment disabled...`);
     response.Status = 'SUCCESS';
     return response;
