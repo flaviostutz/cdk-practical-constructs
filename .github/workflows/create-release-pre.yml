@@ -21,7 +21,7 @@ jobs:
           node-version: '22.x'
       - name: Create tag and push to repo
         run: |
-          npx -y monotag@1.25.0 tag-push \
+          npx -y monotag@1.26.0 tag-push \
             --prerelease \
             --git-username="Flávio Stutz" \
             --git-email="flaviostutz@gmail.com" \
