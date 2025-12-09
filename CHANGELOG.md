@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.20.1 (2025-08-14)
+
+### Bug Fixes
+
+* Remove unneeded fs dependency [[a30f2a1](https://github.com/flaviostutz/cdk-practical-constructs/commit/a30f2a187cd3ee03f3d99f29198ac042edec3cb5)]
+
+### Maintenance
+
+* release: 0.19.5 [[ebfafb4](https://github.com/flaviostutz/cdk-practical-constructs/commit/ebfafb4b8ea31d2d502cfd7337b2da87e6b77ab7)]
+* adding sha to pakage.json to avoid issues while releasing [[8bed8ba](https://github.com/flaviostutz/cdk-practical-constructs/commit/8bed8bae4088dcf51142e5519e02c2fafc62d255)]
+* ignoring changes in examples folder during release [[5a9b0c4](https://github.com/flaviostutz/cdk-practical-constructs/commit/5a9b0c406d564d0ebd332215604b69e09724383d)]
+
+### Misc
+
+
+### Info
+
+* Refs: Merge pull request #77
+* Authors: Casper Kuijjer <casper@kuijjer.com>, Flávio Stutz <flaviostutz@gmail.com>, flaviostutz <flaviostutz@gmail.com>, GitHub <noreply@github.com>
+
+
 ## 0.19.5 (2025-08-14)
 
 ### Maintenance
