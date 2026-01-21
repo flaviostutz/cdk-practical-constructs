@@ -520,7 +520,11 @@ describe('wso2 custom resource lambda', () => {
     return {
       ...commonEvt,
       RequestType: 'Create',
-      ResourceProperties: { ...baseProperties, ServiceToken: 'arn:somelambdatest' },
+      ResourceProperties: {
+        ...baseProperties,
+        ServiceToken: 'arn:somelambdatest',
+        disableDeployment: 'false',
+      },
     };
   };
   const testCFNEventDelete = (
@@ -530,7 +534,11 @@ describe('wso2 custom resource lambda', () => {
     return {
       ...commonEvt,
       RequestType: 'Delete',
-      ResourceProperties: { ...baseProperties, ServiceToken: 'arn:somelambdatest' },
+      ResourceProperties: {
+        ...baseProperties,
+        ServiceToken: 'arn:somelambdatest',
+        disableDeployment: 'false',
+      },
       PhysicalResourceId,
     };
   };
@@ -542,7 +550,11 @@ describe('wso2 custom resource lambda', () => {
     return {
       ...commonEvt,
       RequestType: 'Update',
-      ResourceProperties: { ...baseProperties, ServiceToken: 'arn:somelambdatest' },
+      ResourceProperties: {
+        ...baseProperties,
+        ServiceToken: 'arn:somelambdatest',
+        disableDeployment: 'false',
+      },
       PhysicalResourceId,
       OldResourceProperties: oldResourceProperties,
     };

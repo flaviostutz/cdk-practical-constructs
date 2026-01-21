@@ -59,6 +59,7 @@ export class Wso2Api extends Construct {
         openapiDocument: props.openapiDocument,
         retryOptions: props.retryOptions,
         lifecycleStatus: props.lifecycleStatus,
+        disableDeployment: props.disableDeployment ?? false,
       } satisfies Wso2ApiCustomResourceProperties,
       resourceType: 'Custom::Wso2Api',
       removalPolicy: props.removalPolicy ?? RemovalPolicy.RETAIN,
