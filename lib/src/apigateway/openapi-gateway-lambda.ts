@@ -171,6 +171,7 @@ export const addLogGroupForTracing = (
     });
 
     const deployOptionsAccessLog: StageOptions = {
+      stageName: props.stage,
       ...props.deployOptions,
       accessLogDestination:
         props.deployOptions?.accessLogDestination ?? new LogGroupLogDestination(logGroupAccessLog),
@@ -186,8 +187,9 @@ export const addLogGroupForTracing = (
   }
 
   return {
-    deployOptions: props.deployOptions ?? {
-      metricsEnabled: true,
+    deployOptions: {
+      stageName: props.stage,
+      ...(props.deployOptions ? props.deployOptions : { metricsEnabled: true }),
     },
   };
 };

@@ -93,8 +93,10 @@ describe('openapi-gateway-lambda', () => {
     // routes and schemas defined in rest api
     template.hasResourceProperties('AWS::ApiGateway::RestApi', {
       Body: {
+        openapi: '3.0.3',
         info: {
           title: 'test api',
+          version: 'v1',
         },
         paths: {
           '/users/{id}': {
@@ -123,6 +125,7 @@ describe('openapi-gateway-lambda', () => {
 
     // cloudwatch metrics enabled by default
     template.hasResourceProperties('AWS::ApiGateway::Stage', {
+      StageName: 'tst',
       MethodSettings: [
         {
           MetricsEnabled: true,
